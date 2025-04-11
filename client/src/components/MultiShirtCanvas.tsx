@@ -115,19 +115,19 @@ export default function MultiShirtCanvas({
     }
   }, [mockupImg, designImg, designSize, showDebugAreas]);
   
-  // Define fixed positions for all shirts
+  // Define fixed positions for all shirts - moved higher up to match reference image
   const shirtPositions = [
     // Top row (left to right)
-    { x: 500, y: 750 },   // White shirt
-    { x: 1500, y: 750 },  // Ivory shirt
-    { x: 2500, y: 750 },  // Butter shirt
-    { x: 3500, y: 750 },  // Banana shirt
+    { x: 500, y: 600 },   // White shirt - higher position than before
+    { x: 1500, y: 600 },  // Ivory shirt
+    { x: 2500, y: 600 },  // Butter shirt
+    { x: 3500, y: 600 },  // Banana shirt
     
     // Bottom row (left to right)
-    { x: 500, y: 2250 },  // Mustard shirt
-    { x: 1500, y: 2250 }, // Peachy shirt
-    { x: 2500, y: 2250 }, // Yam shirt
-    { x: 3500, y: 2250 }  // Khaki shirt
+    { x: 500, y: 2100 },  // Mustard shirt - also higher position
+    { x: 1500, y: 2100 }, // Peachy shirt
+    { x: 2500, y: 2100 }, // Yam shirt
+    { x: 3500, y: 2100 }  // Khaki shirt
   ];
   
   // Draw designs on all shirts
@@ -142,16 +142,20 @@ export default function MultiShirtCanvas({
       // Calculate printable area dimensions based on aspect ratio
       let areaWidth, areaHeight;
       
-      if (aspectRatio > 1.5) {
-        // Wide design (landscape or banner)
+      if (aspectRatio > 2.0) {
+        // Very wide design (banner/text like "overstimulated")
+        areaWidth = 550;
+        areaHeight = 150;
+      } else if (aspectRatio > 1.3) {
+        // Landscape design (like "ARE WE GREAT YET?")
         areaWidth = 500;
-        areaHeight = 250;
+        areaHeight = 300;
       } else if (aspectRatio < 0.7) {
-        // Tall design (portrait)
-        areaWidth = 300;
-        areaHeight = 450;
+        // Tall/portrait design (like the bear design)
+        areaWidth = 320;
+        areaHeight = 480;
       } else {
-        // Square-ish design
+        // Square-ish design (like the # symbol)
         areaWidth = 400;
         areaHeight = 400;
       }
@@ -197,16 +201,20 @@ export default function MultiShirtCanvas({
       // Calculate appropriate area based on design aspect ratio
       let areaWidth, areaHeight;
       
-      if (aspectRatio > 1.5) {
-        // Wide design (landscape or banner)
+      if (aspectRatio > 2.0) {
+        // Very wide design (banner/text like "overstimulated")
+        areaWidth = 550;
+        areaHeight = 150;
+      } else if (aspectRatio > 1.3) {
+        // Landscape design (like "ARE WE GREAT YET?")
         areaWidth = 500;
-        areaHeight = 250;
+        areaHeight = 300;
       } else if (aspectRatio < 0.7) {
-        // Tall design (portrait)
-        areaWidth = 300;
-        areaHeight = 450;
+        // Tall/portrait design (like the bear design)
+        areaWidth = 320;
+        areaHeight = 480;
       } else {
-        // Square-ish design
+        // Square-ish design (like the # symbol)
         areaWidth = 400;
         areaHeight = 400;
       }
