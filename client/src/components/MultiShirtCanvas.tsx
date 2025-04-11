@@ -41,19 +41,19 @@ interface ShirtConfig {
   designOffset: { x: number; y: number };
 }
 
-// Define initial shirt positions (standard mockup layout)
+// Define initial shirt positions based on optimal placement data
 const INITIAL_SHIRT_POSITIONS: ShirtConfig[] = [
   // TOP ROW (Left to Right)
-  { x: 500, y: 750, name: "White", index: 0, designOffset: { x: 0, y: 0 } },
-  { x: 1500, y: 750, name: "Ivory", index: 1, designOffset: { x: 0, y: 0 } },
-  { x: 2500, y: 750, name: "Butter", index: 2, designOffset: { x: 0, y: 0 } },
-  { x: 3500, y: 750, name: "Banana", index: 3, designOffset: { x: 0, y: 0 } },
+  { x: 500, y: 750, name: "White", index: 0, designOffset: { x: 90, y: -90 } },
+  { x: 1500, y: 750, name: "Ivory", index: 1, designOffset: { x: 30, y: -75 } },
+  { x: 2500, y: 750, name: "Butter", index: 2, designOffset: { x: -45, y: -80 } },
+  { x: 3500, y: 750, name: "Banana", index: 3, designOffset: { x: -90, y: -90 } },
   
   // BOTTOM ROW (Left to Right)
-  { x: 500, y: 2250, name: "Mustard", index: 4, designOffset: { x: 0, y: 0 } },
-  { x: 1500, y: 2250, name: "Peachy", index: 5, designOffset: { x: 0, y: 0 } },
-  { x: 2500, y: 2250, name: "Yam", index: 6, designOffset: { x: 0, y: 0 } },
-  { x: 3500, y: 2250, name: "Khaki", index: 7, designOffset: { x: 0, y: 0 } }
+  { x: 500, y: 2250, name: "Mustard", index: 4, designOffset: { x: 95, y: -160 } },
+  { x: 1500, y: 2250, name: "Peachy", index: 5, designOffset: { x: 30, y: -180 } },
+  { x: 2500, y: 2250, name: "Yam", index: 6, designOffset: { x: -30, y: -170 } },
+  { x: 3500, y: 2250, name: "Khaki", index: 7, designOffset: { x: -95, y: -170 } }
 ];
 
 export default function MultiShirtCanvas({
@@ -76,7 +76,7 @@ export default function MultiShirtCanvas({
   // Design placement adjustment controls
   const [shirtConfigs, setShirtConfigs] = useState<ShirtConfig[]>(INITIAL_SHIRT_POSITIONS);
   const [selectedShirt, setSelectedShirt] = useState<number>(0);
-  const [globalYOffset, setGlobalYOffset] = useState(0);
+  const [globalYOffset, setGlobalYOffset] = useState(-200);  // Default offset based on optimal positioning
   const [editMode, setEditMode] = useState<'none' | 'all' | 'individual'>('none');
   const [designWidthFactor, setDesignWidthFactor] = useState(450); // Default design width for avg design
   const [designHeightFactor, setDesignHeightFactor] = useState(300); // Default design height
@@ -242,10 +242,10 @@ export default function MultiShirtCanvas({
     }
   };
 
-  // Reset positions
+  // Reset positions to default optimal settings
   const resetPositions = () => {
     setShirtConfigs(INITIAL_SHIRT_POSITIONS);
-    setGlobalYOffset(0);
+    setGlobalYOffset(-200); // Reset to optimal default Y offset
     setDesignWidthFactor(450);
     setDesignHeightFactor(300);
   };
