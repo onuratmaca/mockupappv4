@@ -328,15 +328,36 @@ export default function PreviewCanvas({
 
   // Draw printable area visualization
   const drawPrintableArea = (ctx: CanvasRenderingContext2D, mockupImg: ImageObject) => {
+    // Get the grid position of the selected shirt
+    const gridPos = getShirtGridPosition(shirtPosition);
+    
+    // Get the printable area configuration
     const printableArea = getPrintableArea(mockupId);
     
-    // Calculate printable area dimensions
-    const printableWidth = mockupImg.width * printableArea.width;
-    const printableHeight = mockupImg.height * printableArea.height;
+    // Calculate the size and position of the selected shirt within the mockup
+    const shirtWidth = mockupImg.width * gridPos.width;
+    const shirtHeight = mockupImg.height * gridPos.height;
+    const shirtX = mockupImg.x + (mockupImg.width * gridPos.x) - (shirtWidth / 2);
+    const shirtY = mockupImg.y + (mockupImg.height * gridPos.y) - (shirtHeight / 2);
     
-    // Calculate center of printable area
-    const centerX = mockupImg.x + mockupImg.width * printableArea.xCenter;
-    const centerY = mockupImg.y + mockupImg.height * printableArea.yCenter;
+    // Calculate printable area dimensions for this shirt
+    const printableWidth = shirtWidth * printableArea.width;
+    const printableHeight = shirtHeight * printableArea.height;
+    
+    // Calculate center of printable area within this shirt
+    const centerX = shirtX + (shirtWidth * printableArea.xCenter);
+    const centerY = shirtY + (shirtHeight * printableArea.yCenter);
+    
+    // Draw shirt position outline
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    ctx.strokeRect(
+      shirtX,
+      shirtY,
+      shirtWidth,
+      shirtHeight
+    );
     
     // Draw printable area rectangle
     ctx.strokeStyle = 'rgba(0, 200, 255, 0.5)';
@@ -359,8 +380,8 @@ export default function PreviewCanvas({
     
     positions.forEach(position => {
       const offset = printableArea.positionOffsets[position];
-      const x = centerX + (mockupImg.width * offset.x);
-      const y = centerY + (mockupImg.height * offset.y);
+      const x = centerX + (shirtWidth * offset.x);
+      const y = centerY + (shirtHeight * offset.y);
       
       ctx.beginPath();
       ctx.setLineDash([]);

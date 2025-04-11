@@ -4,10 +4,12 @@ import Footer from "@/components/Footer";
 import DesignUploader from "@/components/DesignUploader";
 import MockupSelector from "@/components/MockupSelector";
 import DesignControls from "@/components/DesignControls";
+import ShirtPositionSelector from "@/components/ShirtPositionSelector";
 import PreviewCanvas from "@/components/PreviewCanvas";
 import SavedProjectsModal from "@/components/SavedProjectsModal";
 import { useToast } from "@/hooks/use-toast";
 import { DesignRatio } from "@/lib/design-ratios";
+import { ShirtPosition } from "@/lib/mockup-data";
 import { Project } from "@shared/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -16,6 +18,7 @@ export default function Home() {
   const { toast } = useToast();
   const [designImage, setDesignImage] = useState<string | null>(null);
   const [selectedMockupId, setSelectedMockupId] = useState(1); // Default to first mockup
+  const [shirtPosition, setShirtPosition] = useState<ShirtPosition>(0); // Default to first shirt (top-left)
   const [designSize, setDesignSize] = useState(60);
   const [designPosition, setDesignPosition] = useState<"top" | "center" | "bottom">("center");
   const [designXOffset, setDesignXOffset] = useState(0);
@@ -26,7 +29,7 @@ export default function Home() {
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
 
   // Query for saved projects
-  const { data: savedProjects = [], refetch: refetchProjects } = useQuery({
+  const { data: savedProjects = [], refetch: refetchProjects } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
     enabled: true
   });
@@ -91,6 +94,7 @@ export default function Home() {
       lastEdited: new Date().toISOString(),
       designImage,
       selectedMockupId,
+      shirtPosition,
       designSize,
       designPosition,
       designXOffset,
@@ -124,6 +128,7 @@ export default function Home() {
   const handleLoadProject = (project: Project) => {
     setDesignImage(project.designImage);
     setSelectedMockupId(project.selectedMockupId || 1);
+    setShirtPosition((project.shirtPosition as ShirtPosition) || 0);
     setDesignSize(project.designSize);
     setDesignPosition(project.designPosition as "top" | "center" | "bottom");
     setDesignXOffset(project.designXOffset);
@@ -170,6 +175,11 @@ export default function Home() {
                   onMockupSelect={setSelectedMockupId}
                 />
                 
+                <ShirtPositionSelector
+                  selectedPosition={shirtPosition}
+                  onPositionSelect={setShirtPosition}
+                />
+                
                 <DesignControls
                   designSize={designSize}
                   onDesignSizeChange={setDesignSize}
@@ -188,6 +198,7 @@ export default function Home() {
               <PreviewCanvas
                 designImage={designImage}
                 mockupId={selectedMockupId}
+                shirtPosition={shirtPosition}
                 designSize={designSize}
                 designPosition={designPosition}
                 designXOffset={designXOffset}
