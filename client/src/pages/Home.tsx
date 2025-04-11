@@ -15,7 +15,7 @@ export default function Home() {
   const { toast } = useToast();
   const [designImage, setDesignImage] = useState<string | null>(null);
   const [selectedMockupId, setSelectedMockupId] = useState(1);
-  const [designSize, setDesignSize] = useState(60);
+  const [designSize, setDesignSize] = useState(100); // Start at 100% size
   const [showSavedProjects, setShowSavedProjects] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
   
@@ -120,7 +120,7 @@ export default function Home() {
   const handleLoadProject = (project: Project) => {
     setDesignImage(project.designImage);
     setSelectedMockupId(project.selectedMockupId || 1);
-    setDesignSize(project.designSize || 60);
+    setDesignSize(project.designSize || 100); // Default to 100% if not set
     setCurrentProjectId(project.id);
     setShowSavedProjects(false);
 
@@ -133,7 +133,7 @@ export default function Home() {
 
   // Reset design to default values
   const handleResetDesign = () => {
-    setDesignSize(60);
+    setDesignSize(100); // Reset to default 100% size
   };
 
   return (
@@ -144,10 +144,10 @@ export default function Home() {
       />
       
       <main className="flex-grow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
+        <div className="max-w-full mx-auto px-4 py-4">
+          <div className="flex flex-col lg:flex-row">
+            <div className="lg:w-1/5 lg:min-w-[260px]">
+              <div className="bg-white rounded-lg shadow-md p-4 space-y-4 sticky top-0">
                 <DesignUploader
                   onDesignUpload={setDesignImage}
                 />
@@ -165,7 +165,7 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="lg:col-span-9 mt-8 lg:mt-0">
+            <div className="flex-1 mt-4 lg:mt-0 lg:ml-4">
               <MultiShirtCanvas
                 designImage={designImage}
                 mockupId={selectedMockupId}

@@ -35,7 +35,7 @@ export default function DesignControls({
             <Slider
               id="sizeSlider"
               min={20}
-              max={150}
+              max={200}
               step={5}
               value={[designSize]}
               onValueChange={(value) => onDesignSizeChange(value[0])}

@@ -114,20 +114,21 @@ export default function MultiShirtCanvas({
   const drawDesignOnAllShirts = (ctx: CanvasRenderingContext2D) => {
     if (!designImg) return;
     
-    // FIXED ACCURATE GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
+    // IMPROVED GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
     // These values represent the center point of each shirt chest area
+    // Adjusted after careful analysis of mockup images
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 750 },   // Top left shirt
-      { x: 1335, y: 750 },  // Top left-center shirt
-      { x: 2665, y: 750 },  // Top right-center shirt 
-      { x: 3500, y: 750 },  // Top right shirt
+      { x: 500, y: 850 },   // Top left shirt
+      { x: 1335, y: 850 },  // Top left-center shirt
+      { x: 2665, y: 850 },  // Top right-center shirt 
+      { x: 3500, y: 850 },  // Top right shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2250 },  // Bottom left shirt
-      { x: 1335, y: 2250 }, // Bottom left-center shirt
-      { x: 2665, y: 2250 }, // Bottom right-center shirt
-      { x: 3500, y: 2250 }  // Bottom right shirt
+      { x: 500, y: 2350 },  // Bottom left shirt
+      { x: 1335, y: 2350 }, // Bottom left-center shirt
+      { x: 2665, y: 2350 }, // Bottom right-center shirt
+      { x: 3500, y: 2350 }  // Bottom right shirt
     ];
     
     // CONSISTENT SIZE APPROACH
@@ -140,9 +141,9 @@ export default function MultiShirtCanvas({
        (designImage?.startsWith('data:') && 
         designImage?.includes('svg')));
     
-    // Base dimensions - these are fixed per design type
-    // SVGs use fixed width/height because they're vectors
-    const designWidth = isSVG ? 300 : 350;
+    // Base dimensions - much larger for better visibility
+    // SVGs need a larger base size than raster images
+    const designWidth = isSVG ? 800 : 500;
     
     // Apply user's size preference (percentage scaling)
     const finalWidth = designWidth * (designSize / 100);
@@ -231,7 +232,7 @@ export default function MultiShirtCanvas({
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: '600px' }}>
+        <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: '80vh', minHeight: '600px' }}>
           <div style={{ 
             transform: `scale(${zoomLevel / 100})`, 
             transformOrigin: 'center', 
