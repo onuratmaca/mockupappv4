@@ -115,19 +115,22 @@ export default function MultiShirtCanvas({
     }
   }, [mockupImg, designImg, designSize, showDebugAreas]);
   
-  // Define fixed positions for all shirts - moved higher up to match reference image
+  // Super simple approach: make all shirt positions exactly like #7
+  const yOffset = 650; // Y-position for top row
+  const bottomYOffset = 2150; // Y-position for bottom row
+
   const shirtPositions = [
-    // Top row (left to right)
-    { x: 500, y: 600 },   // White shirt - higher position than before
-    { x: 1500, y: 600 },  // Ivory shirt
-    { x: 2500, y: 600 },  // Butter shirt
-    { x: 3500, y: 600 },  // Banana shirt
+    // Top row - using exact same Y offset as the good one (#7)
+    { x: 500, y: yOffset },   // White shirt
+    { x: 1500, y: yOffset },  // Ivory shirt 
+    { x: 2500, y: yOffset },  // Butter shirt
+    { x: 3500, y: yOffset },  // Banana shirt
     
-    // Bottom row (left to right)
-    { x: 500, y: 2100 },  // Mustard shirt - also higher position
-    { x: 1500, y: 2100 }, // Peachy shirt
-    { x: 2500, y: 2100 }, // Yam shirt
-    { x: 3500, y: 2100 }  // Khaki shirt
+    // Bottom row - using exact same Y offset as the good one (#7)
+    { x: 500, y: bottomYOffset },  // Mustard shirt
+    { x: 1500, y: bottomYOffset }, // Peachy shirt
+    { x: 2400, y: bottomYOffset }, // Yam shirt (#7) - moved slightly left
+    { x: 3500, y: bottomYOffset }  // Khaki shirt
   ];
   
   // Draw designs on all shirts
