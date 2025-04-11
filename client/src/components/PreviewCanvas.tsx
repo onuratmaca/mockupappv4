@@ -11,6 +11,14 @@ import { Minus, Plus, Undo, Redo, Save, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DesignRatio, DESIGN_RATIOS } from "@/lib/design-ratios";
 import { MOCKUP_IMAGES, getMockupById } from "@/lib/mockup-data";
+import { getPrintableArea } from "@/lib/printable-areas";
+
+// Extend with data property
+interface FabricObject extends fabric.Object {
+  data?: {
+    type?: string;
+  };
+}
 
 interface PreviewCanvasProps {
   designImage: string | null;
@@ -132,8 +140,15 @@ export default function PreviewCanvas({
       canvas.remove(tshirtImageRef.current);
     }
     
+    // Clear any existing debug objects
+    canvas.getObjects().forEach((obj: fabric.Object) => {
+      if (obj.data && obj.data.type === 'debug') {
+        canvas.remove(obj);
+      }
+    });
+    
     // Load mockup image
-    fabric.Image.fromURL(mockup.src, (img: fabric.Image) => {
+    fabric.Image.fromURL(mockup.src, function(img) {
       // Scale the image to fit canvas
       const scale = Math.min(
         canvas.width! / img.width!,
@@ -156,7 +171,11 @@ export default function PreviewCanvas({
       canvas.add(img);
       
       // Make sure it's behind other objects
-      img.sendToBack();
+      img.moveTo(0);
+      
+      // Draw debug visualization of printable area
+      drawPrintableAreaVisualizer(mockupId);
+      
       canvas.renderAll();
       
       // If design exists, reapply it
@@ -235,9 +254,16 @@ export default function PreviewCanvas({
     const design = designObjectRef.current;
     const tshirt = tshirtImageRef.current;
     
-    // Calculate t-shirt printable area (approximate)
-    const printableWidth = tshirt.getScaledWidth() * 0.4;
-    const printableHeight = tshirt.getScaledHeight() * 0.5;
+    // Get the appropriate printable area for this mockup
+    const printableArea = getPrintableArea(mockupId);
+    
+    // Calculate t-shirt printable area based on configuration
+    const printableWidth = tshirt.getScaledWidth() * printableArea.width;
+    const printableHeight = tshirt.getScaledHeight() * printableArea.height;
+    
+    // Get the center point of the printable area
+    const centerX = tshirt.left! + (tshirt.getScaledWidth() * (printableArea.xCenter - 0.5));
+    const centerY = tshirt.top! + (tshirt.getScaledHeight() * (printableArea.yCenter - 0.5));
     
     // Calculate design size based on percentage of printable area
     const maxDesignWidth = printableWidth * (designSize / 100);
@@ -246,23 +272,16 @@ export default function PreviewCanvas({
     const scale = maxDesignWidth / design.getScaledWidth();
     design.scale(scale);
     
-    // Calculate vertical position based on selected position
-    let yPosition;
-    switch (designPosition) {
-      case 'top':
-        yPosition = tshirt.top! - printableHeight * 0.2;
-        break;
-      case 'bottom':
-        yPosition = tshirt.top! + printableHeight * 0.2;
-        break;
-      default: // center
-        yPosition = tshirt.top!;
-        break;
-    }
+    // Get position offsets based on selected position (top, center, bottom)
+    const positionOffset = printableArea.positionOffsets[designPosition];
     
-    // Apply position with offsets
+    // Calculate vertical position based on selected position and configuration
+    const xPosition = centerX + (tshirt.getScaledWidth() * positionOffset.x);
+    const yPosition = centerY + (tshirt.getScaledHeight() * positionOffset.y);
+    
+    // Apply position with user-defined offsets
     design.set({
-      left: tshirt.left! + designXOffset,
+      left: xPosition + designXOffset,
       top: yPosition + designYOffset,
       originX: 'center',
       originY: 'center',
@@ -393,6 +412,71 @@ export default function PreviewCanvas({
     if (zoomLevel > 50) {
       onZoomChange(zoomLevel - 10);
     }
+  };
+  
+  // Draw a visual representation of the printable area
+  const drawPrintableAreaVisualizer = (mockupId: number) => {
+    if (!canvasInstanceRef.current || !tshirtImageRef.current) return;
+    
+    const canvas = canvasInstanceRef.current;
+    const tshirt = tshirtImageRef.current;
+    const printableArea = getPrintableArea(mockupId);
+    
+    // Calculate the dimensions of the printable area
+    const printableWidth = tshirt.getScaledWidth() * printableArea.width;
+    const printableHeight = tshirt.getScaledHeight() * printableArea.height;
+    
+    // Calculate the center point of the printable area
+    const centerX = tshirt.left! + (tshirt.getScaledWidth() * (printableArea.xCenter - 0.5));
+    const centerY = tshirt.top! + (tshirt.getScaledHeight() * (printableArea.yCenter - 0.5));
+    
+    // Create a rectangle to represent the printable area
+    const rect = new fabric.Rect({
+      left: centerX,
+      top: centerY,
+      width: printableWidth,
+      height: printableHeight,
+      fill: 'transparent',
+      stroke: 'rgba(0, 200, 255, 0.5)',
+      strokeWidth: 2,
+      strokeDashArray: [5, 5],
+      originX: 'center',
+      originY: 'center',
+      selectable: false,
+      evented: false,
+      data: { type: 'debug' }
+    });
+    
+    // Add position markers for top, center, and bottom positions
+    const positions = ['top', 'center', 'bottom'] as const;
+    const colors = {
+      top: 'rgba(255, 0, 0, 0.7)',
+      center: 'rgba(0, 255, 0, 0.7)',
+      bottom: 'rgba(0, 0, 255, 0.7)'
+    };
+    
+    positions.forEach(position => {
+      const offset = printableArea.positionOffsets[position];
+      const x = centerX + (tshirt.getScaledWidth() * offset.x);
+      const y = centerY + (tshirt.getScaledHeight() * offset.y);
+      
+      // Create a circle to mark each position
+      const circle = new fabric.Circle({
+        left: x,
+        top: y,
+        radius: 5,
+        fill: colors[position],
+        originX: 'center',
+        originY: 'center',
+        selectable: false,
+        evented: false,
+        data: { type: 'debug' }
+      });
+      
+      canvas.add(circle);
+    });
+    
+    canvas.add(rect);
   };
   
   return (
