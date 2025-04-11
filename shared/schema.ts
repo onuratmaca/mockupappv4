@@ -16,6 +16,11 @@ export const projects = pgTable("projects", {
   designYOffset: integer("design_y_offset").notNull().default(0),
   designRatio: text("design_ratio").notNull().default("square"),
   thumbnail: text("thumbnail").notNull(),
+  // Additional fields for advanced placement settings
+  placementSettings: text("placement_settings").default("{}"), // JSON string of placement settings
+  designWidthFactor: integer("design_width_factor").default(450),
+  designHeightFactor: integer("design_height_factor").default(300),
+  globalYOffset: integer("global_y_offset").default(0),
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({

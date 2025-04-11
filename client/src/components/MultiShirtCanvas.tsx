@@ -6,10 +6,13 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw } from "lucide-react";
+import { Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getMockupById } from "@/lib/mockup-data";
 import { Slider } from "@/components/ui/slider";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import type { Project } from "@shared/schema";
 
 interface MultiShirtCanvasProps {
   designImage: string | null;
@@ -17,6 +20,15 @@ interface MultiShirtCanvasProps {
   designSize: number;
   designPosition: string; 
   onDownload: () => void;
+  onSaveSettings?: (settings: PlacementSettings) => void;
+}
+
+// Define a placement settings type
+export interface PlacementSettings {
+  designWidthFactor: number;
+  designHeightFactor: number;
+  globalYOffset: number;
+  placementSettings: string; // JSON string of shirt configs
 }
 
 // Size and position configuration
