@@ -6,7 +6,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw, Save } from "lucide-react";
+import { Calculator, Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getMockupById } from "@/lib/mockup-data";
 import { Slider } from "@/components/ui/slider";
@@ -464,6 +464,7 @@ export default function MultiShirtCanvas({
 
   // JPEG quality setting for download
   const [jpegQuality, setJpegQuality] = useState<number>(85); // Default 85% quality
+  const [lastFileSize, setLastFileSize] = useState<number | null>(null); // To store actual file size
   
   // Handle mockup download
   const handleDownload = () => {
@@ -545,6 +546,12 @@ export default function MultiShirtCanvas({
       // Get canvas data URL as JPEG with quality setting
       const dataURL = downloadCanvas.toDataURL('image/jpeg', jpegQuality / 100);
       
+      // Calculate file size
+      const binaryString = atob(dataURL.split(',')[1]);
+      const fileSizeBytes = binaryString.length;
+      const fileSizeMB = fileSizeBytes / (1024 * 1024);
+      setLastFileSize(fileSizeMB);
+      
       // Create download link
       const link = document.createElement('a');
       link.download = `tshirt-mockup-${mockupId}.jpg`;
@@ -555,14 +562,85 @@ export default function MultiShirtCanvas({
       
       toast({
         title: "Success",
-        description: `Mockup downloaded as JPEG (${jpegQuality}% quality)`,
+        description: `Downloaded JPEG (${fileSizeMB.toFixed(2)}MB at ${jpegQuality}% quality)`,
       });
       
       onDownload();
     }
   };
   
-  // Quality setting will now be controlled by the slider directly
+  // Generate a sample file to get an exact size estimate without downloading
+  const calculateFileSize = () => {
+    if (!canvasRef.current || !designImg || !mockupImg) {
+      return; // Can't calculate without images
+    }
+    
+    // Create a temporary canvas for size calculation
+    const downloadCanvas = document.createElement('canvas');
+    downloadCanvas.width = canvasSize.width;
+    downloadCanvas.height = canvasSize.height;
+    const downloadCtx = downloadCanvas.getContext('2d');
+    
+    if (downloadCtx) {
+      // Draw mockup
+      downloadCtx.drawImage(mockupImg, 0, 0, canvasSize.width, canvasSize.height);
+      
+      // Draw designs without debug markers
+      if (designImg) {
+        // Get design's aspect ratio
+        const aspectRatio = designImg.width / designImg.height;
+        
+        // Just draw a single shirt to save processing time
+        const shirt = shirtConfigs[0];
+        
+        // Use the same calculation logic as the download function
+        let areaWidth = designWidthFactor;
+        let areaHeight = designHeightFactor;
+        
+        // Apply user's size preference 
+        areaWidth = areaWidth * (designSize / 100);
+        areaHeight = areaHeight * (designSize / 100);
+        
+        // Calculate final design dimensions preserving aspect ratio
+        let designWidth, designHeight;
+        
+        if (aspectRatio > areaWidth / areaHeight) {
+          designWidth = areaWidth;
+          designHeight = designWidth / aspectRatio;
+        } else {
+          designHeight = areaHeight;
+          designWidth = designHeight * aspectRatio;
+        }
+        
+        // Draw the design with offsets
+        const designX = shirt.x + shirt.designOffset.x;
+        const designY = shirt.y + shirt.designOffset.y + globalYOffset;
+        
+        downloadCtx.drawImage(
+          designImg,
+          designX - (designWidth / 2),
+          designY,
+          designWidth,
+          designHeight
+        );
+      }
+      
+      // Generate the data URL at the current quality
+      const dataURL = downloadCanvas.toDataURL('image/jpeg', jpegQuality / 100);
+      
+      // Calculate file size
+      const binaryString = atob(dataURL.split(',')[1]);
+      const fileSizeBytes = binaryString.length;
+      const fileSizeMB = fileSizeBytes / (1024 * 1024);
+      
+      // Update the last file size
+      setLastFileSize(fileSizeMB);
+      
+      toast({
+        description: `JPEG file size at ${jpegQuality}% quality: ${fileSizeMB.toFixed(2)}MB`,
+      });
+    }
+  };
   
   // Generate position data for developer
   const generatePositionData = () => {
@@ -844,7 +922,9 @@ export default function MultiShirtCanvas({
               </div>
             </div>
             <div className="text-xs text-gray-500">
-              Est. Size: ~{(0.4 + (jpegQuality - 40) * 0.11).toFixed(1)}MB
+              {lastFileSize 
+                ? `Last Size: ${lastFileSize.toFixed(2)}MB` 
+                : `Size: ~ ${(0.12 + (jpegQuality/100) * 7).toFixed(1)}MB`}
             </div>
           </div>
           
@@ -859,7 +939,16 @@ export default function MultiShirtCanvas({
             />
           </div>
           
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            <Button 
+              size="sm"
+              variant="outline"
+              onClick={calculateFileSize}
+              disabled={!designImg}
+            >
+              <Calculator className="mr-2 h-4 w-4" />
+              Calculate Size
+            </Button>
             <Button 
               size="sm"
               onClick={handleDownload}
