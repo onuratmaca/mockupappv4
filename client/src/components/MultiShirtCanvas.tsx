@@ -18,6 +18,13 @@ interface MultiShirtCanvasProps {
   onDownload: () => void;
 }
 
+// Define shirt dimensions - these are consistent across all mockups
+const SHIRT_WIDTH = 1000;
+const SHIRT_HEIGHT = 1400;
+const COLLAR_HEIGHT = 300; // Estimated height from top to collar
+// Standard distance from collar to design
+const DESIGN_OFFSET_FROM_COLLAR = 175;
+
 export default function MultiShirtCanvas({
   designImage,
   mockupId,
@@ -115,57 +122,64 @@ export default function MultiShirtCanvas({
     }
   }, [mockupImg, designImg, designSize, showDebugAreas]);
   
-  // Hardcoded positions directly from example images
-  // These are directly measured from the example layout
-  const shirtPositions = [
-    // TOP ROW (Left to Right) - measured from reference
-    { x: 500, y: 690 },    // White shirt - ARE WE GREAT YET
-    { x: 1500, y: 690 },   // Ivory shirt - # symbol
-    { x: 2500, y: 690 },   // Butter shirt - overstimulated
-    { x: 3500, y: 690 },   // Banana shirt (empty in example)
+  // Define shirt center positions in the canvas
+  // These values remain constant for all mockups
+  const shirtCenters = [
+    // TOP ROW (Left to Right)
+    { x: 500, y: 750 },    // White shirt
+    { x: 1500, y: 750 },   // Ivory shirt
+    { x: 2500, y: 750 },   // Butter shirt
+    { x: 3500, y: 750 },   // Banana shirt
     
-    // BOTTOM ROW (Left to Right) - measured from reference
-    { x: 500, y: 2190 },   // Mustard shirt - EAT THE RICH
-    { x: 1500, y: 2190 },  // Peachy shirt - Bear with backpack
-    { x: 2400, y: 2190 },  // Yam shirt - MADE FOR MORE (moved slightly left from 2500)
-    { x: 3500, y: 2190 }   // Khaki shirt - WELL-BEHAVED WOMEN
+    // BOTTOM ROW (Left to Right)
+    { x: 500, y: 2250 },   // Mustard shirt
+    { x: 1500, y: 2250 },  // Peachy shirt
+    { x: 2500, y: 2250 },  // Yam shirt
+    { x: 3500, y: 2250 }   // Khaki shirt
   ];
   
-  // Draw designs on all shirts
+  // Draw designs on all shirts using a consistent approach
   const drawDesignsOnShirts = (ctx: CanvasRenderingContext2D) => {
     if (!designImg) return;
     
     // Get design's aspect ratio
     const aspectRatio = designImg.width / designImg.height;
     
-    // Place design on each shirt
-    shirtPositions.forEach(position => {
-      // Calculate printable area dimensions based on aspect ratio - Measured from example
+    // For each shirt position
+    shirtCenters.forEach((center) => {
+      // Calculate position relative to top of shirt collar
+      const topOfShirt = center.y - (SHIRT_HEIGHT / 2);
+      const collarPosition = topOfShirt + COLLAR_HEIGHT;
+      
+      // Calculate design placement location (below the collar)
+      const designY = collarPosition + DESIGN_OFFSET_FROM_COLLAR;
+      
+      // Calculate design dimensions based on aspect ratio
       let areaWidth, areaHeight;
       
       if (aspectRatio > 2.0) {
         // Very wide design (banner/text like "overstimulated")
-        areaWidth = 490;
+        areaWidth = 450;
         areaHeight = 120;
       } else if (aspectRatio > 1.3) {
         // Landscape design (like "ARE WE GREAT YET?")
-        areaWidth = 450;
-        areaHeight = 230;
+        areaWidth = 400;
+        areaHeight = 220;
       } else if (aspectRatio < 0.7) {
         // Tall/portrait design (like the bear design)
-        areaWidth = 290;
-        areaHeight = 450;
+        areaWidth = 280;
+        areaHeight = 420;
       } else {
         // Square-ish design (like the # symbol)
         areaWidth = 350;
         areaHeight = 350;
       }
       
-      // Apply user's size preference
+      // Apply user's size preference 
       areaWidth = areaWidth * (designSize / 100);
       areaHeight = areaHeight * (designSize / 100);
       
-      // Calculate design dimensions to fit within the area while preserving aspect ratio
+      // Calculate final design dimensions preserving aspect ratio
       let designWidth, designHeight;
       
       // Fit by width or height based on aspect ratio
@@ -179,11 +193,11 @@ export default function MultiShirtCanvas({
         designWidth = designHeight * aspectRatio;
       }
       
-      // Draw the design centered on the shirt position
+      // Draw the design centered horizontally, positioned below collar
       ctx.drawImage(
         designImg,
-        position.x - (designWidth / 2),
-        position.y - (designHeight / 2),
+        center.x - (designWidth / 2),
+        designY - (designHeight / 2),
         designWidth,
         designHeight
       );
@@ -195,45 +209,70 @@ export default function MultiShirtCanvas({
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
     ctx.lineWidth = 2;
     
-    // Get design's aspect ratio for showing appropriate printable areas
+    // Get design's aspect ratio
     const aspectRatio = designImg ? designImg.width / designImg.height : 1;
     
-    shirtPositions.forEach(position => {
-      // Calculate appropriate area based on design aspect ratio
+    // For each shirt
+    shirtCenters.forEach((center) => {
+      // Draw shirt outline for debugging
+      ctx.strokeStyle = 'rgba(0, 0, 255, 0.3)';
+      ctx.strokeRect(
+        center.x - (SHIRT_WIDTH / 2),
+        center.y - (SHIRT_HEIGHT / 2),
+        SHIRT_WIDTH,
+        SHIRT_HEIGHT
+      );
+      
+      // Calculate collar position
+      const topOfShirt = center.y - (SHIRT_HEIGHT / 2);
+      const collarPosition = topOfShirt + COLLAR_HEIGHT;
+      
+      // Draw collar line
+      ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+      ctx.beginPath();
+      ctx.moveTo(center.x - 100, collarPosition);
+      ctx.lineTo(center.x + 100, collarPosition);
+      ctx.stroke();
+      
+      // Calculate design position
+      const designY = collarPosition + DESIGN_OFFSET_FROM_COLLAR;
+      
+      // Calculate design area based on aspect ratio
       let areaWidth, areaHeight;
       
       if (aspectRatio > 2.0) {
         // Very wide design (banner/text like "overstimulated")
-        areaWidth = 490;
+        areaWidth = 450;
         areaHeight = 120;
       } else if (aspectRatio > 1.3) {
         // Landscape design (like "ARE WE GREAT YET?")
-        areaWidth = 450;
-        areaHeight = 230;
+        areaWidth = 400;
+        areaHeight = 220;
       } else if (aspectRatio < 0.7) {
         // Tall/portrait design (like the bear design)
-        areaWidth = 290;
-        areaHeight = 450;
+        areaWidth = 280;
+        areaHeight = 420;
       } else {
         // Square-ish design (like the # symbol)
         areaWidth = 350;
         areaHeight = 350;
       }
       
-      // Draw bounding rectangle
+      // Draw design area
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
       ctx.strokeRect(
-        position.x - areaWidth/2,
-        position.y - areaHeight/2,
+        center.x - (areaWidth / 2),
+        designY - (areaHeight / 2),
         areaWidth,
         areaHeight
       );
       
-      // Draw crosshair at center
+      // Draw crosshair at design center
       ctx.beginPath();
-      ctx.moveTo(position.x - 20, position.y);
-      ctx.lineTo(position.x + 20, position.y);
-      ctx.moveTo(position.x, position.y - 20);
-      ctx.lineTo(position.x, position.y + 20);
+      ctx.moveTo(center.x - 20, designY);
+      ctx.lineTo(center.x + 20, designY);
+      ctx.moveTo(center.x, designY - 20);
+      ctx.lineTo(center.x, designY + 20);
       ctx.stroke();
     });
   };
