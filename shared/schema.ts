@@ -9,6 +9,7 @@ export const projects = pgTable("projects", {
   lastEdited: text("last_edited").notNull(),
   designImage: text("design_image").notNull(),
   selectedMockupId: integer("selected_mockup_id").notNull().default(1),
+  shirtPosition: integer("shirt_position").notNull().default(0),
   designSize: integer("design_size").notNull().default(60),
   designPosition: text("design_position").notNull().default("center"),
   designXOffset: integer("design_x_offset").notNull().default(0),
