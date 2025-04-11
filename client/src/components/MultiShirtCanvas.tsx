@@ -844,7 +844,7 @@ export default function MultiShirtCanvas({
               </div>
             </div>
             <div className="text-xs text-gray-500">
-              Est. Size: ~{Math.round(jpegQuality * 0.15)}MB
+              Est. Size: ~{Math.max(1, Math.round(Math.pow(jpegQuality / 60, 2) * 6))}MB
             </div>
           </div>
           
