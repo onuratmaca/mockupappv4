@@ -103,7 +103,7 @@ export default function PreviewCanvas({
     if (mockupImg && designImg) {
       updateDesignPosition();
     }
-  }, [designSize, designPosition, designXOffset, designYOffset, designRatio]);
+  }, [designSize, designPosition, designXOffset, designYOffset, designRatio, shirtPosition]);
 
   // Redraw canvas when images, position or zoom change
   useEffect(() => {
@@ -245,16 +245,28 @@ export default function PreviewCanvas({
     const centerY = shirtY + (shirtHeight * printableArea.yCenter);
     
     // Calculate design size based on percentage of printable area
-    const maxDesignWidth = printableWidth * (designSize / 100);
-    const scale = maxDesignWidth / designImg.width;
+    // Use the smaller dimension (width or height) for better stability
+    const maxDesignSize = Math.min(printableWidth, printableHeight) * (designSize / 100);
     
-    const newWidth = designImg.width * scale;
-    const newHeight = designImg.height * scale;
+    // Determine which dimension to scale by based on design ratio
+    const designAspectRatio = designImg.width / designImg.height;
+    let scale, newWidth, newHeight;
+    
+    if (designAspectRatio >= 1) {
+      // Landscape or square - scale by width
+      scale = maxDesignSize / designImg.width;
+    } else {
+      // Portrait - scale by height
+      scale = maxDesignSize / designImg.height;
+    }
+    
+    newWidth = designImg.width * scale;
+    newHeight = designImg.height * scale;
     
     // Get position offset based on selected position
     const positionOffset = printableArea.positionOffsets[designPosition];
     
-    // Calculate position with offsets
+    // Calculate position with offsets - maintain stable center point
     const xPosition = centerX + (shirtWidth * positionOffset.x) - (newWidth / 2) + designXOffset;
     const yPosition = centerY + (shirtHeight * positionOffset.y) - (newHeight / 2) + designYOffset;
     
@@ -270,10 +282,8 @@ export default function PreviewCanvas({
     setDesignImg(updatedDesign);
     
     // Update position for parent component
-    onPositionChange(
-      Math.round(xPosition - (canvasSize.width / 2 - newWidth / 2)),
-      Math.round(yPosition - (canvasSize.height / 2 - newHeight / 2))
-    );
+    // Only update offset values, not absolute positions
+    onPositionChange(designXOffset, designYOffset);
     
     // Save to history
     addToHistory(updatedDesign);
@@ -415,7 +425,7 @@ export default function PreviewCanvas({
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDragging || !designImg || !canvasRef.current) return;
+    if (!isDragging || !designImg || !canvasRef.current || !mockupImg) return;
     
     const rect = canvasRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) * (canvasSize.width / rect.width);
@@ -430,11 +440,33 @@ export default function PreviewCanvas({
       y: newY
     });
     
+    // Get the grid position of the selected shirt
+    const gridPos = getShirtGridPosition(shirtPosition);
+    
+    // Get the printable area configuration
+    const printableArea = getPrintableArea(mockupId);
+    
+    // Calculate shirt dimensions and position
+    const shirtWidth = mockupImg.width * gridPos.width;
+    const shirtHeight = mockupImg.height * gridPos.height;
+    const shirtX = mockupImg.x + (mockupImg.width * gridPos.x) - (shirtWidth / 2);
+    const shirtY = mockupImg.y + (mockupImg.height * gridPos.y) - (shirtHeight / 2);
+    
+    // Calculate printable area center within this shirt
+    const centerX = shirtX + (shirtWidth * printableArea.xCenter);
+    const centerY = shirtY + (shirtHeight * printableArea.yCenter);
+    
+    // Get position offset based on selected position
+    const positionOffset = printableArea.positionOffsets[designPosition];
+    const idealCenterX = centerX + (shirtWidth * positionOffset.x);
+    const idealCenterY = centerY + (shirtHeight * positionOffset.y);
+    
+    // Calculate the new offsets from the ideal center position
+    const newXOffset = Math.round(newX - (idealCenterX - designImg.width / 2));
+    const newYOffset = Math.round(newY - (idealCenterY - designImg.height / 2));
+    
     // Update position for parent component
-    onPositionChange(
-      Math.round(newX - (canvasSize.width / 2 - designImg.width / 2)),
-      Math.round(newY - (canvasSize.height / 2 - designImg.height / 2))
-    );
+    onPositionChange(newXOffset, newYOffset);
     
     drawCanvas();
   };
