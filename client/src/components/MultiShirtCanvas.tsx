@@ -115,22 +115,20 @@ export default function MultiShirtCanvas({
     }
   }, [mockupImg, designImg, designSize, showDebugAreas]);
   
-  // Super simple approach: make all shirt positions exactly like #7
-  const yOffset = 650; // Y-position for top row
-  const bottomYOffset = 2150; // Y-position for bottom row
-
+  // Hardcoded positions directly from example images
+  // These are directly measured from the example layout
   const shirtPositions = [
-    // Top row - using exact same Y offset as the good one (#7)
-    { x: 500, y: yOffset },   // White shirt
-    { x: 1500, y: yOffset },  // Ivory shirt 
-    { x: 2500, y: yOffset },  // Butter shirt
-    { x: 3500, y: yOffset },  // Banana shirt
+    // TOP ROW (Left to Right) - measured from reference
+    { x: 500, y: 690 },    // White shirt - ARE WE GREAT YET
+    { x: 1500, y: 690 },   // Ivory shirt - # symbol
+    { x: 2500, y: 690 },   // Butter shirt - overstimulated
+    { x: 3500, y: 690 },   // Banana shirt (empty in example)
     
-    // Bottom row - using exact same Y offset as the good one (#7)
-    { x: 500, y: bottomYOffset },  // Mustard shirt
-    { x: 1500, y: bottomYOffset }, // Peachy shirt
-    { x: 2400, y: bottomYOffset }, // Yam shirt (#7) - moved slightly left
-    { x: 3500, y: bottomYOffset }  // Khaki shirt
+    // BOTTOM ROW (Left to Right) - measured from reference
+    { x: 500, y: 2190 },   // Mustard shirt - EAT THE RICH
+    { x: 1500, y: 2190 },  // Peachy shirt - Bear with backpack
+    { x: 2400, y: 2190 },  // Yam shirt - MADE FOR MORE (moved slightly left from 2500)
+    { x: 3500, y: 2190 }   // Khaki shirt - WELL-BEHAVED WOMEN
   ];
   
   // Draw designs on all shirts
@@ -142,25 +140,25 @@ export default function MultiShirtCanvas({
     
     // Place design on each shirt
     shirtPositions.forEach(position => {
-      // Calculate printable area dimensions based on aspect ratio
+      // Calculate printable area dimensions based on aspect ratio - Measured from example
       let areaWidth, areaHeight;
       
       if (aspectRatio > 2.0) {
         // Very wide design (banner/text like "overstimulated")
-        areaWidth = 550;
-        areaHeight = 150;
+        areaWidth = 490;
+        areaHeight = 120;
       } else if (aspectRatio > 1.3) {
         // Landscape design (like "ARE WE GREAT YET?")
-        areaWidth = 500;
-        areaHeight = 300;
+        areaWidth = 450;
+        areaHeight = 230;
       } else if (aspectRatio < 0.7) {
         // Tall/portrait design (like the bear design)
-        areaWidth = 320;
-        areaHeight = 480;
+        areaWidth = 290;
+        areaHeight = 450;
       } else {
         // Square-ish design (like the # symbol)
-        areaWidth = 400;
-        areaHeight = 400;
+        areaWidth = 350;
+        areaHeight = 350;
       }
       
       // Apply user's size preference
@@ -206,20 +204,20 @@ export default function MultiShirtCanvas({
       
       if (aspectRatio > 2.0) {
         // Very wide design (banner/text like "overstimulated")
-        areaWidth = 550;
-        areaHeight = 150;
+        areaWidth = 490;
+        areaHeight = 120;
       } else if (aspectRatio > 1.3) {
         // Landscape design (like "ARE WE GREAT YET?")
-        areaWidth = 500;
-        areaHeight = 300;
+        areaWidth = 450;
+        areaHeight = 230;
       } else if (aspectRatio < 0.7) {
         // Tall/portrait design (like the bear design)
-        areaWidth = 320;
-        areaHeight = 480;
+        areaWidth = 290;
+        areaHeight = 450;
       } else {
         // Square-ish design (like the # symbol)
-        areaWidth = 400;
-        areaHeight = 400;
+        areaWidth = 350;
+        areaHeight = 350;
       }
       
       // Draw bounding rectangle
