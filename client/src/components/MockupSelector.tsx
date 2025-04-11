@@ -3,15 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-// Define the mockup images
-export const MOCKUP_IMAGES = [
-  { id: 1, name: "Mockup 1", src: "/attached_assets/1.jpg" },
-  { id: 2, name: "Mockup 2", src: "/attached_assets/2.jpg" },
-  { id: 3, name: "Mockup 3", src: "/attached_assets/3.jpg" },
-  { id: 4, name: "Mockup 4", src: "/attached_assets/4.jpg" },
-  { id: 5, name: "Mockup 5", src: "/attached_assets/5.jpg" }
-];
+import { MOCKUP_IMAGES } from "@/lib/mockup-data";
 
 interface MockupSelectorProps {
   selectedMockupId: number;

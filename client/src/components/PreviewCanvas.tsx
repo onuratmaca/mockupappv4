@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Minus, Plus, Undo, Redo, Save, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DesignRatio, DESIGN_RATIOS } from "@/lib/design-ratios";
-import { MOCKUP_IMAGES } from "@/components/MockupSelector";
+import { MOCKUP_IMAGES, getMockupById } from "@/lib/mockup-data";
 
 interface PreviewCanvasProps {
   designImage: string | null;
@@ -117,7 +117,7 @@ export default function PreviewCanvas({
     const canvas = canvasInstanceRef.current;
     
     // Find mockup image by ID
-    const mockup = MOCKUP_IMAGES.find(m => m.id === id);
+    const mockup = getMockupById(id);
     if (!mockup) {
       toast({
         title: "Error",
@@ -211,8 +211,7 @@ export default function PreviewCanvas({
         );
       });
       
-      img.on('moved', updateHistory);
-      img.on('scaled', updateHistory);
+      img.on('modified', updateHistory);
       
       designObjectRef.current = img;
       canvas.add(img);
