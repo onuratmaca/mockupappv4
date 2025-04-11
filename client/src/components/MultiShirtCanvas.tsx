@@ -116,19 +116,19 @@ export default function MultiShirtCanvas({
     
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
     // These values represent the center point of each shirt chest area
-    // Adjusted to be 3-4 fingers down from the neckline/tag, centered horizontally
+    // SIGNIFICANTLY moved down from the neckline - at least 4-5 fingers down
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 850 },   // Top left shirt (moved down from neckline)
-      { x: 1335, y: 850 },  // Top left-center shirt
-      { x: 2665, y: 850 },  // Top right-center shirt 
-      { x: 3500, y: 850 },  // Top right shirt
+      { x: 500, y: 950 },   // Top left shirt (much lower now)
+      { x: 1335, y: 950 },  // Top left-center shirt
+      { x: 2665, y: 950 },  // Top right-center shirt 
+      { x: 3500, y: 950 },  // Top right shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2350 },  // Bottom left shirt (moved down from neckline)
-      { x: 1335, y: 2350 }, // Bottom left-center shirt
-      { x: 2665, y: 2350 }, // Bottom right-center shirt
-      { x: 3500, y: 2350 }  // Bottom right shirt
+      { x: 500, y: 2450 },  // Bottom left shirt (much lower now)
+      { x: 1335, y: 2450 }, // Bottom left-center shirt
+      { x: 2665, y: 2450 }, // Bottom right-center shirt
+      { x: 3500, y: 2450 }  // Bottom right shirt
     ];
     
     // CONSISTENT SIZE APPROACH
@@ -141,9 +141,9 @@ export default function MultiShirtCanvas({
        (designImage?.startsWith('data:') && 
         designImage?.includes('svg')));
     
-    // Base dimensions - much larger for better visibility
+    // Base dimensions - DRAMATICALLY increased sizes
     // SVGs need a larger base size than raster images
-    const designWidth = isSVG ? 800 : 500;
+    const designWidth = isSVG ? 1200 : 800;
     
     // Apply user's size preference (percentage scaling)
     const finalWidth = designWidth * (designSize / 100);

@@ -15,7 +15,7 @@ export default function Home() {
   const { toast } = useToast();
   const [designImage, setDesignImage] = useState<string | null>(null);
   const [selectedMockupId, setSelectedMockupId] = useState(1);
-  const [designSize, setDesignSize] = useState(100); // Start at 100% size
+  const [designSize, setDesignSize] = useState(75); // Start at 75% size for better visibility
   const [showSavedProjects, setShowSavedProjects] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
   
@@ -120,7 +120,7 @@ export default function Home() {
   const handleLoadProject = (project: Project) => {
     setDesignImage(project.designImage);
     setSelectedMockupId(project.selectedMockupId || 1);
-    setDesignSize(project.designSize || 100); // Default to 100% if not set
+    setDesignSize(project.designSize || 75); // Default to 75% if not set
     setCurrentProjectId(project.id);
     setShowSavedProjects(false);
 
@@ -133,7 +133,7 @@ export default function Home() {
 
   // Reset design to default values
   const handleResetDesign = () => {
-    setDesignSize(100); // Reset to default 100% size
+    setDesignSize(75); // Reset to default 75% size
   };
 
   return (
