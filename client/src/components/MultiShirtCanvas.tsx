@@ -164,25 +164,21 @@ export default function MultiShirtCanvas({
     const aspectRatio = designImg.width / designImg.height;
     
     // Calculate the Y offset adjustment based on aspect ratio
-    // Reference design was 4:1 ratio (aspectRatio ≈ 6.55), so adjust relative to that
+    // Reference design was 4:1 ratio, so adjust relative to that
     let yOffsetAdjustment = 0;
     
-    if (aspectRatio < 6.0) {
-      // For designs with lower aspect ratio than our reference design (4:1)
-      // move them slightly up to adjust for height differences
-      if (aspectRatio > 2.0) {
-        // Very wide designs but not as wide as reference - small adjustment
-        yOffsetAdjustment = -15;
-      } else if (aspectRatio > 1.3) {
-        // Landscape designs - medium adjustment
-        yOffsetAdjustment = -40;
-      } else if (aspectRatio < 0.7) {
-        // Tall/portrait designs - largest adjustment due to height
-        yOffsetAdjustment = -100;
-      } else {
-        // Square-ish designs
-        yOffsetAdjustment = -60;
-      }
+    // For wide/banner designs (4:1 and wider) - this is our reference point
+    if (aspectRatio >= 4.0) {
+      yOffsetAdjustment = 0; // No adjustment needed for reference design
+    } 
+    // For designs with lower width-to-height ratio than our reference (4:1)
+    // move them slightly lower (positive Y adjustment)
+    else if (aspectRatio >= 0.9) { // Covers 4:3, 4:4, 4:5 ratios
+      yOffsetAdjustment = 10; // Just 10px lower as specified
+    }
+    // For tall/portrait designs
+    else {
+      yOffsetAdjustment = 15; // Slightly more adjustment for very tall designs
     }
     
     // Place design on each shirt position
@@ -246,25 +242,21 @@ export default function MultiShirtCanvas({
     const aspectRatio = designImg.width / designImg.height;
     
     // Calculate the Y offset adjustment based on aspect ratio
-    // Reference design was 4:1 ratio (aspectRatio ≈ 6.55), so adjust relative to that
+    // Reference design was 4:1 ratio, so adjust relative to that
     let yOffsetAdjustment = 0;
     
-    if (aspectRatio < 6.0) {
-      // For designs with lower aspect ratio than our reference design (4:1)
-      // move them slightly up to adjust for height differences
-      if (aspectRatio > 2.0) {
-        // Very wide designs but not as wide as reference - small adjustment
-        yOffsetAdjustment = -15;
-      } else if (aspectRatio > 1.3) {
-        // Landscape designs - medium adjustment
-        yOffsetAdjustment = -40;
-      } else if (aspectRatio < 0.7) {
-        // Tall/portrait designs - largest adjustment due to height
-        yOffsetAdjustment = -100;
-      } else {
-        // Square-ish designs
-        yOffsetAdjustment = -60;
-      }
+    // For wide/banner designs (4:1 and wider) - this is our reference point
+    if (aspectRatio >= 4.0) {
+      yOffsetAdjustment = 0; // No adjustment needed for reference design
+    } 
+    // For designs with lower width-to-height ratio than our reference (4:1)
+    // move them slightly lower (positive Y adjustment)
+    else if (aspectRatio >= 0.9) { // Covers 4:3, 4:4, 4:5 ratios
+      yOffsetAdjustment = 10; // Just 10px lower as specified
+    }
+    // For tall/portrait designs
+    else {
+      yOffsetAdjustment = 15; // Slightly more adjustment for very tall designs
     }
     
     // For each shirt position
@@ -380,25 +372,21 @@ export default function MultiShirtCanvas({
         const aspectRatio = designImg.width / designImg.height;
         
         // Calculate the Y offset adjustment based on aspect ratio
-        // Reference design was 4:1 ratio (aspectRatio ≈ 6.55), so adjust relative to that
+        // Reference design was 4:1 ratio, so adjust relative to that
         let yOffsetAdjustment = 0;
         
-        if (aspectRatio < 6.0) {
-          // For designs with lower aspect ratio than our reference design (4:1)
-          // move them slightly up to adjust for height differences
-          if (aspectRatio > 2.0) {
-            // Very wide designs but not as wide as reference - small adjustment
-            yOffsetAdjustment = -15;
-          } else if (aspectRatio > 1.3) {
-            // Landscape designs - medium adjustment
-            yOffsetAdjustment = -40;
-          } else if (aspectRatio < 0.7) {
-            // Tall/portrait designs - largest adjustment due to height
-            yOffsetAdjustment = -100;
-          } else {
-            // Square-ish designs
-            yOffsetAdjustment = -60;
-          }
+        // For wide/banner designs (4:1 and wider) - this is our reference point
+        if (aspectRatio >= 4.0) {
+          yOffsetAdjustment = 0; // No adjustment needed for reference design
+        } 
+        // For designs with lower width-to-height ratio than our reference (4:1)
+        // move them slightly lower (positive Y adjustment)
+        else if (aspectRatio >= 0.9) { // Covers 4:3, 4:4, 4:5 ratios
+          yOffsetAdjustment = 10; // Just one inch (10px) lower as specified
+        }
+        // For tall/portrait designs
+        else {
+          yOffsetAdjustment = 15; // Slightly more adjustment for very tall designs
         }
         
         // Place design on each shirt position
