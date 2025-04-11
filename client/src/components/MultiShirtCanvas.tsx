@@ -30,7 +30,7 @@ export default function MultiShirtCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mockupImg, setMockupImg] = useState<HTMLImageElement | null>(null);
   const [designImg, setDesignImg] = useState<HTMLImageElement | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(100); // Full size view
+  const [zoomLevel, setZoomLevel] = useState(60); // Reduced to fit entire mockup
   const [canvasSize] = useState({ width: 4000, height: 3000 });
 
   // Initialize canvas with exact mockup dimensions
@@ -116,19 +116,19 @@ export default function MultiShirtCanvas({
     
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
     // These values represent the center point of each shirt chest area
-    // SIGNIFICANTLY moved down from the neckline - at least 4-5 fingers down
+    // Positioned exactly 3-4 fingers down from the neckline/tag
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 950 },   // Top left shirt (much lower now)
-      { x: 1335, y: 950 },  // Top left-center shirt
-      { x: 2665, y: 950 },  // Top right-center shirt 
-      { x: 3500, y: 950 },  // Top right shirt
+      { x: 500, y: 800 },   // Top left shirt (3-4 fingers down from tag)
+      { x: 1335, y: 800 },  // Top left-center shirt
+      { x: 2665, y: 800 },  // Top right-center shirt 
+      { x: 3500, y: 800 },  // Top right shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2450 },  // Bottom left shirt (much lower now)
-      { x: 1335, y: 2450 }, // Bottom left-center shirt
-      { x: 2665, y: 2450 }, // Bottom right-center shirt
-      { x: 3500, y: 2450 }  // Bottom right shirt
+      { x: 500, y: 2300 },  // Bottom left shirt (3-4 fingers down from tag)
+      { x: 1335, y: 2300 }, // Bottom left-center shirt
+      { x: 2665, y: 2300 }, // Bottom right-center shirt
+      { x: 3500, y: 2300 }  // Bottom right shirt
     ];
     
     // CONSISTENT SIZE APPROACH
@@ -141,9 +141,9 @@ export default function MultiShirtCanvas({
        (designImage?.startsWith('data:') && 
         designImage?.includes('svg')));
     
-    // Base dimensions - DRAMATICALLY increased sizes
-    // SVGs need a larger base size than raster images
-    const designWidth = isSVG ? 1200 : 800;
+    // Base dimensions - Adjusted to your specifications
+    // 60% for SVGs, 40% for raster images
+    const designWidth = isSVG ? 600 : 400;
     
     // Apply user's size preference (percentage scaling)
     const finalWidth = designWidth * (designSize / 100);
