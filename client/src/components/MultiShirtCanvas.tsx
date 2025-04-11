@@ -30,7 +30,7 @@ export default function MultiShirtCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mockupImg, setMockupImg] = useState<HTMLImageElement | null>(null);
   const [designImg, setDesignImg] = useState<HTMLImageElement | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(60); // Reduced default zoom to see full mockup
+  const [zoomLevel, setZoomLevel] = useState(100); // Full size view
   const [canvasSize] = useState({ width: 4000, height: 3000 });
 
   // Initialize canvas with exact mockup dimensions
@@ -116,19 +116,19 @@ export default function MultiShirtCanvas({
     
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
     // These values represent the center point of each shirt chest area
-    // Original values - waiting for user guidance on better coordinates
+    // Adjusted to be 3-4 fingers down from the neckline/tag, centered horizontally
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 750 },   // Top left shirt
-      { x: 1335, y: 750 },  // Top left-center shirt
-      { x: 2665, y: 750 },  // Top right-center shirt 
-      { x: 3500, y: 750 },  // Top right shirt
+      { x: 500, y: 850 },   // Top left shirt (moved down from neckline)
+      { x: 1335, y: 850 },  // Top left-center shirt
+      { x: 2665, y: 850 },  // Top right-center shirt 
+      { x: 3500, y: 850 },  // Top right shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2250 },  // Bottom left shirt
-      { x: 1335, y: 2250 }, // Bottom left-center shirt
-      { x: 2665, y: 2250 }, // Bottom right-center shirt
-      { x: 3500, y: 2250 }  // Bottom right shirt
+      { x: 500, y: 2350 },  // Bottom left shirt (moved down from neckline)
+      { x: 1335, y: 2350 }, // Bottom left-center shirt
+      { x: 2665, y: 2350 }, // Bottom right-center shirt
+      { x: 3500, y: 2350 }  // Bottom right shirt
     ];
     
     // CONSISTENT SIZE APPROACH
@@ -232,7 +232,7 @@ export default function MultiShirtCanvas({
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: '80vh', minHeight: '600px' }}>
+        <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: '70vh', minHeight: '500px' }}>
           <div style={{ 
             transform: `scale(${zoomLevel / 100})`, 
             transformOrigin: 'center', 
