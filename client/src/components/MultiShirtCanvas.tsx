@@ -163,6 +163,28 @@ export default function MultiShirtCanvas({
     // Get design's aspect ratio
     const aspectRatio = designImg.width / designImg.height;
     
+    // Calculate the Y offset adjustment based on aspect ratio
+    // Reference design was 4:1 ratio (aspectRatio ≈ 6.55), so adjust relative to that
+    let yOffsetAdjustment = 0;
+    
+    if (aspectRatio < 6.0) {
+      // For designs with lower aspect ratio than our reference design (4:1)
+      // move them slightly up to adjust for height differences
+      if (aspectRatio > 2.0) {
+        // Very wide designs but not as wide as reference - small adjustment
+        yOffsetAdjustment = -15;
+      } else if (aspectRatio > 1.3) {
+        // Landscape designs - medium adjustment
+        yOffsetAdjustment = -40;
+      } else if (aspectRatio < 0.7) {
+        // Tall/portrait designs - largest adjustment due to height
+        yOffsetAdjustment = -100;
+      } else {
+        // Square-ish designs
+        yOffsetAdjustment = -60;
+      }
+    }
+    
     // Place design on each shirt position
     OPTIMIZED_SHIRT_POSITIONS.forEach(position => {
       // Calculate design dimensions based on aspect ratio
@@ -203,11 +225,14 @@ export default function MultiShirtCanvas({
         designWidth = designHeight * aspectRatio;
       }
       
-      // Draw the design centered on the optimized position
+      // Apply the position with aspect ratio-based Y adjustment
+      const adjustedY = position.y + yOffsetAdjustment;
+      
+      // Draw the design centered on the optimized position with adjusted Y
       ctx.drawImage(
         designImg,
         position.x - (designWidth / 2),
-        position.y - (designHeight / 2),
+        adjustedY - (designHeight / 2),
         designWidth,
         designHeight
       );
@@ -219,6 +244,28 @@ export default function MultiShirtCanvas({
     if (!designImg) return;
     
     const aspectRatio = designImg.width / designImg.height;
+    
+    // Calculate the Y offset adjustment based on aspect ratio
+    // Reference design was 4:1 ratio (aspectRatio ≈ 6.55), so adjust relative to that
+    let yOffsetAdjustment = 0;
+    
+    if (aspectRatio < 6.0) {
+      // For designs with lower aspect ratio than our reference design (4:1)
+      // move them slightly up to adjust for height differences
+      if (aspectRatio > 2.0) {
+        // Very wide designs but not as wide as reference - small adjustment
+        yOffsetAdjustment = -15;
+      } else if (aspectRatio > 1.3) {
+        // Landscape designs - medium adjustment
+        yOffsetAdjustment = -40;
+      } else if (aspectRatio < 0.7) {
+        // Tall/portrait designs - largest adjustment due to height
+        yOffsetAdjustment = -100;
+      } else {
+        // Square-ish designs
+        yOffsetAdjustment = -60;
+      }
+    }
     
     // For each shirt position
     OPTIMIZED_SHIRT_POSITIONS.forEach(position => {
@@ -247,9 +294,12 @@ export default function MultiShirtCanvas({
       areaWidth = areaWidth * (designSize / 100);
       areaHeight = areaHeight * (designSize / 100);
       
-      // Draw printable area rectangle
-      ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
-      ctx.lineWidth = 2;
+      // Apply the position with aspect ratio-based Y adjustment
+      const adjustedY = position.y + yOffsetAdjustment;
+      
+      // Original reference position (red rectangle)
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
+      ctx.lineWidth = 1;
       ctx.strokeRect(
         position.x - (areaWidth / 2),
         position.y - (areaHeight / 2),
@@ -257,24 +307,36 @@ export default function MultiShirtCanvas({
         areaHeight
       );
       
-      // Draw crosshair at center
+      // Adjusted position for current design ratio (green rectangle)
+      ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(
+        position.x - (areaWidth / 2),
+        adjustedY - (areaHeight / 2),
+        areaWidth,
+        areaHeight
+      );
+      
+      // Draw crosshair at adjusted center
       ctx.beginPath();
-      ctx.moveTo(position.x - 15, position.y);
-      ctx.lineTo(position.x + 15, position.y);
-      ctx.moveTo(position.x, position.y - 15);
-      ctx.lineTo(position.x, position.y + 15);
+      ctx.strokeStyle = 'rgba(0, 0, 255, 0.6)';
+      ctx.moveTo(position.x - 15, adjustedY);
+      ctx.lineTo(position.x + 15, adjustedY);
+      ctx.moveTo(position.x, adjustedY - 15);
+      ctx.lineTo(position.x, adjustedY + 15);
       ctx.stroke();
       
       // Add shirt identifier
       ctx.font = '30px sans-serif';
       ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
-      ctx.fillText(position.name, position.x - 30, position.y - 20);
+      ctx.fillText(position.name, position.x - 30, adjustedY - 20);
     });
     
     // Add design info
     ctx.font = '36px sans-serif';
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillText(`Design Ratio: ${aspectRatio.toFixed(2)}`, 100, 100);
+    ctx.fillText(`Y Adjustment: ${yOffsetAdjustment}px`, 100, 150);
   };
 
   // Handle zoom in/out
@@ -317,6 +379,28 @@ export default function MultiShirtCanvas({
         // Get design's aspect ratio
         const aspectRatio = designImg.width / designImg.height;
         
+        // Calculate the Y offset adjustment based on aspect ratio
+        // Reference design was 4:1 ratio (aspectRatio ≈ 6.55), so adjust relative to that
+        let yOffsetAdjustment = 0;
+        
+        if (aspectRatio < 6.0) {
+          // For designs with lower aspect ratio than our reference design (4:1)
+          // move them slightly up to adjust for height differences
+          if (aspectRatio > 2.0) {
+            // Very wide designs but not as wide as reference - small adjustment
+            yOffsetAdjustment = -15;
+          } else if (aspectRatio > 1.3) {
+            // Landscape designs - medium adjustment
+            yOffsetAdjustment = -40;
+          } else if (aspectRatio < 0.7) {
+            // Tall/portrait designs - largest adjustment due to height
+            yOffsetAdjustment = -100;
+          } else {
+            // Square-ish designs
+            yOffsetAdjustment = -60;
+          }
+        }
+        
         // Place design on each shirt position
         OPTIMIZED_SHIRT_POSITIONS.forEach(position => {
           // Calculate design dimensions based on aspect ratio
@@ -357,11 +441,14 @@ export default function MultiShirtCanvas({
             designWidth = designHeight * aspectRatio;
           }
           
-          // Draw the design centered on the position
+          // Apply the position with aspect ratio-based Y adjustment
+          const adjustedY = position.y + yOffsetAdjustment;
+          
+          // Draw the design centered on the optimized position with adjusted Y
           downloadCtx.drawImage(
             designImg,
             position.x - (designWidth / 2),
-            position.y - (designHeight / 2),
+            adjustedY - (designHeight / 2),
             designWidth,
             designHeight
           );
