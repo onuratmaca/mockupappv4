@@ -157,6 +157,20 @@ export default function Home() {
     setDesignSize(project.designSize || 100); // Default to 100% if not set
     setCurrentProjectId(project.id);
     setShowSavedProjects(false);
+    
+    // Load placement settings if available
+    if (project.placementSettings) {
+      try {
+        setPlacementSettings({
+          placementSettings: project.placementSettings || '{}',
+          designWidthFactor: project.designWidthFactor || 450,
+          designHeightFactor: project.designHeightFactor || 300,
+          globalYOffset: project.globalYOffset || 0
+        });
+      } catch (error) {
+        console.error("Failed to parse placement settings:", error);
+      }
+    }
 
     toast({
       title: "Success",
@@ -207,6 +221,7 @@ export default function Home() {
                 designPosition={designPosition}
                 onDownload={handleDownloadMockup}
                 onSaveSettings={handleSavePlacementSettings}
+                initialSettings={placementSettings}
               />
             </div>
           </div>

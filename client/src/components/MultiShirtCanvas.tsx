@@ -21,6 +21,7 @@ interface MultiShirtCanvasProps {
   designPosition: string; 
   onDownload: () => void;
   onSaveSettings?: (settings: PlacementSettings) => void;
+  initialSettings?: PlacementSettings;
 }
 
 // Define a placement settings type
@@ -61,7 +62,8 @@ export default function MultiShirtCanvas({
   designSize,
   designPosition,
   onDownload,
-  onSaveSettings
+  onSaveSettings,
+  initialSettings
 }: MultiShirtCanvasProps) {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -133,6 +135,33 @@ export default function MultiShirtCanvas({
       setDesignImg(null);
     }
   }, [designImage, toast]);
+  
+  // Load initial placement settings when provided
+  useEffect(() => {
+    if (initialSettings) {
+      // Set design width and height
+      setDesignWidthFactor(initialSettings.designWidthFactor);
+      setDesignHeightFactor(initialSettings.designHeightFactor);
+      
+      // Set global Y offset
+      setGlobalYOffset(initialSettings.globalYOffset);
+      
+      // Set shirt configurations if available
+      if (initialSettings.placementSettings) {
+        try {
+          const parsedSettings = JSON.parse(initialSettings.placementSettings);
+          if (Array.isArray(parsedSettings) && parsedSettings.length === 8) {
+            setShirtConfigs(parsedSettings);
+          }
+        } catch (error) {
+          console.error("Failed to parse saved shirt configurations:", error);
+        }
+      }
+      
+      // Automatically enable edit mode for better user experience
+      setEditMode('all');
+    }
+  }, [initialSettings]);
 
   // Handle mouse click on canvas for selecting shirts
   const handleCanvasClick = (e: MouseEvent<HTMLCanvasElement>) => {
