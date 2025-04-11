@@ -5,6 +5,9 @@ import mockup3 from "@assets/3.jpg";
 import mockup4 from "@assets/4.jpg";
 import mockup5 from "@assets/5.jpg";
 
+// Shirt positions in the grid (8 shirts in a 2x4 grid)
+export type ShirtPosition = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
 // Define the mockup images
 export const MOCKUP_IMAGES = [
   { id: 1, name: "Mockup 1", src: mockup1 },
@@ -20,6 +23,33 @@ export interface Mockup {
   src: string;
 }
 
+export interface ShirtGridPosition {
+  x: number; // Percentage x position in the grid (0-1)
+  y: number; // Percentage y position in the grid (0-1)
+  width: number; // Width percentage of a single shirt (0-1)
+  height: number; // Height percentage of a single shirt (0-1)
+}
+
+// Definition of where each shirt is positioned in the mockup grid
+// These values are based on the layout with 8 shirts (4 columns x 2 rows)
+export const SHIRT_GRID_POSITIONS: ShirtGridPosition[] = [
+  // Top row (left to right)
+  { x: 0.125, y: 0.25, width: 0.25, height: 0.5 },  // Position 0 - Top Left
+  { x: 0.375, y: 0.25, width: 0.25, height: 0.5 },  // Position 1 - Top Middle-Left
+  { x: 0.625, y: 0.25, width: 0.25, height: 0.5 },  // Position 2 - Top Middle-Right
+  { x: 0.875, y: 0.25, width: 0.25, height: 0.5 },  // Position 3 - Top Right
+  
+  // Bottom row (left to right)
+  { x: 0.125, y: 0.75, width: 0.25, height: 0.5 },  // Position 4 - Bottom Left
+  { x: 0.375, y: 0.75, width: 0.25, height: 0.5 },  // Position 5 - Bottom Middle-Left
+  { x: 0.625, y: 0.75, width: 0.25, height: 0.5 },  // Position 6 - Bottom Middle-Right
+  { x: 0.875, y: 0.75, width: 0.25, height: 0.5 },  // Position 7 - Bottom Right
+];
+
 export function getMockupById(id: number): Mockup | undefined {
   return MOCKUP_IMAGES.find(mockup => mockup.id === id);
+}
+
+export function getShirtGridPosition(position: ShirtPosition): ShirtGridPosition {
+  return SHIRT_GRID_POSITIONS[position];
 }

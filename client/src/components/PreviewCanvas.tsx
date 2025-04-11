@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Minus, Plus, Download, Undo, Redo, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DesignRatio, DESIGN_RATIOS } from "@/lib/design-ratios";
-import { getMockupById, Mockup } from "@/lib/mockup-data";
+import { getMockupById, Mockup, ShirtPosition, getShirtGridPosition, ShirtGridPosition } from "@/lib/mockup-data";
 import { getPrintableArea, PrintableArea } from "@/lib/printable-areas";
 
 interface PreviewCanvasProps {
   designImage: string | null;
   mockupId: number;
+  shirtPosition: ShirtPosition;
   designSize: number;
   designPosition: 'top' | 'center' | 'bottom';
   designXOffset: number;
@@ -38,6 +39,7 @@ interface ImageObject {
 export default function PreviewCanvas({
   designImage,
   mockupId,
+  shirtPosition,
   designSize,
   designPosition,
   designXOffset,
@@ -103,10 +105,10 @@ export default function PreviewCanvas({
     }
   }, [designSize, designPosition, designXOffset, designYOffset, designRatio]);
 
-  // Redraw canvas when images or zoom change
+  // Redraw canvas when images, position or zoom change
   useEffect(() => {
     drawCanvas();
-  }, [mockupImg, designImg, zoomLevel]);
+  }, [mockupImg, designImg, zoomLevel, shirtPosition]);
 
   // Handle zoom level
   const handleZoomIn = () => {
@@ -222,15 +224,25 @@ export default function PreviewCanvas({
   const updateDesignPosition = () => {
     if (!mockupImg || !designImg) return;
     
+    // Get the grid position of the selected shirt
+    const gridPos = getShirtGridPosition(shirtPosition);
+    
+    // Get the printable area configuration
     const printableArea = getPrintableArea(mockupId);
     
-    // Calculate printable area dimensions
-    const printableWidth = mockupImg.width * printableArea.width;
-    const printableHeight = mockupImg.height * printableArea.height;
+    // Calculate the size and position of the selected shirt within the mockup
+    const shirtWidth = mockupImg.width * gridPos.width;
+    const shirtHeight = mockupImg.height * gridPos.height;
+    const shirtX = mockupImg.x + (mockupImg.width * gridPos.x) - (shirtWidth / 2);
+    const shirtY = mockupImg.y + (mockupImg.height * gridPos.y) - (shirtHeight / 2);
     
-    // Calculate center of printable area
-    const centerX = mockupImg.x + mockupImg.width * printableArea.xCenter;
-    const centerY = mockupImg.y + mockupImg.height * printableArea.yCenter;
+    // Calculate printable area dimensions for this shirt
+    const printableWidth = shirtWidth * printableArea.width;
+    const printableHeight = shirtHeight * printableArea.height;
+    
+    // Calculate center of printable area within this shirt
+    const centerX = shirtX + (shirtWidth * printableArea.xCenter);
+    const centerY = shirtY + (shirtHeight * printableArea.yCenter);
     
     // Calculate design size based on percentage of printable area
     const maxDesignWidth = printableWidth * (designSize / 100);
@@ -243,8 +255,8 @@ export default function PreviewCanvas({
     const positionOffset = printableArea.positionOffsets[designPosition];
     
     // Calculate position with offsets
-    const xPosition = centerX + (mockupImg.width * positionOffset.x) - (newWidth / 2) + designXOffset;
-    const yPosition = centerY + (mockupImg.height * positionOffset.y) - (newHeight / 2) + designYOffset;
+    const xPosition = centerX + (shirtWidth * positionOffset.x) - (newWidth / 2) + designXOffset;
+    const yPosition = centerY + (shirtHeight * positionOffset.y) - (newHeight / 2) + designYOffset;
     
     // Update design image properties
     const updatedDesign = {

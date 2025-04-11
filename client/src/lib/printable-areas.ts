@@ -2,15 +2,16 @@
  * Printable area configuration for each mockup template
  * These values are used to calculate where to place designs on each type of mockup
  */
+import { ShirtPosition } from "./mockup-data";
 
 export type PrintableArea = {
-  // Horizontal percentage from the left edge of the image
+  // Horizontal percentage from the left edge of a shirt
   xCenter: number;
-  // Vertical percentage from the top edge of the image
+  // Vertical percentage from the top edge of a shirt
   yCenter: number;
-  // Maximum width of the printable area as a percentage of the image width
+  // Maximum width of the printable area as a percentage of the shirt width
   width: number;
-  // Maximum height of the printable area as a percentage of the image height
+  // Maximum height of the printable area as a percentage of the shirt height
   height: number;
   // Additional position adjustments for different placement options (top, center, bottom)
   positionOffsets: {
@@ -24,75 +25,76 @@ export type PrintableArea = {
 const DEFAULT_PRINTABLE_AREA: PrintableArea = {
   xCenter: 0.5,   // Center horizontally
   yCenter: 0.45,  // Slightly above center vertically
-  width: 0.4,     // 40% of mockup width
-  height: 0.5,    // 50% of mockup height
+  width: 0.7,     // 70% of shirt width
+  height: 0.6,    // 60% of shirt height
   positionOffsets: {
-    top: { x: 0, y: -0.15 },     // Move up for top position
+    top: { x: 0, y: -0.12 },     // Move up for top position
     center: { x: 0, y: 0 },      // No adjustment for center
-    bottom: { x: 0, y: 0.15 },   // Move down for bottom position
+    bottom: { x: 0, y: 0.12 },   // Move down for bottom position
   }
 };
 
-// Configuration for each mockup's printable area
+// Configuration for each mockup style's printable area
+// The key is the mockup ID (1-5)
 export const MOCKUP_PRINTABLE_AREAS: Record<number, PrintableArea> = {
   // Mockup 1
   1: {
     xCenter: 0.5,
     yCenter: 0.42,
-    width: 0.4,
-    height: 0.45,
+    width: 0.7,
+    height: 0.6,
     positionOffsets: {
-      top: { x: 0, y: -0.15 },
+      top: { x: 0, y: -0.1 },
       center: { x: 0, y: 0 },
-      bottom: { x: 0, y: 0.15 },
+      bottom: { x: 0, y: 0.1 },
     }
   },
   // Mockup 2
   2: {
     xCenter: 0.5,
     yCenter: 0.45,
-    width: 0.35,
-    height: 0.45,
+    width: 0.65,
+    height: 0.6,
     positionOffsets: {
-      top: { x: 0, y: -0.12 },
+      top: { x: 0, y: -0.1 },
       center: { x: 0, y: 0 },
-      bottom: { x: 0, y: 0.12 },
+      bottom: { x: 0, y: 0.1 },
     }
   },
   // Mockup 3
   3: {
     xCenter: 0.5,
     yCenter: 0.43,
-    width: 0.38,
-    height: 0.48,
+    width: 0.68,
+    height: 0.58,
     positionOffsets: {
-      top: { x: 0, y: -0.16 },
+      top: { x: 0, y: -0.1 },
       center: { x: 0, y: 0 },
-      bottom: { x: 0, y: 0.16 },
+      bottom: { x: 0, y: 0.1 },
     }
   },
   // Mockup 4
   4: {
     xCenter: 0.5,
     yCenter: 0.44,
-    width: 0.42,
-    height: 0.5,
+    width: 0.7,
+    height: 0.62,
     positionOffsets: {
-      top: { x: 0, y: -0.14 },
+      top: { x: 0, y: -0.1 },
       center: { x: 0, y: 0 },
-      bottom: { x: 0, y: 0.14 },
+      bottom: { x: 0, y: 0.1 },
     }
   },
   // Mockup 5
   5: {
     xCenter: 0.5,
     yCenter: 0.46,
-    width: 0.36,
-    height: 0.45,
+    width: 0.66,
+    height: 0.6,
     positionOffsets: {
-      top: { x: 0, y: -0.13 },
+      top: { x: 0, y: -0.1 },
       center: { x: 0, y: 0 },
-      bottom: { x: 0, y: 0.13 },
+      bottom: { x: 0, y: 0.1 },
     }
   }
 };
