@@ -74,7 +74,8 @@ export default function MultiShirtCanvas({
   const [zoomLevel, setZoomLevel] = useState(100); // Full size view
   const [canvasSize] = useState({ width: 4000, height: 3000 });
   const [showDebugAreas, setShowDebugAreas] = useState(false); // Debug off by default
-  const [verticalPosition, setVerticalPosition] = useState(0); // Y-offset in pixels
+  const [verticalPosition, setVerticalPosition] = useState(-150); // Y-offset in pixels, start with -150px for taller designs
+  const [horizontalPosition, setHorizontalPosition] = useState(0); // X-offset in pixels
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -156,7 +157,7 @@ export default function MultiShirtCanvas({
         drawDebugAreas(ctx);
       }
     }
-  }, [mockupImg, designImg, designSize, showDebugAreas, verticalPosition]);
+  }, [mockupImg, designImg, designSize, showDebugAreas, verticalPosition, horizontalPosition]);
   
   // Draw designs on all shirts using the optimized positions
   const drawDesignsOnShirts = (ctx: CanvasRenderingContext2D) => {
@@ -223,14 +224,16 @@ export default function MultiShirtCanvas({
         designWidth = designHeight * aspectRatio;
       }
       
-      // Apply the position with user-controlled Y position adjustment
-      // This treats Y as the top edge of the design, not the center
+      // Apply user position adjustments
+      // Vertical: treats Y as the top edge of the design, not the center
+      // Horizontal: applies X offset to center position
       const designTop = position.y + verticalPosition + yOffsetAdjustment - (designHeight / 2);
+      const designLeft = position.x + horizontalPosition - (designWidth / 2);
       
-      // Draw the design with top edge at the specified position
+      // Draw the design with top-left at the specified position
       ctx.drawImage(
         designImg,
-        position.x - (designWidth / 2),
+        designLeft,
         designTop,
         designWidth,
         designHeight
@@ -289,8 +292,9 @@ export default function MultiShirtCanvas({
       areaWidth = areaWidth * (designSize / 100);
       areaHeight = areaHeight * (designSize / 100);
       
-      // Calculate the final design top position (starting Y)
+      // Calculate the final design position with all adjustments
       const designTop = position.y + verticalPosition + yOffsetAdjustment - (areaHeight / 2);
+      const designLeft = position.x + horizontalPosition - (areaWidth / 2);
       
       // Original reference position (red rectangle)
       ctx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
@@ -306,7 +310,7 @@ export default function MultiShirtCanvas({
       ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)';
       ctx.lineWidth = 2;
       ctx.strokeRect(
-        position.x - (areaWidth / 2),
+        designLeft,
         designTop,
         areaWidth,
         areaHeight
@@ -316,14 +320,22 @@ export default function MultiShirtCanvas({
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(0, 0, 255, 0.8)';
       ctx.lineWidth = 2;
-      ctx.moveTo(position.x - areaWidth/2 - 20, designTop);
-      ctx.lineTo(position.x + areaWidth/2 + 20, designTop);
+      ctx.moveTo(designLeft - 20, designTop);
+      ctx.lineTo(designLeft + areaWidth + 20, designTop);
+      ctx.stroke();
+      
+      // Draw marker for left edge of design (purple line)
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(128, 0, 255, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.moveTo(designLeft, designTop - 20);
+      ctx.lineTo(designLeft, designTop + areaHeight + 20);
       ctx.stroke();
       
       // Add shirt identifier
       ctx.font = '30px sans-serif';
       ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
-      ctx.fillText(position.name, position.x - 30, designTop - 20);
+      ctx.fillText(position.name, designLeft, designTop - 20);
     });
     
     // Add design info
@@ -331,7 +343,8 @@ export default function MultiShirtCanvas({
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillText(`Design Ratio: ${aspectRatio.toFixed(2)}`, 100, 100);
     ctx.fillText(`Auto Y Adjustment: ${yOffsetAdjustment}px`, 100, 150);
-    ctx.fillText(`User Y Position: ${verticalPosition}px`, 100, 200);
+    ctx.fillText(`Vertical Position: ${verticalPosition}px`, 100, 200);
+    ctx.fillText(`Horizontal Position: ${horizontalPosition}px`, 100, 250);
   };
 
   // Handle zoom in/out
@@ -432,14 +445,16 @@ export default function MultiShirtCanvas({
             designWidth = designHeight * aspectRatio;
           }
           
-          // Apply the position with user-controlled Y position adjustment
-          // This treats Y as the top edge of the design, not the center
+          // Apply user position adjustments 
+          // Vertical: treats Y as the top edge of the design, not the center
+          // Horizontal: applies X offset to center position
           const designTop = position.y + verticalPosition + yOffsetAdjustment - (designHeight / 2);
+          const designLeft = position.x + horizontalPosition - (designWidth / 2);
           
-          // Draw the design with top edge at the specified position
+          // Draw the design with top-left at the specified position
           downloadCtx.drawImage(
             designImg,
-            position.x - (designWidth / 2),
+            designLeft,
             designTop,
             designWidth,
             designHeight
@@ -530,13 +545,37 @@ export default function MultiShirtCanvas({
                 <div className="flex-1">
                   <Slider
                     value={[verticalPosition]} 
-                    min={-100}
-                    max={100}
+                    min={-200}
+                    max={200}
                     step={1}
                     onValueChange={(value) => setVerticalPosition(value[0])}
                   />
                 </div>
                 <ArrowDown className="h-4 w-4 text-gray-500" />
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm font-medium">Horizontal Position</span>
+                <span className="text-sm text-gray-500">{horizontalPosition}px</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <svg className="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 19l-7-7 7-7" />
+                </svg>
+                <div className="flex-1">
+                  <Slider
+                    value={[horizontalPosition]} 
+                    min={-200}
+                    max={200}
+                    step={1}
+                    onValueChange={(value) => setHorizontalPosition(value[0])}
+                  />
+                </div>
+                <svg className="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 5l7 7-7 7" />
+                </svg>
               </div>
             </div>
             
