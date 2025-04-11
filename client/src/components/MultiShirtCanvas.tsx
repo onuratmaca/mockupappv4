@@ -116,18 +116,19 @@ export default function MultiShirtCanvas({
   // Helper function to visualize the printable areas
   const drawPrintableAreas = (ctx: CanvasRenderingContext2D) => {
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
+    // Adjusted to match the center chest area of each shirt based on reference images
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 800 },   // Top left shirt 
-      { x: 1335, y: 800 },  // Top left-center shirt
-      { x: 2665, y: 800 },  // Top right-center shirt 
-      { x: 3500, y: 800 },  // Top right shirt
+      { x: 500, y: 750 },   // Top left shirt 
+      { x: 1500, y: 750 },  // Top left-center shirt
+      { x: 2500, y: 750 },  // Top right-center shirt 
+      { x: 3500, y: 750 },  // Top right shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2300 },  // Bottom left shirt 
-      { x: 1335, y: 2300 }, // Bottom left-center shirt
-      { x: 2665, y: 2300 }, // Bottom right-center shirt
-      { x: 3500, y: 2300 }  // Bottom right shirt
+      { x: 500, y: 2250 },  // Bottom left shirt 
+      { x: 1500, y: 2250 }, // Bottom left-center shirt
+      { x: 2500, y: 2250 }, // Bottom right-center shirt
+      { x: 3500, y: 2250 }  // Bottom right shirt
     ];
     
     // Add rectangles to show the current printable areas
@@ -136,9 +137,9 @@ export default function MultiShirtCanvas({
     
     shirtCenters.forEach(pos => {
       // Draw a red rectangle for the current positioning
-      // 300x300 pixel area to represent printable area
-      const width = 300;
-      const height = 300;
+      // SVG designs use 600px width, PNG/JPG designs use 400px
+      const width = 600;  // Match largest design size
+      const height = 600; // Square area for simplicity
       
       ctx.strokeRect(
         pos.x - width/2,
@@ -163,19 +164,19 @@ export default function MultiShirtCanvas({
     
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
     // These values represent the center point of each shirt chest area
-    // Positioned exactly 3-4 fingers down from the neckline/tag
+    // Updated to match the grid positions from SHIRT_GRID_POSITIONS
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 800 },   // Top left shirt (3-4 fingers down from tag)
-      { x: 1335, y: 800 },  // Top left-center shirt
-      { x: 2665, y: 800 },  // Top right-center shirt 
-      { x: 3500, y: 800 },  // Top right shirt
+      { x: 500, y: 750 },   // Top left shirt
+      { x: 1500, y: 750 },  // Top left-center shirt
+      { x: 2500, y: 750 },  // Top right-center shirt 
+      { x: 3500, y: 750 },  // Top right shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2300 },  // Bottom left shirt (3-4 fingers down from tag)
-      { x: 1335, y: 2300 }, // Bottom left-center shirt
-      { x: 2665, y: 2300 }, // Bottom right-center shirt
-      { x: 3500, y: 2300 }  // Bottom right shirt
+      { x: 500, y: 2250 },  // Bottom left shirt
+      { x: 1500, y: 2250 }, // Bottom left-center shirt
+      { x: 2500, y: 2250 }, // Bottom right-center shirt
+      { x: 3500, y: 2250 }  // Bottom right shirt
     ];
     
     // CONSISTENT SIZE APPROACH
