@@ -127,14 +127,21 @@ export default function PreviewCanvas({
   const loadMockupImage = (mockup: Mockup) => {
     const img = new Image();
     img.onload = () => {
+      // Original mockups are 4000x3000px, ensure correct aspect ratio
+      const naturalAspect = 4000 / 3000;
+      
+      // If the loaded image has a different aspect ratio, we'll enforce the correct one
+      const correctedWidth = naturalAspect >= 1 ? img.width : img.height * naturalAspect;
+      const correctedHeight = naturalAspect >= 1 ? img.width / naturalAspect : img.height;
+      
       // Calculate scaling to fit canvas
       const scale = Math.min(
-        canvasSize.width / img.width,
-        canvasSize.height / img.height
+        canvasSize.width / correctedWidth,
+        canvasSize.height / correctedHeight
       );
       
-      const width = img.width * scale;
-      const height = img.height * scale;
+      const width = correctedWidth * scale;
+      const height = correctedHeight * scale;
       
       // Center in canvas
       const x = (canvasSize.width - width) / 2;
@@ -358,8 +365,17 @@ export default function PreviewCanvas({
     const centerX = shirtX + (shirtWidth * printableArea.xCenter);
     const centerY = shirtY + (shirtHeight * printableArea.yCenter);
     
+    // Highlight the selected shirt with a transparent overlay
+    ctx.fillStyle = 'rgba(255, 255, 0, 0.1)';
+    ctx.fillRect(
+      shirtX,
+      shirtY,
+      shirtWidth,
+      shirtHeight
+    );
+    
     // Draw shirt position outline
-    ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
     ctx.lineWidth = 2;
     ctx.setLineDash([]);
     ctx.strokeRect(
@@ -370,7 +386,7 @@ export default function PreviewCanvas({
     );
     
     // Draw printable area rectangle
-    ctx.strokeStyle = 'rgba(0, 200, 255, 0.5)';
+    ctx.strokeStyle = 'rgba(0, 150, 255, 0.7)';
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 5]);
     ctx.strokeRect(
@@ -380,24 +396,50 @@ export default function PreviewCanvas({
       printableHeight
     );
     
-    // Draw position markers
+    // Add a subtle background to the printable area
+    ctx.fillStyle = 'rgba(0, 150, 255, 0.05)';
+    ctx.fillRect(
+      centerX - printableWidth / 2,
+      centerY - printableHeight / 2,
+      printableWidth,
+      printableHeight
+    );
+    
+    // Draw position markers with improved visibility
     const positions = ['top', 'center', 'bottom'] as const;
     const colors = {
-      top: 'rgba(255, 0, 0, 0.7)',
-      center: 'rgba(0, 255, 0, 0.7)',
-      bottom: 'rgba(0, 0, 255, 0.7)'
+      top: 'rgba(255, 50, 50, 0.9)',
+      center: 'rgba(50, 255, 50, 0.9)',
+      bottom: 'rgba(50, 50, 255, 0.9)'
     };
     
+    // Draw the markers for each position with a larger radius
     positions.forEach(position => {
       const offset = printableArea.positionOffsets[position];
       const x = centerX + (shirtWidth * offset.x);
       const y = centerY + (shirtHeight * offset.y);
       
+      // Add a white outline to the marker
       ctx.beginPath();
       ctx.setLineDash([]);
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fill();
+      
+      // Draw the colored marker
+      ctx.beginPath();
       ctx.arc(x, y, 5, 0, Math.PI * 2);
       ctx.fillStyle = colors[position];
       ctx.fill();
+      
+      // Draw a ring around the current position marker
+      if (position === designPosition) {
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, Math.PI * 2);
+        ctx.strokeStyle = colors[position];
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
     });
   };
 
