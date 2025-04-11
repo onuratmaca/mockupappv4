@@ -462,6 +462,9 @@ export default function MultiShirtCanvas({
     setSyncAll(prev => !prev);
   };
 
+  // JPEG quality setting for download
+  const [jpegQuality, setJpegQuality] = useState<number>(85); // Default 85% quality
+  
   // Handle mockup download
   const handleDownload = () => {
     if (!canvasRef.current || !designImg || !mockupImg) {
@@ -539,12 +542,12 @@ export default function MultiShirtCanvas({
         });
       }
       
-      // Get canvas data URL
-      const dataURL = downloadCanvas.toDataURL('image/png');
+      // Get canvas data URL as JPEG with quality setting
+      const dataURL = downloadCanvas.toDataURL('image/jpeg', jpegQuality / 100);
       
       // Create download link
       const link = document.createElement('a');
-      link.download = `tshirt-mockup-${mockupId}.png`;
+      link.download = `tshirt-mockup-${mockupId}.jpg`;
       link.href = dataURL;
       document.body.appendChild(link);
       link.click();
@@ -552,12 +555,14 @@ export default function MultiShirtCanvas({
       
       toast({
         title: "Success",
-        description: "Mockup downloaded successfully!",
+        description: `Mockup downloaded as JPEG (${jpegQuality}% quality)`,
       });
       
       onDownload();
     }
   };
+  
+  // Quality setting will now be controlled by the slider directly
   
   // Generate position data for developer
   const generatePositionData = () => {
@@ -829,15 +834,41 @@ export default function MultiShirtCanvas({
           </div>
         </div>
         
-        <div className="mt-4 flex justify-end">
-          <Button 
-            size="sm"
-            onClick={handleDownload}
-            disabled={!designImg}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download Mockup
-          </Button>
+        <div className="mt-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">JPEG Quality: {jpegQuality}%</span>
+              <div className="text-xs text-gray-500">
+                {jpegQuality > 80 ? "Higher Quality / Larger File" : 
+                 jpegQuality > 60 ? "Balanced Quality" : "Smaller File Size"}
+              </div>
+            </div>
+            <div className="text-xs text-gray-500">
+              Est. Size: ~{Math.round(jpegQuality * 0.15)}MB
+            </div>
+          </div>
+          
+          <div className="w-full max-w-full">
+            <Slider 
+              min={40} 
+              max={95} 
+              step={5} 
+              value={[jpegQuality]} 
+              onValueChange={(value) => setJpegQuality(value[0])}
+              disabled={!designImg}
+            />
+          </div>
+          
+          <div className="flex justify-end">
+            <Button 
+              size="sm"
+              onClick={handleDownload}
+              disabled={!designImg}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download JPEG Mockup
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
