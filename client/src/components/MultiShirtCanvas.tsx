@@ -786,9 +786,10 @@ export default function MultiShirtCanvas({
                 </label>
               </div>
               <Slider 
-                min={-200} 
-                max={200} 
+                min={-300} 
+                max={100} 
                 step={5} 
+                defaultValue={[-200]}
                 value={[globalYOffset]} 
                 onValueChange={(value) => setGlobalYOffset(value[0])} 
               />
