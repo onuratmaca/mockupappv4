@@ -6,9 +6,9 @@ import { z } from "zod";
 export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  lastEdited: timestamp("last_edited").notNull().defaultNow(),
+  lastEdited: text("last_edited").notNull(),
   designImage: text("design_image").notNull(),
-  selectedColor: text("selected_color").notNull().default("White"),
+  selectedMockupId: integer("selected_mockup_id").notNull().default(1),
   designSize: integer("design_size").notNull().default(60),
   designPosition: text("design_position").notNull().default("center"),
   designXOffset: integer("design_x_offset").notNull().default(0),

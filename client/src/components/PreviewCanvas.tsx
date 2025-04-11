@@ -9,13 +9,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Undo, Redo, Save, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { T_SHIRT_COLORS } from "@/lib/t-shirt-colors";
 import { DesignRatio, DESIGN_RATIOS } from "@/lib/design-ratios";
-import { generateTShirtUrl } from "@/lib/fabric-utils";
+import { MOCKUP_IMAGES } from "@/components/MockupSelector";
 
 interface PreviewCanvasProps {
   designImage: string | null;
-  tshirtColor: string;
+  mockupId: number;
   designSize: number;
   designPosition: 'top' | 'center' | 'bottom';
   designXOffset: number;
@@ -29,7 +28,7 @@ interface PreviewCanvasProps {
 
 export default function PreviewCanvas({
   designImage,
-  tshirtColor,
+  mockupId,
   designSize,
   designPosition,
   designXOffset,
@@ -62,8 +61,8 @@ export default function PreviewCanvas({
       
       canvasInstanceRef.current = canvas;
       
-      // Load initial t-shirt image
-      loadTshirtImage(tshirtColor);
+      // Load initial mockup image
+      loadMockupImage(mockupId);
       
       // Add to history
       updateHistory();
@@ -76,12 +75,12 @@ export default function PreviewCanvas({
     }
   }, []);
   
-  // Load t-shirt image when color changes
+  // Load mockup image when mockup ID changes
   useEffect(() => {
     if (canvasInstanceRef.current) {
-      loadTshirtImage(tshirtColor);
+      loadMockupImage(mockupId);
     }
-  }, [tshirtColor]);
+  }, [mockupId]);
   
   // Load design image when it changes
   useEffect(() => {
@@ -111,21 +110,30 @@ export default function PreviewCanvas({
     setCanRedo(historyIndex < history.length - 1);
   }, [history, historyIndex]);
   
-  // Load t-shirt image
-  const loadTshirtImage = (color: string) => {
+  // Load mockup image
+  const loadMockupImage = (id: number) => {
     if (!canvasInstanceRef.current) return;
     
     const canvas = canvasInstanceRef.current;
     
-    // Generate t-shirt URL based on color
-    const tshirtUrl = generateTShirtUrl(color);
+    // Find mockup image by ID
+    const mockup = MOCKUP_IMAGES.find(m => m.id === id);
+    if (!mockup) {
+      toast({
+        title: "Error",
+        description: "Mockup not found",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // Remove existing t-shirt image if any
+    // Remove existing mockup image if any
     if (tshirtImageRef.current) {
       canvas.remove(tshirtImageRef.current);
     }
     
-    fabric.Image.fromURL(tshirtUrl, (img) => {
+    // Load mockup image
+    fabric.Image.fromURL(mockup.src, (img: fabric.Image) => {
       // Scale the image to fit canvas
       const scale = Math.min(
         canvas.width! / img.width!,
@@ -146,7 +154,9 @@ export default function PreviewCanvas({
       
       tshirtImageRef.current = img;
       canvas.add(img);
-      canvas.sendToBack(img);
+      
+      // Make sure it's behind other objects
+      img.sendToBack();
       canvas.renderAll();
       
       // If design exists, reapply it
@@ -167,7 +177,7 @@ export default function PreviewCanvas({
       canvas.remove(designObjectRef.current);
     }
     
-    fabric.Image.fromURL(imageUrl, (img) => {
+    fabric.Image.fromURL(imageUrl, (img: fabric.Image) => {
       const ratio = DESIGN_RATIOS[designRatio].value;
       
       // If the ratio is different than the image's natural ratio, adjust it
@@ -352,7 +362,7 @@ export default function PreviewCanvas({
     
     // Create a download link
     const link = document.createElement('a');
-    link.download = `tshirt-mockup-${tshirtColor.toLowerCase()}.png`;
+    link.download = `tshirt-mockup-${mockupId}.png`;
     link.href = dataURL;
     document.body.appendChild(link);
     link.click();

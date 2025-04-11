@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DesignUploader from "@/components/DesignUploader";
-import ColorSelector from "@/components/ColorSelector";
+import MockupSelector from "@/components/MockupSelector";
 import DesignControls from "@/components/DesignControls";
 import PreviewCanvas from "@/components/PreviewCanvas";
 import SavedProjectsModal from "@/components/SavedProjectsModal";
@@ -15,7 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 export default function Home() {
   const { toast } = useToast();
   const [designImage, setDesignImage] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState("White");
+  const [selectedMockupId, setSelectedMockupId] = useState(1); // Default to first mockup
   const [designSize, setDesignSize] = useState(60);
   const [designPosition, setDesignPosition] = useState<"top" | "center" | "bottom">("center");
   const [designXOffset, setDesignXOffset] = useState(0);
@@ -90,7 +90,7 @@ export default function Home() {
       name: `Project ${new Date().toLocaleString()}`,
       lastEdited: new Date().toISOString(),
       designImage,
-      selectedColor,
+      selectedMockupId,
       designSize,
       designPosition,
       designXOffset,
@@ -123,7 +123,7 @@ export default function Home() {
   // Handle load project
   const handleLoadProject = (project: Project) => {
     setDesignImage(project.designImage);
-    setSelectedColor(project.selectedColor);
+    setSelectedMockupId(project.selectedMockupId || 1);
     setDesignSize(project.designSize);
     setDesignPosition(project.designPosition as "top" | "center" | "bottom");
     setDesignXOffset(project.designXOffset);
@@ -165,9 +165,9 @@ export default function Home() {
                   onDesignRatioChange={setDesignRatio}
                 />
                 
-                <ColorSelector
-                  selectedColor={selectedColor}
-                  onColorSelect={setSelectedColor}
+                <MockupSelector
+                  selectedMockupId={selectedMockupId}
+                  onMockupSelect={setSelectedMockupId}
                 />
                 
                 <DesignControls
@@ -187,7 +187,7 @@ export default function Home() {
             <div className="lg:col-span-9 mt-8 lg:mt-0">
               <PreviewCanvas
                 designImage={designImage}
-                tshirtColor={selectedColor}
+                mockupId={selectedMockupId}
                 designSize={designSize}
                 designPosition={designPosition}
                 designXOffset={designXOffset}
