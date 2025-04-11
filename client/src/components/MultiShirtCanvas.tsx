@@ -73,9 +73,12 @@ export default function MultiShirtCanvas({
   const [designImg, setDesignImg] = useState<HTMLImageElement | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100); // Full size view
   const [canvasSize] = useState({ width: 4000, height: 3000 });
-  const [showDebugAreas, setShowDebugAreas] = useState(false); // Debug off by default
-  const [verticalPosition, setVerticalPosition] = useState(-150); // Y-offset in pixels, start with -150px for taller designs
+  const [showDebugAreas, setShowDebugAreas] = useState(true); // Debug on by default
+  const [verticalPosition, setVerticalPosition] = useState(0); // Y-offset in pixels, starting at 0 and will be adjusted with the initial offset
   const [horizontalPosition, setHorizontalPosition] = useState(0); // X-offset in pixels
+  
+  // Apply an initial offset when first rendering
+  const INITIAL_Y_OFFSET = 150; // Start designs 150px lower
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -227,8 +230,16 @@ export default function MultiShirtCanvas({
       // Apply user position adjustments
       // Vertical: treats Y as the top edge of the design, not the center
       // Horizontal: applies X offset to center position
-      const designTop = position.y + verticalPosition + yOffsetAdjustment - (designHeight / 2);
+      const designTop = position.y + verticalPosition + yOffsetAdjustment - (designHeight / 2) + 150; // Adding 150px to move it down
       const designLeft = position.x + horizontalPosition - (designWidth / 2);
+      
+      // Add a small blue dot at the shirt position center for reference
+      if (showDebugAreas) {
+        ctx.fillStyle = 'rgba(0, 0, 255, 0.6)';
+        ctx.beginPath();
+        ctx.arc(position.x, position.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
       
       // Draw the design with top-left at the specified position
       ctx.drawImage(
@@ -293,7 +304,7 @@ export default function MultiShirtCanvas({
       areaHeight = areaHeight * (designSize / 100);
       
       // Calculate the final design position with all adjustments
-      const designTop = position.y + verticalPosition + yOffsetAdjustment - (areaHeight / 2);
+      const designTop = position.y + verticalPosition + yOffsetAdjustment - (areaHeight / 2) + 150; // Adding 150px to move it down
       const designLeft = position.x + horizontalPosition - (areaWidth / 2);
       
       // Original reference position (red rectangle)
@@ -448,7 +459,7 @@ export default function MultiShirtCanvas({
           // Apply user position adjustments 
           // Vertical: treats Y as the top edge of the design, not the center
           // Horizontal: applies X offset to center position
-          const designTop = position.y + verticalPosition + yOffsetAdjustment - (designHeight / 2);
+          const designTop = position.y + verticalPosition + yOffsetAdjustment - (designHeight / 2) + 150; // Adding 150px to move it down
           const designLeft = position.x + horizontalPosition - (designWidth / 2);
           
           // Draw the design with top-left at the specified position
