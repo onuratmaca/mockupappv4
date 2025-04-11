@@ -6,7 +6,8 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ZoomIn, ZoomOut, Eye, EyeOff, ArrowUp, ArrowDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Download, ZoomIn, ZoomOut, Eye, EyeOff, ArrowUp, ArrowDown, Save, RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getMockupById } from "@/lib/mockup-data";
 import { Slider } from "@/components/ui/slider";
@@ -76,9 +77,34 @@ export default function MultiShirtCanvas({
   const [showDebugAreas, setShowDebugAreas] = useState(true); // Debug on by default
   const [verticalPosition, setVerticalPosition] = useState(0); // Y-offset in pixels, starting at 0 and will be adjusted with the initial offset
   const [horizontalPosition, setHorizontalPosition] = useState(0); // X-offset in pixels
+  const [selectedShirt, setSelectedShirt] = useState<number | null>(null); // Selected shirt index (null means all shirts)
+  const [shirtPositions, setShirtPositions] = useState<Record<number, {x: number, y: number}>>({});
+  const [adjustMode, setAdjustMode] = useState<'all' | 'individual'>('all'); // Mode for adjusting shirts
   
   // Apply an initial offset when first rendering
   const INITIAL_Y_OFFSET = 150; // Start designs 150px lower
+  
+  // Load saved position settings on component mount
+  useEffect(() => {
+    try {
+      const savedPositions = localStorage.getItem('mockup-position-data');
+      if (savedPositions) {
+        const data = JSON.parse(savedPositions);
+        if (data.vertical !== undefined) setVerticalPosition(data.vertical);
+        if (data.horizontal !== undefined) setHorizontalPosition(data.horizontal);
+        if (data.shirt !== undefined) setSelectedShirt(data.shirt);
+        if (data.adjustMode !== undefined) setAdjustMode(data.adjustMode);
+        if (data.shirtPositions) setShirtPositions(data.shirtPositions);
+        
+        toast({
+          title: "Positions Loaded",
+          description: "Your saved position settings have been restored",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to load saved positions:", error);
+    }
+  }, []);
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -134,6 +160,55 @@ export default function MultiShirtCanvas({
     }
   }, [designImage, toast]);
 
+  // Handle canvas click to select shirts
+  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current || !designImg || !mockupImg) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Calculate click position relative to canvas and adjust for zoom
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX * (100 / zoomLevel);
+    const y = (e.clientY - rect.top) * scaleY * (100 / zoomLevel);
+    
+    // Check if click is within any shirt position
+    let clickedShirt: number | null = null;
+    
+    OPTIMIZED_SHIRT_POSITIONS.forEach((position, index) => {
+      // Calculate distance from click to shirt center
+      const dist = Math.sqrt(
+        Math.pow(x - position.x, 2) + 
+        Math.pow(y - position.y, 2)
+      );
+      
+      // If within shirt area (rough estimation)
+      if (dist < 300) {
+        clickedShirt = index;
+      }
+    });
+    
+    if (clickedShirt !== null) {
+      // If clicking the already selected shirt, deselect it
+      if (selectedShirt === clickedShirt) {
+        setSelectedShirt(null);
+        setAdjustMode('all');
+        toast({
+          title: "All Shirts Mode",
+          description: "Now adjusting all shirts simultaneously",
+        });
+      } else {
+        setSelectedShirt(clickedShirt);
+        setAdjustMode('individual');
+        toast({
+          title: "Individual Shirt Mode",
+          description: `Now adjusting shirt ${OPTIMIZED_SHIRT_POSITIONS[clickedShirt].name}`,
+        });
+      }
+    }
+  };
+  
   // Redraw the canvas when inputs change
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -159,8 +234,24 @@ export default function MultiShirtCanvas({
       if (showDebugAreas) {
         drawDebugAreas(ctx);
       }
+      
+      // Highlight selected shirt if in individual mode
+      if (selectedShirt !== null) {
+        const position = OPTIMIZED_SHIRT_POSITIONS[selectedShirt];
+        ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        // Draw a highlight circle around the selected shirt
+        ctx.arc(position.x, position.y, 350, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Add "SELECTED" text
+        ctx.font = 'bold 60px sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 0, 0.8)';
+        ctx.fillText('SELECTED', position.x - 150, position.y - 350);
+      }
     }
-  }, [mockupImg, designImg, designSize, showDebugAreas, verticalPosition, horizontalPosition]);
+  }, [mockupImg, designImg, designSize, showDebugAreas, verticalPosition, horizontalPosition, selectedShirt, adjustMode, shirtPositions]);
   
   // Draw designs on all shirts using the optimized positions
   const drawDesignsOnShirts = (ctx: CanvasRenderingContext2D) => {
@@ -539,13 +630,28 @@ export default function MultiShirtCanvas({
               ref={canvasRef} 
               width={canvasSize.width} 
               height={canvasSize.height}
-              style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
+              style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain', cursor: 'pointer' }}
+              onClick={handleCanvasClick}
             />
           </div>
         </div>
         
         {designImg && (
           <div className="mt-4 space-y-4">
+            <div className="bg-gray-100 p-3 rounded-lg mb-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Adjustment Mode</span>
+                <Badge variant={adjustMode === 'all' ? "default" : "outline"}>
+                  {adjustMode === 'all' ? 'All Shirts' : `Shirt ${selectedShirt !== null ? OPTIMIZED_SHIRT_POSITIONS[selectedShirt].name : ''}`}
+                </Badge>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {adjustMode === 'all' 
+                  ? 'Adjusting all shirts at once. Click on a shirt to select it for individual adjustment.' 
+                  : 'Adjusting a single shirt. Click on the same shirt or outside to revert to All Shirts mode.'}
+              </div>
+            </div>
+            
             <div>
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium">Vertical Position</span>
@@ -590,7 +696,57 @@ export default function MultiShirtCanvas({
               </div>
             </div>
             
-            <div className="flex justify-end">
+            <div className="flex justify-between">
+              <div className="space-x-2">
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const positionData = JSON.stringify({
+                      vertical: verticalPosition,
+                      horizontal: horizontalPosition,
+                      shirt: selectedShirt,
+                      adjustMode: adjustMode,
+                      shirtPositions: shirtPositions
+                    });
+                    
+                    localStorage.setItem('mockup-position-data', positionData);
+                    
+                    toast({
+                      title: "Positions Saved",
+                      description: "Your custom position settings have been saved",
+                    });
+                  }}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Save
+                </Button>
+                
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    // Reset positions to default
+                    setVerticalPosition(0);
+                    setHorizontalPosition(0);
+                    setSelectedShirt(null);
+                    setAdjustMode('all');
+                    setShirtPositions({});
+                    
+                    // Clear saved positions
+                    localStorage.removeItem('mockup-position-data');
+                    
+                    toast({
+                      title: "Positions Reset",
+                      description: "All position settings have been reset to default",
+                    });
+                  }}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Reset
+                </Button>
+              </div>
+              
               <Button 
                 size="sm"
                 onClick={handleDownload}
