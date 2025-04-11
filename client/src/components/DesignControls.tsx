@@ -41,19 +41,19 @@ export default function DesignControls({
         {/* Size Control */}
         <div>
           <Label htmlFor="sizeSlider" className="text-sm font-medium text-gray-700">
-            Size
+            Design Size
           </Label>
           <div className="flex items-center space-x-2 mt-2">
             <Slider
               id="sizeSlider"
               min={20}
-              max={100}
-              step={1}
+              max={150}
+              step={5}
               value={[designSize]}
               onValueChange={(value) => onDesignSizeChange(value[0])}
               className="flex-grow"
             />
-            <span className="text-sm text-gray-500 w-10 text-right">{designSize}%</span>
+            <span className="text-sm text-gray-500 w-12 text-right">{designSize}%</span>
           </div>
         </div>
         
@@ -90,38 +90,7 @@ export default function DesignControls({
           </div>
         </div>
         
-        {/* Fine Adjustment Controls */}
-        <div>
-          <Label className="text-sm font-medium text-gray-700 block mb-2">
-            Fine Adjustments
-          </Label>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label htmlFor="xPos" className="text-xs text-gray-500">
-                X Position
-              </Label>
-              <Input
-                id="xPos"
-                type="number"
-                value={designXOffset}
-                onChange={(e) => onDesignXOffsetChange(parseInt(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="yPos" className="text-xs text-gray-500">
-                Y Position
-              </Label>
-              <Input
-                id="yPos"
-                type="number"
-                value={designYOffset}
-                onChange={(e) => onDesignYOffsetChange(parseInt(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </div>
+        {/* No fine adjustment controls needed in multi-shirt mode */}
         
         {/* Reset Button */}
         <Button 

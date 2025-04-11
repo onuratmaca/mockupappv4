@@ -74,14 +74,26 @@ export default function DesignUploader({
           if (ctx) {
             ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
             
-            // Convert to data URL and pass it to the parent
-            const normalizedImageUrl = canvas.toDataURL('image/png');
-            onDesignUpload(normalizedImageUrl);
-            
-            toast({
-              title: "Success",
-              description: `Design normalized to ${Math.round(targetWidth)}×${Math.round(targetHeight)} pixels`,
-            });
+                    // For SVG files, we may want to preserve the original to maintain quality
+            // but for non-SVG files, we normalize to PNG
+            if (file.type === 'image/svg+xml') {
+              // For SVGs, pass the original file to preserve vector quality
+              onDesignUpload(result);
+              
+              toast({
+                title: "SVG Uploaded",
+                description: `Vector design uploaded at original quality`,
+              });
+            } else {
+              // For other formats, convert to PNG and normalize dimensions
+              const normalizedImageUrl = canvas.toDataURL('image/png');
+              onDesignUpload(normalizedImageUrl);
+              
+              toast({
+                title: "Success",
+                description: `Design normalized to ${Math.round(targetWidth)}×${Math.round(targetHeight)} pixels`,
+              });
+            }
           } else {
             // Fallback if canvas context fails
             onDesignUpload(result);
