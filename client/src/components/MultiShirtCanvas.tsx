@@ -116,19 +116,19 @@ export default function MultiShirtCanvas({
   // Helper function to visualize the printable areas
   const drawPrintableAreas = (ctx: CanvasRenderingContext2D) => {
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
-    // Adjusted based on the reference mockup image
+    // Adjusted based on the reference mockup image with actual designs
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 750 },   // Top left shirt (White) - landscape rectangle
-      { x: 1500, y: 750 },  // Top left-center shirt (Ivory) - square
-      { x: 2500, y: 750 },  // Top right-center shirt (Butter) - wide rectangle
-      { x: 3500, y: 750 },  // Top right shirt (Banana)
+      { x: 500, y: 680 },   // Top left shirt (White) - landscape "ARE WE GREAT YET? CAUSE..."
+      { x: 1500, y: 680 },  // Top left-center shirt (Ivory) - square with "#" design
+      { x: 2500, y: 680 },  // Top right-center shirt (Butter) - wide "overstimulated" text
+      { x: 3500, y: 680 },  // Top right shirt (Banana) - no design
       
       // Bottom row (left to right)
-      { x: 500, y: 2250 },  // Bottom left shirt (Mustard)
-      { x: 1500, y: 2250 }, // Bottom left-center shirt (Peachy)
-      { x: 2500, y: 2250 }, // Bottom right-center shirt (Yam)
-      { x: 3500, y: 2250 }  // Bottom right shirt (Khaki)
+      { x: 500, y: 2180 },  // Bottom left shirt (Mustard) - "Eat The Rich" with caterpillar
+      { x: 1500, y: 2180 }, // Bottom left-center shirt (Peachy) - bear design
+      { x: 2500, y: 2180 }, // Bottom right-center shirt (Yam) - "MADE for more"
+      { x: 3500, y: 2180 }  // Bottom right shirt (Khaki) - "Well-behaved women rarely make history"
     ];
     
     // Add rectangles to show the current printable areas
@@ -136,25 +136,41 @@ export default function MultiShirtCanvas({
     ctx.lineWidth = 2;
     
     shirtCenters.forEach((pos, index) => {
-      // Different rectangle shapes based on reference image
+      // Different rectangle shapes based on reference image with actual designs
       let width, height;
       
       if (index === 0) {
-        // White shirt - landscape rectangle
-        width = 500;
-        height = 350;
+        // White shirt - landscape rectangle - "ARE WE GREAT YET? CAUSE..."
+        width = 550;
+        height = 300;
       } else if (index === 1) {
-        // Ivory shirt - square
+        // Ivory shirt - square with "#" design
         width = 400;
         height = 400;
       } else if (index === 2) {
-        // Butter shirt - wide horizontal rectangle
-        width = 650;
-        height = 200;
-      } else {
-        // Default for other shirts - standard rectangle
+        // Butter shirt - wide horizontal text "overstimulated"
+        width = 450;
+        height = 110;
+      } else if (index === 4) {
+        // Mustard shirt - "Eat The Rich" with caterpillar
         width = 500;
-        height = 350;
+        height = 320;
+      } else if (index === 5) {
+        // Peachy shirt - bear design
+        width = 380;
+        height = 480;
+      } else if (index === 6) {
+        // Yam shirt - "MADE for more"
+        width = 480;
+        height = 280;
+      } else if (index === 7) {
+        // Khaki shirt - "Well-behaved women rarely make history"
+        width = 520;
+        height = 300;
+      } else {
+        // Default for shirts without specific designs
+        width = 450;
+        height = 300;
       }
       
       ctx.strokeRect(
@@ -179,19 +195,19 @@ export default function MultiShirtCanvas({
     if (!designImg) return;
     
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
-    // Adjusted based on the reference mockup image
+    // Adjusted based on the reference mockup image with actual designs
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 750 },   // Top left shirt (White) - landscape rectangle
-      { x: 1500, y: 750 },  // Top left-center shirt (Ivory) - square
-      { x: 2500, y: 750 },  // Top right-center shirt (Butter) - wide rectangle
-      { x: 3500, y: 750 },  // Top right shirt (Banana)
+      { x: 500, y: 680 },   // Top left shirt (White) - landscape "ARE WE GREAT YET? CAUSE..."
+      { x: 1500, y: 680 },  // Top left-center shirt (Ivory) - square with "#" design
+      { x: 2500, y: 680 },  // Top right-center shirt (Butter) - wide "overstimulated" text
+      { x: 3500, y: 680 },  // Top right shirt (Banana) - no design
       
       // Bottom row (left to right)
-      { x: 500, y: 2250 },  // Bottom left shirt (Mustard)
-      { x: 1500, y: 2250 }, // Bottom left-center shirt (Peachy)
-      { x: 2500, y: 2250 }, // Bottom right-center shirt (Yam)
-      { x: 3500, y: 2250 }  // Bottom right shirt (Khaki)
+      { x: 500, y: 2180 },  // Bottom left shirt (Mustard) - "Eat The Rich" with caterpillar
+      { x: 1500, y: 2180 }, // Bottom left-center shirt (Peachy) - bear design
+      { x: 2500, y: 2180 }, // Bottom right-center shirt (Yam) - "MADE for more"
+      { x: 3500, y: 2180 }  // Bottom right shirt (Khaki) - "Well-behaved women rarely make history"
     ];
     
     // ADAPTIVE SIZE APPROACH BASED ON DESIGN'S ASPECT RATIO
@@ -216,41 +232,120 @@ export default function MultiShirtCanvas({
       let designWidth = 400;
       let designHeight = 400;
       
-      // Base sizes according to image format and aspect ratio
-      if (isSVG) {
-        // SVG images get slightly larger dimensions
-        if (isWide) {
-          // Very wide designs (like the butter shirt example)
-          designWidth = 650 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else if (isLandscape) {
-          // Landscape designs (like the white shirt example)
-          designWidth = 500 * (designSize / 100);
+      // Custom sizing based on specific shirt position and design aspect ratio
+      if (index === 0) {
+        // White shirt - landscape rectangle "ARE WE GREAT YET? CAUSE..."
+        if (isWide || isLandscape) {
+          designWidth = 550 * (designSize / 100);
           designHeight = designWidth / aspectRatio;
         } else if (isSquarish) {
-          // Square-ish designs (like the ivory shirt example)
+          designWidth = 450 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else {
+          // Portrait
+          designHeight = 300 * (designSize / 100);
+          designWidth = designHeight * aspectRatio;
+        }
+      } else if (index === 1) {
+        // Ivory shirt - square with "#" design
+        if (isSquarish) {
+          // Ideal for square design
+          designWidth = 400 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else if (isLandscape) {
           designWidth = 400 * (designSize / 100);
           designHeight = designWidth / aspectRatio;
         } else {
-          // Portrait/tall designs
+          // Portrait
           designHeight = 400 * (designSize / 100);
           designWidth = designHeight * aspectRatio;
         }
-      } else {
-        // Raster images (PNG, JPG) get slightly smaller dimensions
+      } else if (index === 2) {
+        // Butter shirt - wide horizontal "overstimulated" text
+        // Perfect for very wide designs
         if (isWide) {
-          designWidth = 600 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else if (isLandscape) {
           designWidth = 450 * (designSize / 100);
           designHeight = designWidth / aspectRatio;
-        } else if (isSquarish) {
-          designWidth = 350 * (designSize / 100);
+        } else if (isLandscape) {
+          designWidth = 400 * (designSize / 100);
           designHeight = designWidth / aspectRatio;
         } else {
-          // Default to portrait
-          designHeight = 350 * (designSize / 100);
+          // For taller designs, keep it contained
+          designHeight = 150 * (designSize / 100);
           designWidth = designHeight * aspectRatio;
+        }
+      } else if (index === 4) {
+        // Mustard shirt - "Eat The Rich" with caterpillar
+        if (isLandscape || isWide) {
+          designWidth = 500 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else {
+          designHeight = 320 * (designSize / 100);
+          designWidth = designHeight * aspectRatio;
+        }
+      } else if (index === 5) {
+        // Peachy shirt - bear design (more vertical space)
+        if (isPortrait) {
+          // Perfect for tall designs
+          designHeight = 480 * (designSize / 100);
+          designWidth = designHeight * aspectRatio;
+        } else {
+          designWidth = 380 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        }
+      } else if (index === 6) {
+        // Yam shirt - "MADE for more"
+        if (isLandscape || isWide) {
+          designWidth = 480 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else {
+          designHeight = 280 * (designSize / 100);
+          designWidth = designHeight * aspectRatio;
+        }
+      } else if (index === 7) {
+        // Khaki shirt - "Well-behaved women rarely make history"
+        if (isLandscape || isWide) {
+          designWidth = 520 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else {
+          designHeight = 300 * (designSize / 100);
+          designWidth = designHeight * aspectRatio;
+        }
+      } else {
+        // Default for other shirts or no specific design
+        // Fall back to format-based sizing
+        if (isSVG) {
+          // SVG images get slightly larger dimensions
+          if (isWide) {
+            designWidth = 500 * (designSize / 100);
+            designHeight = designWidth / aspectRatio;
+          } else if (isLandscape) {
+            designWidth = 450 * (designSize / 100);
+            designHeight = designWidth / aspectRatio;
+          } else if (isSquarish) {
+            designWidth = 400 * (designSize / 100);
+            designHeight = designWidth / aspectRatio;
+          } else {
+            // Portrait/tall designs
+            designHeight = 400 * (designSize / 100);
+            designWidth = designHeight * aspectRatio;
+          }
+        } else {
+          // Raster images get slightly smaller dimensions
+          if (isWide) {
+            designWidth = 450 * (designSize / 100);
+            designHeight = designWidth / aspectRatio;
+          } else if (isLandscape) {
+            designWidth = 400 * (designSize / 100);
+            designHeight = designWidth / aspectRatio;
+          } else if (isSquarish) {
+            designWidth = 350 * (designSize / 100);
+            designHeight = designWidth / aspectRatio;
+          } else {
+            // Default to portrait
+            designHeight = 350 * (designSize / 100);
+            designWidth = designHeight * aspectRatio;
+          }
         }
       }
       
