@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import DesignUploader from "@/components/DesignUploader";
 import MockupSelector from "@/components/MockupSelector";
 import DesignControls from "@/components/DesignControls";
-import MultiShirtCanvas from "@/components/MultiShirtCanvas";
+import MultiShirtCanvas, { PlacementSettings } from "@/components/MultiShirtCanvas";
 import SavedProjectsModal from "@/components/SavedProjectsModal";
 import { useToast } from "@/hooks/use-toast";
 import { Project } from "@shared/schema";
@@ -18,6 +18,7 @@ export default function Home() {
   const [designSize, setDesignSize] = useState(100); // Start at 100% (will be scaled based on file type)
   const [showSavedProjects, setShowSavedProjects] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
+  const [placementSettings, setPlacementSettings] = useState<PlacementSettings | null>(null);
   
   // Fixed position for all designs
   const designPosition = "center";
@@ -72,6 +73,34 @@ export default function Home() {
     }
   });
 
+  // Handle save placement settings
+  const handleSavePlacementSettings = (settings: PlacementSettings) => {
+    setPlacementSettings(settings);
+    
+    // If we have a current project, update it with the placement settings
+    if (currentProjectId) {
+      updateMutation.mutate({
+        id: currentProjectId,
+        name: `Project ${new Date().toLocaleString()}`,
+        lastEdited: new Date().toISOString(),
+        designImage: designImage || '',
+        selectedMockupId,
+        shirtPosition: 0,
+        designSize,
+        designPosition: 'center',
+        designXOffset: 0,
+        designYOffset: 0,
+        designRatio: 'square',
+        thumbnail: designImage || '',
+        // Add the new placement settings
+        placementSettings: settings.placementSettings,
+        designWidthFactor: settings.designWidthFactor,
+        designHeightFactor: settings.designHeightFactor,
+        globalYOffset: settings.globalYOffset
+      });
+    }
+  };
+
   // Handle save project
   const handleSaveProject = () => {
     if (!designImage) {
@@ -95,6 +124,11 @@ export default function Home() {
       designYOffset: 0,
       designRatio: 'square',
       thumbnail: designImage,
+      // Include placement settings if available
+      placementSettings: placementSettings?.placementSettings || '{}',
+      designWidthFactor: placementSettings?.designWidthFactor || 450,
+      designHeightFactor: placementSettings?.designHeightFactor || 300,
+      globalYOffset: placementSettings?.globalYOffset || 0
     };
 
     if (currentProjectId) {
@@ -172,6 +206,7 @@ export default function Home() {
                 designSize={designSize}
                 designPosition={designPosition}
                 onDownload={handleDownloadMockup}
+                onSaveSettings={handleSavePlacementSettings}
               />
             </div>
           </div>

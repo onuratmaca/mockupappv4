@@ -60,7 +60,8 @@ export default function MultiShirtCanvas({
   mockupId,
   designSize,
   designPosition,
-  onDownload
+  onDownload,
+  onSaveSettings
 }: MultiShirtCanvasProps) {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -547,6 +548,42 @@ export default function MultiShirtCanvas({
       title: "Position Data Generated",
       description: "Check browser console for copy-paste data",
     });
+    
+    return data;
+  };
+  
+  // Save placement settings to project
+  const saveSettings = () => {
+    if (!designImage) {
+      toast({
+        title: "Error",
+        description: "Please upload a design image before saving settings",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Generate the position data
+    const positionData = generatePositionData();
+    
+    // Create the settings object to save
+    const settings: PlacementSettings = {
+      designWidthFactor,
+      designHeightFactor,
+      globalYOffset,
+      placementSettings: JSON.stringify(shirtConfigs)
+    };
+    
+    // Call the parent's save function if provided
+    if (onSaveSettings) {
+      onSaveSettings(settings);
+      
+      toast({
+        title: "Success",
+        description: "Design placement settings saved successfully!",
+        variant: "default",
+      });
+    }
   };
 
   return (
@@ -617,6 +654,13 @@ export default function MultiShirtCanvas({
                   onClick={generatePositionData}
                 >
                   Export Position Data
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="default" 
+                  onClick={saveSettings}
+                >
+                  <Save className="h-3 w-3 mr-1" /> Save Settings
                 </Button>
               </div>
             </div>
