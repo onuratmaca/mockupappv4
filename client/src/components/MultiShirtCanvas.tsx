@@ -116,32 +116,46 @@ export default function MultiShirtCanvas({
   // Helper function to visualize the printable areas
   const drawPrintableAreas = (ctx: CanvasRenderingContext2D) => {
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
-    // Adjusted based on feedback - using position #2 as the reference point
-    // Moving all positions slightly right to center with the neckline
-    // Y-position remains the same
+    // Adjusted based on the reference mockup image
     const shirtCenters = [
       // Top row (left to right)
-      { x: 520, y: 750 },   // Top left shirt 
-      { x: 1550, y: 750 },  // Top left-center shirt (reference position #2, shifted right)
-      { x: 2550, y: 750 },  // Top right-center shirt 
-      { x: 3520, y: 750 },  // Top right shirt
+      { x: 500, y: 750 },   // Top left shirt (White) - landscape rectangle
+      { x: 1500, y: 750 },  // Top left-center shirt (Ivory) - square
+      { x: 2500, y: 750 },  // Top right-center shirt (Butter) - wide rectangle
+      { x: 3500, y: 750 },  // Top right shirt (Banana)
       
       // Bottom row (left to right)
-      { x: 520, y: 2250 },  // Bottom left shirt 
-      { x: 1550, y: 2250 }, // Bottom left-center shirt
-      { x: 2550, y: 2250 }, // Bottom right-center shirt
-      { x: 3520, y: 2250 }  // Bottom right shirt
+      { x: 500, y: 2250 },  // Bottom left shirt (Mustard)
+      { x: 1500, y: 2250 }, // Bottom left-center shirt (Peachy)
+      { x: 2500, y: 2250 }, // Bottom right-center shirt (Yam)
+      { x: 3500, y: 2250 }  // Bottom right shirt (Khaki)
     ];
     
     // Add rectangles to show the current printable areas
-    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
     ctx.lineWidth = 2;
     
-    shirtCenters.forEach(pos => {
-      // Draw a red rectangle for the current positioning
-      // SVG designs use 600px width, PNG/JPG designs use 400px
-      const width = 600;  // Match largest design size
-      const height = 600; // Square area for simplicity
+    shirtCenters.forEach((pos, index) => {
+      // Different rectangle shapes based on reference image
+      let width, height;
+      
+      if (index === 0) {
+        // White shirt - landscape rectangle
+        width = 500;
+        height = 350;
+      } else if (index === 1) {
+        // Ivory shirt - square
+        width = 400;
+        height = 400;
+      } else if (index === 2) {
+        // Butter shirt - wide horizontal rectangle
+        width = 650;
+        height = 200;
+      } else {
+        // Default for other shirts - standard rectangle
+        width = 500;
+        height = 350;
+      }
       
       ctx.strokeRect(
         pos.x - width/2,
@@ -165,24 +179,22 @@ export default function MultiShirtCanvas({
     if (!designImg) return;
     
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
-    // Adjusted based on feedback - using position #2 as the reference point
-    // Moving all positions slightly right to center with the neckline
+    // Adjusted based on the reference mockup image
     const shirtCenters = [
       // Top row (left to right)
-      { x: 520, y: 750 },   // Top left shirt 
-      { x: 1550, y: 750 },  // Top left-center shirt (reference position #2, shifted right)
-      { x: 2550, y: 750 },  // Top right-center shirt 
-      { x: 3520, y: 750 },  // Top right shirt
+      { x: 500, y: 750 },   // Top left shirt (White) - landscape rectangle
+      { x: 1500, y: 750 },  // Top left-center shirt (Ivory) - square
+      { x: 2500, y: 750 },  // Top right-center shirt (Butter) - wide rectangle
+      { x: 3500, y: 750 },  // Top right shirt (Banana)
       
       // Bottom row (left to right)
-      { x: 520, y: 2250 },  // Bottom left shirt 
-      { x: 1550, y: 2250 }, // Bottom left-center shirt
-      { x: 2550, y: 2250 }, // Bottom right-center shirt
-      { x: 3520, y: 2250 }  // Bottom right shirt
+      { x: 500, y: 2250 },  // Bottom left shirt (Mustard)
+      { x: 1500, y: 2250 }, // Bottom left-center shirt (Peachy)
+      { x: 2500, y: 2250 }, // Bottom right-center shirt (Yam)
+      { x: 3500, y: 2250 }  // Bottom right shirt (Khaki)
     ];
     
-    // CONSISTENT SIZE APPROACH
-    // Use fixed dimensions for all designs while preserving aspect ratio
+    // ADAPTIVE SIZE APPROACH BASED ON DESIGN'S ASPECT RATIO
     
     // Detect SVG files (they need special handling)
     const isSVG = 
@@ -191,27 +203,64 @@ export default function MultiShirtCanvas({
        (designImage?.startsWith('data:') && 
         designImage?.includes('svg')));
     
-    // Base dimensions - Adjusted to your specifications
-    // 60% for SVGs, 40% for raster images
-    const designWidth = isSVG ? 600 : 400;
-    
-    // Apply user's size preference (percentage scaling)
-    const finalWidth = designWidth * (designSize / 100);
-    
-    // Calculate height while preserving aspect ratio
+    // Calculate the design's aspect ratio
     const aspectRatio = designImg.width / designImg.height;
-    const finalHeight = finalWidth / aspectRatio;
+    const isLandscape = aspectRatio > 1.3;
+    const isSquarish = aspectRatio >= 0.8 && aspectRatio <= 1.3;
+    const isWide = aspectRatio > 2.5;
+    const isPortrait = aspectRatio < 0.8;
     
-    // Always center designs on each shirt (no top/bottom options)
-    // Draw on each shirt
-    shirtCenters.forEach(pos => {
+    // Draw on each shirt, placing the design according to its aspect ratio
+    shirtCenters.forEach((pos, index) => {
+      // Initialize with default values
+      let designWidth = 400;
+      let designHeight = 400;
+      
+      // Base sizes according to image format and aspect ratio
+      if (isSVG) {
+        // SVG images get slightly larger dimensions
+        if (isWide) {
+          // Very wide designs (like the butter shirt example)
+          designWidth = 650 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else if (isLandscape) {
+          // Landscape designs (like the white shirt example)
+          designWidth = 500 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else if (isSquarish) {
+          // Square-ish designs (like the ivory shirt example)
+          designWidth = 400 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else {
+          // Portrait/tall designs
+          designHeight = 400 * (designSize / 100);
+          designWidth = designHeight * aspectRatio;
+        }
+      } else {
+        // Raster images (PNG, JPG) get slightly smaller dimensions
+        if (isWide) {
+          designWidth = 600 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else if (isLandscape) {
+          designWidth = 450 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else if (isSquarish) {
+          designWidth = 350 * (designSize / 100);
+          designHeight = designWidth / aspectRatio;
+        } else {
+          // Default to portrait
+          designHeight = 350 * (designSize / 100);
+          designWidth = designHeight * aspectRatio;
+        }
+      }
+      
+      // Draw the design centered on the shirt
       ctx.drawImage(
         designImg, 
-        // Center horizontally and vertically on each shirt
-        pos.x - (finalWidth / 2),  // center X
-        pos.y - (finalHeight / 2), // center Y
-        finalWidth, 
-        finalHeight
+        pos.x - (designWidth / 2),  // center X
+        pos.y - (designHeight / 2), // center Y
+        designWidth, 
+        designHeight
       );
     });
   };
