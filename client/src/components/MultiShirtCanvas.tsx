@@ -6,7 +6,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ZoomIn, ZoomOut } from "lucide-react";
+import { Download, ZoomIn, ZoomOut, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DesignRatio } from "@/lib/design-ratios";
 import { getMockupById } from "@/lib/mockup-data";
@@ -32,6 +32,7 @@ export default function MultiShirtCanvas({
   const [designImg, setDesignImg] = useState<HTMLImageElement | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100); // Full size view
   const [canvasSize] = useState({ width: 4000, height: 3000 });
+  const [showDebugAreas, setShowDebugAreas] = useState(true); // Toggle for debug visualization
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -111,76 +112,50 @@ export default function MultiShirtCanvas({
         drawDesignOnAllShirts(ctx);
       }
     }
-  }, [mockupImg, designImg, designSize, designPosition]);
+  }, [mockupImg, designImg, designSize, designPosition, showDebugAreas]);
+  
+  // Toggle for showing debug visualization
+  const [showDebugAreas, setShowDebugAreas] = useState(true);
   
   // Helper function to visualize the printable areas
   const drawPrintableAreas = (ctx: CanvasRenderingContext2D) => {
-    // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
-    // Adjusted based on the reference mockup image with actual designs
+    // Skip if debug mode is off
+    if (!showDebugAreas) return;
+    // FIXED CENTERS - Matching our new drawing method exactly
+    // Each position is exactly where we place designs
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 680 },   // Top left shirt (White) - landscape "ARE WE GREAT YET? CAUSE..."
-      { x: 1500, y: 680 },  // Top left-center shirt (Ivory) - square with "#" design
-      { x: 2500, y: 680 },  // Top right-center shirt (Butter) - wide "overstimulated" text
-      { x: 3500, y: 680 },  // Top right shirt (Banana) - no design
+      { x: 500, y: 650 },   // White shirt 
+      { x: 1500, y: 650 },  // Ivory shirt
+      { x: 2500, y: 650 },  // Butter shirt
+      { x: 3500, y: 650 },  // Banana shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2180 },  // Bottom left shirt (Mustard) - "Eat The Rich" with caterpillar
-      { x: 1500, y: 2180 }, // Bottom left-center shirt (Peachy) - bear design
-      { x: 2500, y: 2180 }, // Bottom right-center shirt (Yam) - "MADE for more"
-      { x: 3500, y: 2180 }  // Bottom right shirt (Khaki) - "Well-behaved women rarely make history"
+      { x: 500, y: 2150 },  // Mustard shirt
+      { x: 1500, y: 2150 }, // Peachy shirt
+      { x: 2500, y: 2150 }, // Yam shirt
+      { x: 3500, y: 2150 }  // Khaki shirt
     ];
     
-    // Add rectangles to show the current printable areas
+    // Set up visuals for debugging rectangles
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
     ctx.lineWidth = 2;
     
-    shirtCenters.forEach((pos, index) => {
-      // Different rectangle shapes based on reference image with actual designs
-      let width, height;
-      
-      if (index === 0) {
-        // White shirt - landscape rectangle - "ARE WE GREAT YET? CAUSE..."
-        width = 550;
-        height = 300;
-      } else if (index === 1) {
-        // Ivory shirt - square with "#" design
-        width = 400;
-        height = 400;
-      } else if (index === 2) {
-        // Butter shirt - wide horizontal text "overstimulated"
-        width = 450;
-        height = 110;
-      } else if (index === 4) {
-        // Mustard shirt - "Eat The Rich" with caterpillar
-        width = 500;
-        height = 320;
-      } else if (index === 5) {
-        // Peachy shirt - bear design
-        width = 380;
-        height = 480;
-      } else if (index === 6) {
-        // Yam shirt - "MADE for more"
-        width = 480;
-        height = 280;
-      } else if (index === 7) {
-        // Khaki shirt - "Well-behaved women rarely make history"
-        width = 520;
-        height = 300;
-      } else {
-        // Default for shirts without specific designs
-        width = 450;
-        height = 300;
-      }
-      
+    // Use the same dimensions we use for placing designs
+    const maxWidth = 500;
+    const maxHeight = 300;
+    
+    // Draw consistent rectangles at all positions
+    shirtCenters.forEach(pos => {
+      // Draw rectangle
       ctx.strokeRect(
-        pos.x - width/2,
-        pos.y - height/2,
-        width,
-        height
+        pos.x - maxWidth/2,
+        pos.y - maxHeight/2,
+        maxWidth,
+        maxHeight
       );
       
-      // Draw crosshair at the center
+      // Draw crosshair at center
       ctx.beginPath();
       ctx.moveTo(pos.x - 20, pos.y);
       ctx.lineTo(pos.x + 20, pos.y);
@@ -194,170 +169,107 @@ export default function MultiShirtCanvas({
   const drawDesignOnAllShirts = (ctx: CanvasRenderingContext2D) => {
     if (!designImg) return;
     
-    // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
-    // Adjusted based on the reference mockup image with actual designs
-    const shirtCenters = [
-      // Top row (left to right)
-      { x: 500, y: 680 },   // Top left shirt (White) - landscape "ARE WE GREAT YET? CAUSE..."
-      { x: 1500, y: 680 },  // Top left-center shirt (Ivory) - square with "#" design
-      { x: 2500, y: 680 },  // Top right-center shirt (Butter) - wide "overstimulated" text
-      { x: 3500, y: 680 },  // Top right shirt (Banana) - no design
-      
-      // Bottom row (left to right)
-      { x: 500, y: 2180 },  // Bottom left shirt (Mustard) - "Eat The Rich" with caterpillar
-      { x: 1500, y: 2180 }, // Bottom left-center shirt (Peachy) - bear design
-      { x: 2500, y: 2180 }, // Bottom right-center shirt (Yam) - "MADE for more"
-      { x: 3500, y: 2180 }  // Bottom right shirt (Khaki) - "Well-behaved women rarely make history"
-    ];
+    // SIMPLE APPROACH: Fixed positions based on mockup reference
+    // Hardcoded positions for each shirt, matching the exact reference image
     
-    // ADAPTIVE SIZE APPROACH BASED ON DESIGN'S ASPECT RATIO
-    
-    // Detect SVG files (they need special handling)
-    const isSVG = 
-      (designImage?.toLowerCase().endsWith('.svg') || 
-       designImage?.toLowerCase().includes('image/svg') ||
-       (designImage?.startsWith('data:') && 
-        designImage?.includes('svg')));
-    
-    // Calculate the design's aspect ratio
+    // Calculate aspect ratio once
     const aspectRatio = designImg.width / designImg.height;
-    const isLandscape = aspectRatio > 1.3;
-    const isSquarish = aspectRatio >= 0.8 && aspectRatio <= 1.3;
-    const isWide = aspectRatio > 2.5;
-    const isPortrait = aspectRatio < 0.8;
     
-    // Draw on each shirt, placing the design according to its aspect ratio
-    shirtCenters.forEach((pos, index) => {
-      // Initialize with default values
-      let designWidth = 400;
-      let designHeight = 400;
-      
-      // Custom sizing based on specific shirt position and design aspect ratio
-      if (index === 0) {
-        // White shirt - landscape rectangle "ARE WE GREAT YET? CAUSE..."
-        if (isWide || isLandscape) {
-          designWidth = 550 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else if (isSquarish) {
-          designWidth = 450 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else {
-          // Portrait
-          designHeight = 300 * (designSize / 100);
-          designWidth = designHeight * aspectRatio;
-        }
-      } else if (index === 1) {
-        // Ivory shirt - square with "#" design
-        if (isSquarish) {
-          // Ideal for square design
-          designWidth = 400 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else if (isLandscape) {
-          designWidth = 400 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else {
-          // Portrait
-          designHeight = 400 * (designSize / 100);
-          designWidth = designHeight * aspectRatio;
-        }
-      } else if (index === 2) {
-        // Butter shirt - wide horizontal "overstimulated" text
-        // Perfect for very wide designs
-        if (isWide) {
-          designWidth = 450 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else if (isLandscape) {
-          designWidth = 400 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else {
-          // For taller designs, keep it contained
-          designHeight = 150 * (designSize / 100);
-          designWidth = designHeight * aspectRatio;
-        }
-      } else if (index === 4) {
-        // Mustard shirt - "Eat The Rich" with caterpillar
-        if (isLandscape || isWide) {
-          designWidth = 500 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else {
-          designHeight = 320 * (designSize / 100);
-          designWidth = designHeight * aspectRatio;
-        }
-      } else if (index === 5) {
-        // Peachy shirt - bear design (more vertical space)
-        if (isPortrait) {
-          // Perfect for tall designs
-          designHeight = 480 * (designSize / 100);
-          designWidth = designHeight * aspectRatio;
-        } else {
-          designWidth = 380 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        }
-      } else if (index === 6) {
-        // Yam shirt - "MADE for more"
-        if (isLandscape || isWide) {
-          designWidth = 480 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else {
-          designHeight = 280 * (designSize / 100);
-          designWidth = designHeight * aspectRatio;
-        }
-      } else if (index === 7) {
-        // Khaki shirt - "Well-behaved women rarely make history"
-        if (isLandscape || isWide) {
-          designWidth = 520 * (designSize / 100);
-          designHeight = designWidth / aspectRatio;
-        } else {
-          designHeight = 300 * (designSize / 100);
-          designWidth = designHeight * aspectRatio;
-        }
-      } else {
-        // Default for other shirts or no specific design
-        // Fall back to format-based sizing
-        if (isSVG) {
-          // SVG images get slightly larger dimensions
-          if (isWide) {
-            designWidth = 500 * (designSize / 100);
-            designHeight = designWidth / aspectRatio;
-          } else if (isLandscape) {
-            designWidth = 450 * (designSize / 100);
-            designHeight = designWidth / aspectRatio;
-          } else if (isSquarish) {
-            designWidth = 400 * (designSize / 100);
-            designHeight = designWidth / aspectRatio;
-          } else {
-            // Portrait/tall designs
-            designHeight = 400 * (designSize / 100);
-            designWidth = designHeight * aspectRatio;
-          }
-        } else {
-          // Raster images get slightly smaller dimensions
-          if (isWide) {
-            designWidth = 450 * (designSize / 100);
-            designHeight = designWidth / aspectRatio;
-          } else if (isLandscape) {
-            designWidth = 400 * (designSize / 100);
-            designHeight = designWidth / aspectRatio;
-          } else if (isSquarish) {
-            designWidth = 350 * (designSize / 100);
-            designHeight = designWidth / aspectRatio;
-          } else {
-            // Default to portrait
-            designHeight = 350 * (designSize / 100);
-            designWidth = designHeight * aspectRatio;
-          }
-        }
-      }
-      
-      // Draw the design centered on the shirt
-      ctx.drawImage(
-        designImg, 
-        pos.x - (designWidth / 2),  // center X
-        pos.y - (designHeight / 2), // center Y
-        designWidth, 
-        designHeight
-      );
-    });
+    // Set max sizes to preserve aspect ratio
+    const maxWidth = 500 * (designSize / 100);
+    const maxHeight = 300 * (designSize / 100);
+    
+    // Calculate appropriate dimensions while preserving aspect ratio
+    let designWidth, designHeight;
+    
+    if (aspectRatio > 1) { // Wider than tall
+      designWidth = maxWidth;
+      designHeight = designWidth / aspectRatio;
+    } else { // Taller than wide
+      designHeight = maxHeight;
+      designWidth = designHeight * aspectRatio;
+    }
+    
+    // Adjust dimensions if they're too large
+    if (designHeight > maxHeight) {
+      designHeight = maxHeight;
+      designWidth = designHeight * aspectRatio;
+    }
+    
+    // HARDCODED POSITIONS - carefully measured from the reference image
+    // Each shirt gets exactly the same design at these fixed positions
+    
+    // Draw on White shirt (top left)
+    ctx.drawImage(
+      designImg,
+      500 - (designWidth / 2), // Center X
+      650 - (designHeight / 2), // Center Y - higher placement
+      designWidth,
+      designHeight
+    );
+    
+    // Draw on Ivory shirt (top left-center)
+    ctx.drawImage(
+      designImg,
+      1500 - (designWidth / 2),
+      650 - (designHeight / 2),
+      designWidth,
+      designHeight
+    );
+    
+    // Draw on Butter shirt (top right-center)
+    ctx.drawImage(
+      designImg,
+      2500 - (designWidth / 2),
+      650 - (designHeight / 2),
+      designWidth,
+      designHeight
+    );
+    
+    // Draw on Banana shirt (top right)
+    ctx.drawImage(
+      designImg,
+      3500 - (designWidth / 2),
+      650 - (designHeight / 2),
+      designWidth,
+      designHeight
+    );
+    
+    // Draw on Mustard shirt (bottom left)
+    ctx.drawImage(
+      designImg,
+      500 - (designWidth / 2),
+      2150 - (designHeight / 2),
+      designWidth,
+      designHeight
+    );
+    
+    // Draw on Peachy shirt (bottom left-center)
+    ctx.drawImage(
+      designImg,
+      1500 - (designWidth / 2),
+      2150 - (designHeight / 2),
+      designWidth,
+      designHeight
+    );
+    
+    // Draw on Yam shirt (bottom right-center)
+    ctx.drawImage(
+      designImg,
+      2500 - (designWidth / 2),
+      2150 - (designHeight / 2),
+      designWidth,
+      designHeight
+    );
+    
+    // Draw on Khaki shirt (bottom right)
+    ctx.drawImage(
+      designImg,
+      3500 - (designWidth / 2),
+      2150 - (designHeight / 2),
+      designWidth,
+      designHeight
+    );
   };
 
   // Handle zoom in/out
@@ -399,12 +311,40 @@ export default function MultiShirtCanvas({
     onDownload();
   };
 
+  // Toggle debug areas
+  const toggleDebugAreas = () => {
+    setShowDebugAreas(prev => !prev);
+    // Force redraw
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx && mockupImg) {
+        // Clear and redraw everything
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(mockupImg, 0, 0, canvas.width, canvas.height);
+        drawPrintableAreas(ctx);
+        if (designImg) {
+          drawDesignOnAllShirts(ctx);
+        }
+      }
+    }
+  };
+
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-medium">Design Mockup</CardTitle>
           <div className="flex items-center space-x-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleDebugAreas}
+              title={showDebugAreas ? "Hide debug areas" : "Show debug areas"}
+            >
+              {showDebugAreas ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
             <Button 
               variant="ghost" 
               size="icon" 
