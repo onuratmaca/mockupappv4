@@ -116,19 +116,21 @@ export default function MultiShirtCanvas({
   // Helper function to visualize the printable areas
   const drawPrintableAreas = (ctx: CanvasRenderingContext2D) => {
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
-    // Adjusted to match the center chest area of each shirt based on reference images
+    // Adjusted based on feedback - using position #2 as the reference point
+    // Moving all positions slightly right to center with the neckline
+    // Y-position remains the same
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 750 },   // Top left shirt 
-      { x: 1500, y: 750 },  // Top left-center shirt
-      { x: 2500, y: 750 },  // Top right-center shirt 
-      { x: 3500, y: 750 },  // Top right shirt
+      { x: 520, y: 750 },   // Top left shirt 
+      { x: 1550, y: 750 },  // Top left-center shirt (reference position #2, shifted right)
+      { x: 2550, y: 750 },  // Top right-center shirt 
+      { x: 3520, y: 750 },  // Top right shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2250 },  // Bottom left shirt 
-      { x: 1500, y: 2250 }, // Bottom left-center shirt
-      { x: 2500, y: 2250 }, // Bottom right-center shirt
-      { x: 3500, y: 2250 }  // Bottom right shirt
+      { x: 520, y: 2250 },  // Bottom left shirt 
+      { x: 1550, y: 2250 }, // Bottom left-center shirt
+      { x: 2550, y: 2250 }, // Bottom right-center shirt
+      { x: 3520, y: 2250 }  // Bottom right shirt
     ];
     
     // Add rectangles to show the current printable areas
@@ -163,20 +165,20 @@ export default function MultiShirtCanvas({
     if (!designImg) return;
     
     // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
-    // These values represent the center point of each shirt chest area
-    // Updated to match the grid positions from SHIRT_GRID_POSITIONS
+    // Adjusted based on feedback - using position #2 as the reference point
+    // Moving all positions slightly right to center with the neckline
     const shirtCenters = [
       // Top row (left to right)
-      { x: 500, y: 750 },   // Top left shirt
-      { x: 1500, y: 750 },  // Top left-center shirt
-      { x: 2500, y: 750 },  // Top right-center shirt 
-      { x: 3500, y: 750 },  // Top right shirt
+      { x: 520, y: 750 },   // Top left shirt 
+      { x: 1550, y: 750 },  // Top left-center shirt (reference position #2, shifted right)
+      { x: 2550, y: 750 },  // Top right-center shirt 
+      { x: 3520, y: 750 },  // Top right shirt
       
       // Bottom row (left to right)
-      { x: 500, y: 2250 },  // Bottom left shirt
-      { x: 1500, y: 2250 }, // Bottom left-center shirt
-      { x: 2500, y: 2250 }, // Bottom right-center shirt
-      { x: 3500, y: 2250 }  // Bottom right shirt
+      { x: 520, y: 2250 },  // Bottom left shirt 
+      { x: 1550, y: 2250 }, // Bottom left-center shirt
+      { x: 2550, y: 2250 }, // Bottom right-center shirt
+      { x: 3520, y: 2250 }  // Bottom right shirt
     ];
     
     // CONSISTENT SIZE APPROACH
