@@ -8,14 +8,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download, ZoomIn, ZoomOut, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { DesignRatio } from "@/lib/design-ratios";
 import { getMockupById } from "@/lib/mockup-data";
 
 interface MultiShirtCanvasProps {
   designImage: string | null;
   mockupId: number;
   designSize: number;
-  designPosition: string; // Always 'center' now
+  designPosition: string; // Not used since we're auto-centering
   onDownload: () => void;
 }
 
@@ -104,172 +103,130 @@ export default function MultiShirtCanvas({
     if (mockupImg) {
       ctx.drawImage(mockupImg, 0, 0, canvas.width, canvas.height);
       
-      // Draw printable areas for debugging
-      drawPrintableAreas(ctx);
-      
-      // Draw design on all shirts if we have a design image
+      // Draw designs if available
       if (designImg) {
-        drawDesignOnAllShirts(ctx);
+        drawDesignsOnShirts(ctx);
+      }
+      
+      // Draw debug guides if enabled
+      if (showDebugAreas) {
+        drawDebugAreas(ctx);
       }
     }
-  }, [mockupImg, designImg, designSize, designPosition, showDebugAreas]);
+  }, [mockupImg, designImg, designSize, showDebugAreas]);
   
-  // Toggle for showing debug visualization
-  const [showDebugAreas, setShowDebugAreas] = useState(true);
-  
-  // Helper function to visualize the printable areas
-  const drawPrintableAreas = (ctx: CanvasRenderingContext2D) => {
-    // Skip if debug mode is off
-    if (!showDebugAreas) return;
-    // FIXED CENTERS - Matching our new drawing method exactly
-    // Each position is exactly where we place designs
-    const shirtCenters = [
-      // Top row (left to right)
-      { x: 500, y: 650 },   // White shirt 
-      { x: 1500, y: 650 },  // Ivory shirt
-      { x: 2500, y: 650 },  // Butter shirt
-      { x: 3500, y: 650 },  // Banana shirt
-      
-      // Bottom row (left to right)
-      { x: 500, y: 2150 },  // Mustard shirt
-      { x: 1500, y: 2150 }, // Peachy shirt
-      { x: 2500, y: 2150 }, // Yam shirt
-      { x: 3500, y: 2150 }  // Khaki shirt
-    ];
+  // Define fixed positions for all shirts
+  const shirtPositions = [
+    // Top row (left to right)
+    { x: 500, y: 750 },   // White shirt
+    { x: 1500, y: 750 },  // Ivory shirt
+    { x: 2500, y: 750 },  // Butter shirt
+    { x: 3500, y: 750 },  // Banana shirt
     
-    // Set up visuals for debugging rectangles
+    // Bottom row (left to right)
+    { x: 500, y: 2250 },  // Mustard shirt
+    { x: 1500, y: 2250 }, // Peachy shirt
+    { x: 2500, y: 2250 }, // Yam shirt
+    { x: 3500, y: 2250 }  // Khaki shirt
+  ];
+  
+  // Draw designs on all shirts
+  const drawDesignsOnShirts = (ctx: CanvasRenderingContext2D) => {
+    if (!designImg) return;
+    
+    // Get design's aspect ratio
+    const aspectRatio = designImg.width / designImg.height;
+    
+    // Place design on each shirt
+    shirtPositions.forEach(position => {
+      // Calculate printable area dimensions based on aspect ratio
+      let areaWidth, areaHeight;
+      
+      if (aspectRatio > 1.5) {
+        // Wide design (landscape or banner)
+        areaWidth = 500;
+        areaHeight = 250;
+      } else if (aspectRatio < 0.7) {
+        // Tall design (portrait)
+        areaWidth = 300;
+        areaHeight = 450;
+      } else {
+        // Square-ish design
+        areaWidth = 400;
+        areaHeight = 400;
+      }
+      
+      // Apply user's size preference
+      areaWidth = areaWidth * (designSize / 100);
+      areaHeight = areaHeight * (designSize / 100);
+      
+      // Calculate design dimensions to fit within the area while preserving aspect ratio
+      let designWidth, designHeight;
+      
+      // Fit by width or height based on aspect ratio
+      if (aspectRatio > areaWidth / areaHeight) {
+        // Width-constrained
+        designWidth = areaWidth;
+        designHeight = designWidth / aspectRatio;
+      } else {
+        // Height-constrained
+        designHeight = areaHeight;
+        designWidth = designHeight * aspectRatio;
+      }
+      
+      // Draw the design centered on the shirt position
+      ctx.drawImage(
+        designImg,
+        position.x - (designWidth / 2),
+        position.y - (designHeight / 2),
+        designWidth,
+        designHeight
+      );
+    });
+  };
+  
+  // Draw debug visualizations
+  const drawDebugAreas = (ctx: CanvasRenderingContext2D) => {
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
     ctx.lineWidth = 2;
     
-    // Use the same dimensions we use for placing designs
-    const maxWidth = 500;
-    const maxHeight = 300;
+    // Get design's aspect ratio for showing appropriate printable areas
+    const aspectRatio = designImg ? designImg.width / designImg.height : 1;
     
-    // Draw consistent rectangles at all positions
-    shirtCenters.forEach(pos => {
-      // Draw rectangle
+    shirtPositions.forEach(position => {
+      // Calculate appropriate area based on design aspect ratio
+      let areaWidth, areaHeight;
+      
+      if (aspectRatio > 1.5) {
+        // Wide design (landscape or banner)
+        areaWidth = 500;
+        areaHeight = 250;
+      } else if (aspectRatio < 0.7) {
+        // Tall design (portrait)
+        areaWidth = 300;
+        areaHeight = 450;
+      } else {
+        // Square-ish design
+        areaWidth = 400;
+        areaHeight = 400;
+      }
+      
+      // Draw bounding rectangle
       ctx.strokeRect(
-        pos.x - maxWidth/2,
-        pos.y - maxHeight/2,
-        maxWidth,
-        maxHeight
+        position.x - areaWidth/2,
+        position.y - areaHeight/2,
+        areaWidth,
+        areaHeight
       );
       
       // Draw crosshair at center
       ctx.beginPath();
-      ctx.moveTo(pos.x - 20, pos.y);
-      ctx.lineTo(pos.x + 20, pos.y);
-      ctx.moveTo(pos.x, pos.y - 20);
-      ctx.lineTo(pos.x, pos.y + 20);
+      ctx.moveTo(position.x - 20, position.y);
+      ctx.lineTo(position.x + 20, position.y);
+      ctx.moveTo(position.x, position.y - 20);
+      ctx.lineTo(position.x, position.y + 20);
       ctx.stroke();
     });
-  };
-
-  // Function to draw design on all 8 shirts
-  const drawDesignOnAllShirts = (ctx: CanvasRenderingContext2D) => {
-    if (!designImg) return;
-    
-    // SIMPLE APPROACH: Fixed positions based on mockup reference
-    // Hardcoded positions for each shirt, matching the exact reference image
-    
-    // Calculate aspect ratio once
-    const aspectRatio = designImg.width / designImg.height;
-    
-    // Set max sizes to preserve aspect ratio
-    const maxWidth = 500 * (designSize / 100);
-    const maxHeight = 300 * (designSize / 100);
-    
-    // Calculate appropriate dimensions while preserving aspect ratio
-    let designWidth, designHeight;
-    
-    if (aspectRatio > 1) { // Wider than tall
-      designWidth = maxWidth;
-      designHeight = designWidth / aspectRatio;
-    } else { // Taller than wide
-      designHeight = maxHeight;
-      designWidth = designHeight * aspectRatio;
-    }
-    
-    // Adjust dimensions if they're too large
-    if (designHeight > maxHeight) {
-      designHeight = maxHeight;
-      designWidth = designHeight * aspectRatio;
-    }
-    
-    // HARDCODED POSITIONS - carefully measured from the reference image
-    // Each shirt gets exactly the same design at these fixed positions
-    
-    // Draw on White shirt (top left)
-    ctx.drawImage(
-      designImg,
-      500 - (designWidth / 2), // Center X
-      650 - (designHeight / 2), // Center Y - higher placement
-      designWidth,
-      designHeight
-    );
-    
-    // Draw on Ivory shirt (top left-center)
-    ctx.drawImage(
-      designImg,
-      1500 - (designWidth / 2),
-      650 - (designHeight / 2),
-      designWidth,
-      designHeight
-    );
-    
-    // Draw on Butter shirt (top right-center)
-    ctx.drawImage(
-      designImg,
-      2500 - (designWidth / 2),
-      650 - (designHeight / 2),
-      designWidth,
-      designHeight
-    );
-    
-    // Draw on Banana shirt (top right)
-    ctx.drawImage(
-      designImg,
-      3500 - (designWidth / 2),
-      650 - (designHeight / 2),
-      designWidth,
-      designHeight
-    );
-    
-    // Draw on Mustard shirt (bottom left)
-    ctx.drawImage(
-      designImg,
-      500 - (designWidth / 2),
-      2150 - (designHeight / 2),
-      designWidth,
-      designHeight
-    );
-    
-    // Draw on Peachy shirt (bottom left-center)
-    ctx.drawImage(
-      designImg,
-      1500 - (designWidth / 2),
-      2150 - (designHeight / 2),
-      designWidth,
-      designHeight
-    );
-    
-    // Draw on Yam shirt (bottom right-center)
-    ctx.drawImage(
-      designImg,
-      2500 - (designWidth / 2),
-      2150 - (designHeight / 2),
-      designWidth,
-      designHeight
-    );
-    
-    // Draw on Khaki shirt (bottom right)
-    ctx.drawImage(
-      designImg,
-      3500 - (designWidth / 2),
-      2150 - (designHeight / 2),
-      designWidth,
-      designHeight
-    );
   };
 
   // Handle zoom in/out
@@ -280,8 +237,13 @@ export default function MultiShirtCanvas({
   const handleZoomOut = () => {
     setZoomLevel(prev => Math.max(prev - 10, 50));
   };
+  
+  // Toggle debug visualization
+  const toggleDebugAreas = () => {
+    setShowDebugAreas(prev => !prev);
+  };
 
-  // Handle download
+  // Handle mockup download
   const handleDownload = () => {
     if (!canvasRef.current || !designImg || !mockupImg) {
       toast({
@@ -309,26 +271,6 @@ export default function MultiShirtCanvas({
     });
     
     onDownload();
-  };
-
-  // Toggle debug areas
-  const toggleDebugAreas = () => {
-    setShowDebugAreas(prev => !prev);
-    // Force redraw
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (ctx && mockupImg) {
-        // Clear and redraw everything
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(mockupImg, 0, 0, canvas.width, canvas.height);
-        drawPrintableAreas(ctx);
-        if (designImg) {
-          drawDesignOnAllShirts(ctx);
-        }
-      }
-    }
   };
 
   return (
