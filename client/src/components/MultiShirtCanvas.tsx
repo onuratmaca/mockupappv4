@@ -6,9 +6,10 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ZoomIn, ZoomOut, Eye, EyeOff } from "lucide-react";
+import { Download, ZoomIn, ZoomOut, Eye, EyeOff, ArrowUp, ArrowDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getMockupById } from "@/lib/mockup-data";
+import { Slider } from "@/components/ui/slider";
 
 interface MultiShirtCanvasProps {
   designImage: string | null;
@@ -73,6 +74,7 @@ export default function MultiShirtCanvas({
   const [zoomLevel, setZoomLevel] = useState(100); // Full size view
   const [canvasSize] = useState({ width: 4000, height: 3000 });
   const [showDebugAreas, setShowDebugAreas] = useState(false); // Debug off by default
+  const [verticalPosition, setVerticalPosition] = useState(0); // Y-offset in pixels
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -154,7 +156,7 @@ export default function MultiShirtCanvas({
         drawDebugAreas(ctx);
       }
     }
-  }, [mockupImg, designImg, designSize, showDebugAreas]);
+  }, [mockupImg, designImg, designSize, showDebugAreas, verticalPosition]);
   
   // Draw designs on all shirts using the optimized positions
   const drawDesignsOnShirts = (ctx: CanvasRenderingContext2D) => {
@@ -221,14 +223,15 @@ export default function MultiShirtCanvas({
         designWidth = designHeight * aspectRatio;
       }
       
-      // Apply the position with aspect ratio-based Y adjustment
-      const adjustedY = position.y + yOffsetAdjustment;
+      // Apply the position with user-controlled Y position adjustment
+      // This treats Y as the top edge of the design, not the center
+      const designTop = position.y + verticalPosition + yOffsetAdjustment - (designHeight / 2);
       
-      // Draw the design centered on the optimized position with adjusted Y
+      // Draw the design with top edge at the specified position
       ctx.drawImage(
         designImg,
         position.x - (designWidth / 2),
-        adjustedY - (designHeight / 2),
+        designTop,
         designWidth,
         designHeight
       );
@@ -286,8 +289,8 @@ export default function MultiShirtCanvas({
       areaWidth = areaWidth * (designSize / 100);
       areaHeight = areaHeight * (designSize / 100);
       
-      // Apply the position with aspect ratio-based Y adjustment
-      const adjustedY = position.y + yOffsetAdjustment;
+      // Calculate the final design top position (starting Y)
+      const designTop = position.y + verticalPosition + yOffsetAdjustment - (areaHeight / 2);
       
       // Original reference position (red rectangle)
       ctx.strokeStyle = 'rgba(255, 0, 0, 0.4)';
@@ -299,36 +302,36 @@ export default function MultiShirtCanvas({
         areaHeight
       );
       
-      // Adjusted position for current design ratio (green rectangle)
+      // Current position with all adjustments (green rectangle)
       ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)';
       ctx.lineWidth = 2;
       ctx.strokeRect(
         position.x - (areaWidth / 2),
-        adjustedY - (areaHeight / 2),
+        designTop,
         areaWidth,
         areaHeight
       );
       
-      // Draw crosshair at adjusted center
+      // Draw marker for top edge of design (blue line)
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(0, 0, 255, 0.6)';
-      ctx.moveTo(position.x - 15, adjustedY);
-      ctx.lineTo(position.x + 15, adjustedY);
-      ctx.moveTo(position.x, adjustedY - 15);
-      ctx.lineTo(position.x, adjustedY + 15);
+      ctx.strokeStyle = 'rgba(0, 0, 255, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.moveTo(position.x - areaWidth/2 - 20, designTop);
+      ctx.lineTo(position.x + areaWidth/2 + 20, designTop);
       ctx.stroke();
       
       // Add shirt identifier
       ctx.font = '30px sans-serif';
       ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
-      ctx.fillText(position.name, position.x - 30, adjustedY - 20);
+      ctx.fillText(position.name, position.x - 30, designTop - 20);
     });
     
     // Add design info
     ctx.font = '36px sans-serif';
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillText(`Design Ratio: ${aspectRatio.toFixed(2)}`, 100, 100);
-    ctx.fillText(`Y Adjustment: ${yOffsetAdjustment}px`, 100, 150);
+    ctx.fillText(`Auto Y Adjustment: ${yOffsetAdjustment}px`, 100, 150);
+    ctx.fillText(`User Y Position: ${verticalPosition}px`, 100, 200);
   };
 
   // Handle zoom in/out
@@ -429,14 +432,15 @@ export default function MultiShirtCanvas({
             designWidth = designHeight * aspectRatio;
           }
           
-          // Apply the position with aspect ratio-based Y adjustment
-          const adjustedY = position.y + yOffsetAdjustment;
+          // Apply the position with user-controlled Y position adjustment
+          // This treats Y as the top edge of the design, not the center
+          const designTop = position.y + verticalPosition + yOffsetAdjustment - (designHeight / 2);
           
-          // Draw the design centered on the optimized position with adjusted Y
+          // Draw the design with top edge at the specified position
           downloadCtx.drawImage(
             designImg,
             position.x - (designWidth / 2),
-            adjustedY - (designHeight / 2),
+            designTop,
             designWidth,
             designHeight
           );
@@ -514,16 +518,40 @@ export default function MultiShirtCanvas({
           </div>
         </div>
         
-        <div className="mt-4 flex justify-end">
-          <Button 
-            size="sm"
-            onClick={handleDownload}
-            disabled={!designImg}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download Mockup
-          </Button>
-        </div>
+        {designImg && (
+          <div className="mt-4 space-y-4">
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm font-medium">Vertical Position</span>
+                <span className="text-sm text-gray-500">{verticalPosition}px</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <ArrowUp className="h-4 w-4 text-gray-500" />
+                <div className="flex-1">
+                  <Slider
+                    value={[verticalPosition]} 
+                    min={-100}
+                    max={100}
+                    step={1}
+                    onValueChange={(value) => setVerticalPosition(value[0])}
+                  />
+                </div>
+                <ArrowDown className="h-4 w-4 text-gray-500" />
+              </div>
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                size="sm"
+                onClick={handleDownload}
+                disabled={!designImg}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download Mockup
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
