@@ -4,12 +4,11 @@ import Footer from "@/components/Footer";
 import DesignUploader from "@/components/DesignUploader";
 import MockupSelector from "@/components/MockupSelector";
 import DesignControls from "@/components/DesignControls";
-import ShirtPositionSelector from "@/components/ShirtPositionSelector";
-import PreviewCanvas from "@/components/PreviewCanvas";
+import AllShirtsPreview from "@/components/AllShirtsPreview";
 import SavedProjectsModal from "@/components/SavedProjectsModal";
 import { useToast } from "@/hooks/use-toast";
 import { DesignRatio } from "@/lib/design-ratios";
-import { ShirtPosition } from "@/lib/mockup-data";
+// Not using ShirtPosition for the all-shirts preview
 import { Project } from "@shared/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -18,7 +17,8 @@ export default function Home() {
   const { toast } = useToast();
   const [designImage, setDesignImage] = useState<string | null>(null);
   const [selectedMockupId, setSelectedMockupId] = useState(1); // Default to first mockup
-  const [shirtPosition, setShirtPosition] = useState<ShirtPosition>(0); // Default to first shirt (top-left)
+  // No longer needed for all-shirts preview
+  const [shirtPosition, setShirtPosition] = useState<number>(0);
   const [designSize, setDesignSize] = useState(60);
   const [designPosition, setDesignPosition] = useState<"top" | "center" | "bottom">("center");
   const [designXOffset, setDesignXOffset] = useState(0);
@@ -175,11 +175,6 @@ export default function Home() {
                   onMockupSelect={setSelectedMockupId}
                 />
                 
-                <ShirtPositionSelector
-                  selectedPosition={shirtPosition}
-                  onPositionSelect={setShirtPosition}
-                />
-                
                 <DesignControls
                   designSize={designSize}
                   onDesignSizeChange={setDesignSize}
@@ -195,10 +190,9 @@ export default function Home() {
             </div>
             
             <div className="lg:col-span-9 mt-8 lg:mt-0">
-              <PreviewCanvas
+              <AllShirtsPreview
                 designImage={designImage}
                 mockupId={selectedMockupId}
-                shirtPosition={shirtPosition}
                 designSize={designSize}
                 designPosition={designPosition}
                 designXOffset={designXOffset}
@@ -206,10 +200,6 @@ export default function Home() {
                 designRatio={designRatio}
                 zoomLevel={zoomLevel}
                 onZoomChange={setZoomLevel}
-                onPositionChange={(x, y) => {
-                  setDesignXOffset(x);
-                  setDesignYOffset(y);
-                }}
                 onDownload={handleDownloadMockup}
               />
             </div>

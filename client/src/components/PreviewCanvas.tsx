@@ -55,7 +55,7 @@ export default function PreviewCanvas({
   const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
   const [mockupImg, setMockupImg] = useState<ImageObject | null>(null);
   const [designImg, setDesignImg] = useState<ImageObject | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 600, height: 600 });
+  const [canvasSize, setCanvasSize] = useState({ width: 4000, height: 3000 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [history, setHistory] = useState<ImageObject[]>([]);
