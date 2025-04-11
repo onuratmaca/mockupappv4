@@ -15,7 +15,7 @@ interface MultiShirtCanvasProps {
   designImage: string | null;
   mockupId: number;
   designSize: number;
-  designPosition: 'top' | 'center' | 'bottom';
+  designPosition: string; // Always 'center' now
   onDownload: () => void;
 }
 
@@ -114,60 +114,53 @@ export default function MultiShirtCanvas({
   const drawDesignOnAllShirts = (ctx: CanvasRenderingContext2D) => {
     if (!designImg) return;
     
-    // Grid layout for shirt centers (4 across, 2 down)
-    // These values are carefully calibrated based on the mockup reference
+    // FIXED ACCURATE GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
+    // These values represent the center point of each shirt chest area
     const shirtCenters = [
       // Top row (left to right)
       { x: 500, y: 750 },   // Top left shirt
       { x: 1335, y: 750 },  // Top left-center shirt
-      { x: 2670, y: 750 },  // Top right-center shirt 
-      { x: 3505, y: 750 },  // Top right shirt
+      { x: 2665, y: 750 },  // Top right-center shirt 
+      { x: 3500, y: 750 },  // Top right shirt
       
       // Bottom row (left to right)
       { x: 500, y: 2250 },  // Bottom left shirt
       { x: 1335, y: 2250 }, // Bottom left-center shirt
-      { x: 2670, y: 2250 }, // Bottom right-center shirt
-      { x: 3505, y: 2250 }  // Bottom right shirt
+      { x: 2665, y: 2250 }, // Bottom right-center shirt
+      { x: 3500, y: 2250 }  // Bottom right shirt
     ];
     
-    // Size calculations for design
-    // This is a good base size for designs at 100% scale
-    const baseSizePx = 500; 
+    // CONSISTENT SIZE APPROACH
+    // Use fixed dimensions for all designs while preserving aspect ratio
     
-    // Better SVG detection that works with both file paths and data URLs
+    // Detect SVG files (they need special handling)
     const isSVG = 
       (designImage?.toLowerCase().endsWith('.svg') || 
        designImage?.toLowerCase().includes('image/svg') ||
        (designImage?.startsWith('data:') && 
         designImage?.includes('svg')));
     
-    // SVG files need a much larger scale factor because they render smaller
-    const formatScaleFactor = isSVG ? 4.0 : 1.0;
+    // Base dimensions - these are fixed per design type
+    // SVGs use fixed width/height because they're vectors
+    const designWidth = isSVG ? 300 : 350;
     
-    // Calculate final width based on user's size setting and format
-    const scaledWidth = baseSizePx * (designSize / 100) * formatScaleFactor;
+    // Apply user's size preference (percentage scaling)
+    const finalWidth = designWidth * (designSize / 100);
     
-    // Maintain aspect ratio
+    // Calculate height while preserving aspect ratio
     const aspectRatio = designImg.width / designImg.height;
-    const scaledHeight = scaledWidth / aspectRatio;
+    const finalHeight = finalWidth / aspectRatio;
     
-    // Position offset based on selected position (in pixels)
-    // These values are larger to make the difference more noticeable
-    const yOffsets = {
-      'top': -200,       // Shift up for top position
-      'center': 0,       // No shift for center
-      'bottom': 200      // Shift down for bottom position
-    };
-    
+    // Always center designs on each shirt (no top/bottom options)
     // Draw on each shirt
     shirtCenters.forEach(pos => {
       ctx.drawImage(
         designImg, 
-        // Center horizontally on each shirt, apply vertical position
-        pos.x - (scaledWidth / 2),
-        pos.y - (scaledHeight / 2) + yOffsets[designPosition],
-        scaledWidth, 
-        scaledHeight
+        // Center horizontally and vertically on each shirt
+        pos.x - (finalWidth / 2),  // center X
+        pos.y - (finalHeight / 2), // center Y
+        finalWidth, 
+        finalHeight
       );
     });
   };

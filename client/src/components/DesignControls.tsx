@@ -12,24 +12,12 @@ import { Label } from "@/components/ui/label";
 interface DesignControlsProps {
   designSize: number;
   onDesignSizeChange: (size: number) => void;
-  designPosition: 'top' | 'center' | 'bottom';
-  onDesignPositionChange: (position: 'top' | 'center' | 'bottom') => void;
-  designXOffset: number;
-  onDesignXOffsetChange: (offset: number) => void;
-  designYOffset: number;
-  onDesignYOffsetChange: (offset: number) => void;
   onResetDesign: () => void;
 }
 
 export default function DesignControls({
   designSize,
   onDesignSizeChange,
-  designPosition,
-  onDesignPositionChange,
-  designXOffset,
-  onDesignXOffsetChange,
-  designYOffset,
-  onDesignYOffsetChange,
   onResetDesign
 }: DesignControlsProps) {
   return (
@@ -57,48 +45,13 @@ export default function DesignControls({
           </div>
         </div>
         
-        {/* Position Controls */}
-        <div>
-          <Label className="text-sm font-medium text-gray-700 block mb-2">
-            Position
-          </Label>
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              variant={designPosition === 'top' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onDesignPositionChange('top')}
-              className="w-full"
-            >
-              Top
-            </Button>
-            <Button
-              variant={designPosition === 'center' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onDesignPositionChange('center')}
-              className="w-full"
-            >
-              Center
-            </Button>
-            <Button
-              variant={designPosition === 'bottom' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onDesignPositionChange('bottom')}
-              className="w-full"
-            >
-              Bottom
-            </Button>
-          </div>
-        </div>
-        
-        {/* No fine adjustment controls needed in multi-shirt mode */}
-        
         {/* Reset Button */}
         <Button 
           variant="outline" 
           onClick={onResetDesign}
           className="w-full"
         >
-          Reset Position
+          Reset Size
         </Button>
       </CardContent>
     </Card>

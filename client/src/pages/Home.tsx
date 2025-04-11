@@ -7,7 +7,6 @@ import DesignControls from "@/components/DesignControls";
 import MultiShirtCanvas from "@/components/MultiShirtCanvas";
 import SavedProjectsModal from "@/components/SavedProjectsModal";
 import { useToast } from "@/hooks/use-toast";
-import { DesignRatio } from "@/lib/design-ratios";
 import { Project } from "@shared/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -15,12 +14,13 @@ import { apiRequest } from "@/lib/queryClient";
 export default function Home() {
   const { toast } = useToast();
   const [designImage, setDesignImage] = useState<string | null>(null);
-  const [selectedMockupId, setSelectedMockupId] = useState(1); // Default to first mockup
+  const [selectedMockupId, setSelectedMockupId] = useState(1);
   const [designSize, setDesignSize] = useState(60);
-  const [designPosition, setDesignPosition] = useState<"top" | "center" | "bottom">("center");
-  const [designRatio, setDesignRatio] = useState<DesignRatio>("square");
   const [showSavedProjects, setShowSavedProjects] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
+  
+  // Fixed position for all designs
+  const designPosition = "center";
 
   // Query for saved projects
   const { data: savedProjects = [], refetch: refetchProjects } = useQuery<Project[]>({
@@ -88,13 +88,13 @@ export default function Home() {
       lastEdited: new Date().toISOString(),
       designImage,
       selectedMockupId,
-      shirtPosition: 0, // Default position even though we're not using it
+      shirtPosition: 0,
       designSize,
-      designPosition,
-      designXOffset: 0, // Include these for schema compatibility
-      designYOffset: 0, // Include these for schema compatibility
-      designRatio,
-      thumbnail: designImage, // Use design as thumbnail for now
+      designPosition: 'center',
+      designXOffset: 0,
+      designYOffset: 0,
+      designRatio: 'square',
+      thumbnail: designImage,
     };
 
     if (currentProjectId) {
@@ -121,8 +121,6 @@ export default function Home() {
     setDesignImage(project.designImage);
     setSelectedMockupId(project.selectedMockupId || 1);
     setDesignSize(project.designSize || 60);
-    setDesignPosition((project.designPosition as "top" | "center" | "bottom") || "center");
-    setDesignRatio((project.designRatio as DesignRatio) || "square");
     setCurrentProjectId(project.id);
     setShowSavedProjects(false);
 
@@ -136,10 +134,7 @@ export default function Home() {
   // Reset design to default values
   const handleResetDesign = () => {
     setDesignSize(60);
-    setDesignPosition("center");
   };
-
-  // No simplified controls needed
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
@@ -155,8 +150,6 @@ export default function Home() {
               <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
                 <DesignUploader
                   onDesignUpload={setDesignImage}
-                  designRatio={designRatio}
-                  onDesignRatioChange={setDesignRatio}
                 />
                 
                 <MockupSelector
@@ -164,16 +157,9 @@ export default function Home() {
                   onMockupSelect={setSelectedMockupId}
                 />
                 
-                {/* Simplified design controls */}
                 <DesignControls
                   designSize={designSize}
                   onDesignSizeChange={setDesignSize}
-                  designPosition={designPosition}
-                  onDesignPositionChange={setDesignPosition}
-                  designXOffset={0}
-                  onDesignXOffsetChange={() => {}}
-                  designYOffset={0}
-                  onDesignYOffsetChange={() => {}}
                   onResetDesign={handleResetDesign}
                 />
               </div>

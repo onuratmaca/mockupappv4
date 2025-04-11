@@ -5,29 +5,16 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { UploadCloud } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { DesignRatio, DESIGN_RATIOS } from "@/lib/design-ratios";
 
 interface DesignUploaderProps {
   onDesignUpload: (imageDataUrl: string) => void;
-  designRatio: DesignRatio;
-  onDesignRatioChange: (ratio: DesignRatio) => void;
 }
 
 export default function DesignUploader({ 
-  onDesignUpload, 
-  designRatio,
-  onDesignRatioChange
+  onDesignUpload
 }: DesignUploaderProps) {
   const { toast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
@@ -47,67 +34,24 @@ export default function DesignUploader({
     reader.onload = (e) => {
       const result = e.target?.result as string;
       if (result) {
-        // Load image to get dimensions
-        const img = new Image();
-        img.onload = () => {
-          // Create a canvas to normalize the image size
-          const canvas = document.createElement('canvas');
-          
-          // Set standard dimensions based on ratio
-          const ratio = DESIGN_RATIOS[designRatio].value;
-          let targetWidth, targetHeight;
-          
-          // Standardize dimensions based on ratio (maintain aspect but with standard size)
-          if (ratio >= 1) { // landscape or square
-            targetWidth = 800; // standard width for all designs
-            targetHeight = 800 / ratio;
-          } else { // portrait
-            targetHeight = 800; // standard height for all designs
-            targetWidth = 800 * ratio;
-          }
-          
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-          
-          // Draw and resize the image
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-            
-                    // For SVG files, we may want to preserve the original to maintain quality
-            // but for non-SVG files, we normalize to PNG
-            if (file.type === 'image/svg+xml') {
-              // For SVGs, pass the original file to preserve vector quality
-              onDesignUpload(result);
-              
-              toast({
-                title: "SVG Uploaded",
-                description: `Vector design uploaded at original quality`,
-              });
-            } else {
-              // For other formats, convert to PNG and normalize dimensions
-              const normalizedImageUrl = canvas.toDataURL('image/png');
-              onDesignUpload(normalizedImageUrl);
-              
-              toast({
-                title: "Success",
-                description: `Design normalized to ${Math.round(targetWidth)}×${Math.round(targetHeight)} pixels`,
-              });
-            }
-          } else {
-            // Fallback if canvas context fails
-            onDesignUpload(result);
-            toast({
-              title: "Success",
-              description: "Design uploaded successfully",
-            });
-          }
-        };
+        // For all designs, just pass the original file data
+        // No need to normalize or process - we'll handle sizing in the canvas
+        onDesignUpload(result);
         
-        // Load the image from the file reader result
-        img.src = result;
+        if (file.type === 'image/svg+xml') {
+          toast({
+            title: "SVG Uploaded",
+            description: "Vector image uploaded at original quality",
+          });
+        } else {
+          toast({
+            title: "Design Uploaded",
+            description: "Design uploaded successfully",
+          });
+        }
       }
     };
+    
     reader.onerror = () => {
       toast({
         title: "Error",
@@ -115,6 +59,7 @@ export default function DesignUploader({
         variant: "destructive"
       });
     };
+    
     reader.readAsDataURL(file);
   };
 
@@ -171,27 +116,7 @@ export default function DesignUploader({
           </Button>
         </div>
         
-        {/* Design Ratio Selection */}
-        <div className="mt-4">
-          <Label htmlFor="designRatio" className="text-sm font-medium text-gray-700">
-            Design Ratio
-          </Label>
-          <Select 
-            value={designRatio} 
-            onValueChange={(value) => onDesignRatioChange(value as DesignRatio)}
-          >
-            <SelectTrigger id="designRatio" className="w-full mt-1">
-              <SelectValue placeholder="Select ratio" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(DESIGN_RATIOS).map(([key, { label }]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* No design ratio selection needed */}
       </CardContent>
     </Card>
   );
