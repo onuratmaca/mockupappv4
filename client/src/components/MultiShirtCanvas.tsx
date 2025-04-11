@@ -704,53 +704,67 @@ export default function MultiShirtCanvas({
     <Card className="h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-medium">Design Placement Editor</CardTitle>
-          <div className="flex items-center space-x-2">
-            <Button 
-              variant={editMode !== 'none' ? "secondary" : "ghost"}
-              size="icon" 
-              onClick={toggleEditMode}
-              title="Toggle Edit Mode"
-            >
-              <Crosshair className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant={showDebugAreas ? "secondary" : "ghost"}
-              size="icon" 
-              onClick={toggleDebugAreas}
-              title="Toggle Debug Areas"
-            >
-              {showDebugAreas ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </Button>
+          <div className="flex items-center">
+            <CardTitle className="text-lg font-medium">Shirt Design Editor</CardTitle>
+            <div className="ml-3 flex items-center space-x-1">
+              <Button 
+                variant={editMode !== 'none' ? "secondary" : "outline"}
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={toggleEditMode}
+              >
+                <Crosshair className="h-3 w-3 mr-1" /> {editMode === 'none' ? 'Edit' : 'Editing'}
+              </Button>
+              <Button 
+                variant={showDebugAreas ? "secondary" : "outline"}
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={toggleDebugAreas}
+              >
+                {showDebugAreas ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
+                {showDebugAreas ? 'Hide Guides' : 'Show Guides'}
+              </Button>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2 bg-gray-100 p-1 rounded-md">
             <Button 
               variant="ghost" 
               size="icon" 
+              className="h-7 w-7"
               onClick={handleZoomOut}
               disabled={zoomLevel <= 50}
             >
-              <ZoomOut className="h-4 w-4" />
+              <ZoomOut className="h-3.5 w-3.5" />
             </Button>
-            <span className="text-sm text-gray-500">{zoomLevel}%</span>
+            <span className="text-xs font-medium w-12 text-center">{zoomLevel}%</span>
             <Button 
               variant="ghost" 
               size="icon" 
+              className="h-7 w-7"
               onClick={handleZoomIn}
               disabled={zoomLevel >= 200}
             >
-              <ZoomIn className="h-4 w-4" />
+              <ZoomIn className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
         {editMode !== 'none' && (
-          <div className="bg-gray-100 p-4 mb-4 rounded-lg space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium">Design Placement Controls</h3>
+          <div className="bg-gray-50 p-4 mb-4 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center">
+                <h3 className="font-medium text-gray-800">Design Placement</h3>
+                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {editMode === 'all' ? 'All Shirts Mode' : editMode === 'individual' ? 'Individual Mode' : 'View Mode'}
+                </span>
+              </div>
               <div className="flex gap-2">
                 <Button 
                   size="sm" 
                   variant={syncAll ? "default" : "outline"}
+                  className="h-8"
                   onClick={toggleSyncMode}
                 >
                   {syncAll ? "All Shirts" : "Individual"}
@@ -758,6 +772,7 @@ export default function MultiShirtCanvas({
                 <Button 
                   size="sm" 
                   variant="outline" 
+                  className="h-8"
                   onClick={resetPositions}
                 >
                   <RotateCcw className="h-3 w-3 mr-1" /> Reset
@@ -765,13 +780,7 @@ export default function MultiShirtCanvas({
                 <Button 
                   size="sm" 
                   variant="secondary" 
-                  onClick={generatePositionData}
-                >
-                  Export Position Data
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="default" 
+                  className="h-8"
                   onClick={saveSettings}
                 >
                   <Save className="h-3 w-3 mr-1" /> Save Settings
@@ -780,93 +789,197 @@ export default function MultiShirtCanvas({
             </div>
             
             {/* Design size controls */}
-            <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium flex items-center">
-                    <MoveHorizontal className="h-3 w-3 mr-1" /> Design Width: {designWidthFactor}px
-                  </label>
+            <div className="mb-6">
+              <h4 className="text-sm font-medium mb-3 text-gray-700">Design Size</h4>
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs text-gray-500 flex items-center">
+                      <MoveHorizontal className="h-3 w-3 mr-1" /> Width: {designWidthFactor}px
+                    </label>
+                    <div className="flex gap-1">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-5 w-5 p-0" 
+                        onClick={() => setDesignWidthFactor(Math.max(100, designWidthFactor - 50))}
+                      >
+                        <span className="text-xs">-</span>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-5 w-5 p-0" 
+                        onClick={() => setDesignWidthFactor(Math.min(800, designWidthFactor + 50))}
+                      >
+                        <span className="text-xs">+</span>
+                      </Button>
+                    </div>
+                  </div>
+                  <Slider 
+                    min={100} 
+                    max={800} 
+                    step={10} 
+                    value={[designWidthFactor]} 
+                    onValueChange={(value) => setDesignWidthFactor(value[0])} 
+                  />
                 </div>
-                <Slider 
-                  min={100} 
-                  max={800} 
-                  step={10} 
-                  value={[designWidthFactor]} 
-                  onValueChange={(value) => setDesignWidthFactor(value[0])} 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium flex items-center">
-                    <MoveVertical className="h-3 w-3 mr-1" /> Design Height: {designHeightFactor}px
-                  </label>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs text-gray-500 flex items-center">
+                      <MoveVertical className="h-3 w-3 mr-1" /> Height: {designHeightFactor}px
+                    </label>
+                    <div className="flex gap-1">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-5 w-5 p-0" 
+                        onClick={() => setDesignHeightFactor(Math.max(100, designHeightFactor - 50))}
+                      >
+                        <span className="text-xs">-</span>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-5 w-5 p-0" 
+                        onClick={() => setDesignHeightFactor(Math.min(600, designHeightFactor + 50))}
+                      >
+                        <span className="text-xs">+</span>
+                      </Button>
+                    </div>
+                  </div>
+                  <Slider 
+                    min={100} 
+                    max={600} 
+                    step={10} 
+                    value={[designHeightFactor]} 
+                    onValueChange={(value) => setDesignHeightFactor(value[0])} 
+                  />
                 </div>
-                <Slider 
-                  min={100} 
-                  max={600} 
-                  step={10} 
-                  value={[designHeightFactor]} 
-                  onValueChange={(value) => setDesignHeightFactor(value[0])} 
-                />
               </div>
             </div>
             
             {/* Position offset controls */}
-            <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium flex items-center">
-                    <MoveHorizontal className="h-3 w-3 mr-1" /> X Offset: {
+            <div className="mb-6">
+              <h4 className="text-sm font-medium mb-3 text-gray-700">Position Adjustment</h4>
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs text-gray-500 flex items-center">
+                      <MoveHorizontal className="h-3 w-3 mr-1" /> X Offset: {
+                        syncAll 
+                          ? shirtConfigs[0].designOffset.x 
+                          : shirtConfigs[selectedShirt].designOffset.x
+                      }px
+                    </label>
+                    <div className="flex gap-1">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-5 w-5 p-0" 
+                        onClick={() => handleXOffsetChange(syncAll ? 
+                          Math.max(-200, shirtConfigs[0].designOffset.x - 20) : 
+                          Math.max(-200, shirtConfigs[selectedShirt].designOffset.x - 20))}
+                      >
+                        <span className="text-xs">←</span>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-5 w-5 p-0" 
+                        onClick={() => handleXOffsetChange(syncAll ? 
+                          Math.min(200, shirtConfigs[0].designOffset.x + 20) : 
+                          Math.min(200, shirtConfigs[selectedShirt].designOffset.x + 20))}
+                      >
+                        <span className="text-xs">→</span>
+                      </Button>
+                    </div>
+                  </div>
+                  <Slider 
+                    min={-200} 
+                    max={200} 
+                    step={5} 
+                    value={[
                       syncAll 
                         ? shirtConfigs[0].designOffset.x 
                         : shirtConfigs[selectedShirt].designOffset.x
-                    }px
-                  </label>
+                    ]} 
+                    onValueChange={(value) => handleXOffsetChange(value[0])} 
+                  />
                 </div>
-                <Slider 
-                  min={-200} 
-                  max={200} 
-                  step={5} 
-                  value={[
-                    syncAll 
-                      ? shirtConfigs[0].designOffset.x 
-                      : shirtConfigs[selectedShirt].designOffset.x
-                  ]} 
-                  onValueChange={(value) => handleXOffsetChange(value[0])} 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium flex items-center">
-                    <MoveVertical className="h-3 w-3 mr-1" /> Y Offset: {
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs text-gray-500 flex items-center">
+                      <MoveVertical className="h-3 w-3 mr-1" /> Y Offset: {
+                        syncAll 
+                          ? shirtConfigs[0].designOffset.y 
+                          : shirtConfigs[selectedShirt].designOffset.y
+                      }px
+                    </label>
+                    <div className="flex gap-1">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-5 w-5 p-0" 
+                        onClick={() => handleYOffsetChange(syncAll ? 
+                          Math.max(-300, shirtConfigs[0].designOffset.y - 20) : 
+                          Math.max(-300, shirtConfigs[selectedShirt].designOffset.y - 20))}
+                      >
+                        <span className="text-xs">↑</span>
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-5 w-5 p-0" 
+                        onClick={() => handleYOffsetChange(syncAll ? 
+                          Math.min(300, shirtConfigs[0].designOffset.y + 20) : 
+                          Math.min(300, shirtConfigs[selectedShirt].designOffset.y + 20))}
+                      >
+                        <span className="text-xs">↓</span>
+                      </Button>
+                    </div>
+                  </div>
+                  <Slider 
+                    min={-300} 
+                    max={300} 
+                    step={5} 
+                    value={[
                       syncAll 
                         ? shirtConfigs[0].designOffset.y 
                         : shirtConfigs[selectedShirt].designOffset.y
-                    }px
-                  </label>
+                    ]} 
+                    onValueChange={(value) => handleYOffsetChange(value[0])} 
+                  />
                 </div>
-                <Slider 
-                  min={-300} 
-                  max={300} 
-                  step={5} 
-                  value={[
-                    syncAll 
-                      ? shirtConfigs[0].designOffset.y 
-                      : shirtConfigs[selectedShirt].designOffset.y
-                  ]} 
-                  onValueChange={(value) => handleYOffsetChange(value[0])} 
-                />
               </div>
             </div>
             
             {/* Global Y Offset */}
-            <div className="space-y-2">
+            <div className="space-y-2 mb-4">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-medium flex items-center">
+                <label className="text-xs text-gray-500 flex items-center">
                   <MoveVertical className="h-3 w-3 mr-1" /> Global Y Adjustment: {globalYOffset}px
                 </label>
+                <div className="flex gap-1">
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-5 w-5 p-0" 
+                    onClick={() => setGlobalYOffset(Math.max(-300, globalYOffset - 20))}
+                  >
+                    <span className="text-xs">↑</span>
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-5 w-5 p-0" 
+                    onClick={() => setGlobalYOffset(Math.min(100, globalYOffset + 20))}
+                  >
+                    <span className="text-xs">↓</span>
+                  </Button>
+                </div>
               </div>
               <Slider 
                 min={-300} 
@@ -879,19 +992,34 @@ export default function MultiShirtCanvas({
             </div>
             
             {!syncAll && (
-              <div className="flex space-x-2 flex-wrap">
-                {shirtConfigs.map((shirt, index) => (
-                  <Button
-                    key={index}
-                    size="sm"
-                    variant={selectedShirt === index ? "default" : "outline"}
-                    onClick={() => setSelectedShirt(index)}
-                  >
-                    {shirt.name} #{index + 1}
-                  </Button>
-                ))}
+              <div>
+                <h4 className="text-sm font-medium mb-2 text-gray-700">Select Shirt</h4>
+                <div className="grid grid-cols-4 gap-2">
+                  {shirtConfigs.map((shirt, index) => (
+                    <Button
+                      key={index}
+                      size="sm"
+                      variant={selectedShirt === index ? "default" : "outline"}
+                      className="text-xs h-7"
+                      onClick={() => setSelectedShirt(index)}
+                    >
+                      {shirt.name} #{index + 1}
+                    </Button>
+                  ))}
+                </div>
               </div>
             )}
+            
+            <div className="mt-4 pt-3 border-t border-gray-200">
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                className="w-full"
+                onClick={generatePositionData}
+              >
+                <span className="text-xs">Export Position Data for Developer</span>
+              </Button>
+            </div>
           </div>
         )}
         
@@ -913,50 +1041,91 @@ export default function MultiShirtCanvas({
         </div>
         
         <div className="mt-4 space-y-3">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-600">JPEG Quality: {jpegQuality}%</span>
-              <div className="text-xs text-gray-500">
-                {jpegQuality > 80 ? "Higher Quality / Larger File" : 
-                 jpegQuality > 60 ? "Balanced Quality" : "Smaller File Size"}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="mb-3">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-700">Export Settings</h3>
+                <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <span className="px-2 py-1 bg-gray-200 rounded-md">
+                    {lastFileSize 
+                      ? `${lastFileSize.toFixed(2)}MB` 
+                      : `~${(0.12 + (jpegQuality/100) * 7).toFixed(1)}MB`}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-xs text-gray-500 flex items-center gap-2">
+                  <span className="font-medium">{jpegQuality}% Quality</span>
+                  {jpegQuality > 80 ? 
+                    <span className="px-1.5 py-0.5 bg-red-100 text-red-800 rounded text-[10px]">LARGER FILES</span> : 
+                    jpegQuality > 60 ? 
+                    <span className="px-1.5 py-0.5 bg-green-100 text-green-800 rounded text-[10px]">BALANCED</span> : 
+                    <span className="px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px]">SMALLER FILES</span>
+                  }
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-6 px-2 text-xs" 
+                    onClick={() => setJpegQuality(30)}
+                  >
+                    30%
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-6 px-2 text-xs" 
+                    onClick={() => setJpegQuality(70)}
+                  >
+                    70%
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-6 px-2 text-xs" 
+                    onClick={() => setJpegQuality(100)}
+                  >
+                    100%
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="w-full mt-1">
+                <Slider 
+                  min={30} 
+                  max={100} 
+                  step={5} 
+                  value={[jpegQuality]} 
+                  onValueChange={(value) => setJpegQuality(value[0])}
+                  disabled={!designImg}
+                />
               </div>
             </div>
-            <div className="text-xs text-gray-500">
-              {lastFileSize 
-                ? `Last Size: ${lastFileSize.toFixed(2)}MB` 
-                : `Size: ~ ${(0.12 + (jpegQuality/100) * 7).toFixed(1)}MB`}
+            
+            <div className="flex gap-2 mt-4">
+              <Button 
+                className="flex-1"
+                size="sm"
+                variant="outline"
+                onClick={calculateFileSize}
+                disabled={!designImg}
+              >
+                <Calculator className="mr-2 h-4 w-4" />
+                Calculate Size
+              </Button>
+              <Button 
+                className="flex-1"
+                size="sm"
+                onClick={handleDownload}
+                disabled={!designImg}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download JPEG
+              </Button>
             </div>
-          </div>
-          
-          <div className="w-full max-w-full">
-            <Slider 
-              min={40} 
-              max={95} 
-              step={5} 
-              value={[jpegQuality]} 
-              onValueChange={(value) => setJpegQuality(value[0])}
-              disabled={!designImg}
-            />
-          </div>
-          
-          <div className="flex justify-between">
-            <Button 
-              size="sm"
-              variant="outline"
-              onClick={calculateFileSize}
-              disabled={!designImg}
-            >
-              <Calculator className="mr-2 h-4 w-4" />
-              Calculate Size
-            </Button>
-            <Button 
-              size="sm"
-              onClick={handleDownload}
-              disabled={!designImg}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Download JPEG Mockup
-            </Button>
           </div>
         </div>
       </CardContent>
