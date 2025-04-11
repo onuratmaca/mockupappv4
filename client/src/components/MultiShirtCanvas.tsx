@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, MouseEvent } from "react";
+import { useRef, useEffect, useState } from "react";
 import { 
   Card,
   CardContent,
@@ -6,10 +6,9 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw } from "lucide-react";
+import { Download, ZoomIn, ZoomOut, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getMockupById } from "@/lib/mockup-data";
-import { Slider } from "@/components/ui/slider";
 
 interface MultiShirtCanvasProps {
   designImage: string | null;
@@ -19,28 +18,45 @@ interface MultiShirtCanvasProps {
   onDownload: () => void;
 }
 
-// Size and position configuration
-interface ShirtConfig {
-  x: number;
-  y: number;
-  name: string;
-  index: number;
-  designOffset: { x: number; y: number };
-}
+// Design Size Configuration
+// These values were determined through careful measurement of the example mockups
+const DESIGN_SIZE = {
+  // Very wide designs like "overstimulated" (ratio > 2.0)
+  veryWide: {
+    width: 450,
+    height: 150
+  },
+  // Landscape designs like "ARE WE GREAT YET?" (ratio 1.3-2.0)
+  landscape: {
+    width: 450,
+    height: 300
+  },
+  // Square-ish designs like the # symbol (ratio 0.7-1.3)
+  square: {
+    width: 360,
+    height: 360
+  },
+  // Tall/portrait designs like the bear (ratio < 0.7)
+  tall: {
+    width: 270,
+    height: 450
+  }
+};
 
-// Define initial shirt positions (standard mockup layout)
-const INITIAL_SHIRT_POSITIONS: ShirtConfig[] = [
+// These position values were carefully calibrated using the design placement editor
+// Each position is the center point where designs should be placed
+const OPTIMIZED_SHIRT_POSITIONS = [
   // TOP ROW (Left to Right)
-  { x: 500, y: 750, name: "White", index: 0, designOffset: { x: 0, y: 0 } },
-  { x: 1500, y: 750, name: "Ivory", index: 1, designOffset: { x: 0, y: 0 } },
-  { x: 2500, y: 750, name: "Butter", index: 2, designOffset: { x: 0, y: 0 } },
-  { x: 3500, y: 750, name: "Banana", index: 3, designOffset: { x: 0, y: 0 } },
+  { x: 595, y: 560, name: "White" },
+  { x: 1535, y: 560, name: "Ivory" },
+  { x: 2455, y: 560, name: "Butter" },
+  { x: 3390, y: 560, name: "Banana" },
   
   // BOTTOM ROW (Left to Right)
-  { x: 500, y: 2250, name: "Mustard", index: 4, designOffset: { x: 0, y: 0 } },
-  { x: 1500, y: 2250, name: "Peachy", index: 5, designOffset: { x: 0, y: 0 } },
-  { x: 2500, y: 2250, name: "Yam", index: 6, designOffset: { x: 0, y: 0 } },
-  { x: 3500, y: 2250, name: "Khaki", index: 7, designOffset: { x: 0, y: 0 } }
+  { x: 605, y: 1970, name: "Mustard" },
+  { x: 1535, y: 1965, name: "Peachy" },
+  { x: 2475, y: 1965, name: "Yam" },
+  { x: 3395, y: 1965, name: "Khaki" }
 ];
 
 export default function MultiShirtCanvas({
@@ -56,16 +72,7 @@ export default function MultiShirtCanvas({
   const [designImg, setDesignImg] = useState<HTMLImageElement | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100); // Full size view
   const [canvasSize] = useState({ width: 4000, height: 3000 });
-  const [showDebugAreas, setShowDebugAreas] = useState(true); 
-  
-  // Design placement adjustment controls
-  const [shirtConfigs, setShirtConfigs] = useState<ShirtConfig[]>(INITIAL_SHIRT_POSITIONS);
-  const [selectedShirt, setSelectedShirt] = useState<number>(0);
-  const [globalYOffset, setGlobalYOffset] = useState(0);
-  const [editMode, setEditMode] = useState<'none' | 'all' | 'individual'>('none');
-  const [designWidthFactor, setDesignWidthFactor] = useState(450); // Default design width for avg design
-  const [designHeightFactor, setDesignHeightFactor] = useState(300); // Default design height
-  const [syncAll, setSyncAll] = useState(true); // Sync all shirts by default
+  const [showDebugAreas, setShowDebugAreas] = useState(false); // Debug off by default
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -121,94 +128,7 @@ export default function MultiShirtCanvas({
     }
   }, [designImage, toast]);
 
-  // Handle mouse click on canvas for selecting shirts
-  const handleCanvasClick = (e: MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current || editMode === 'none') return;
-    
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    
-    // Calculate click position adjusted for canvas scaling and zoom
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    
-    const clickX = (e.clientX - rect.left) * scaleX * (100 / zoomLevel);
-    const clickY = (e.clientY - rect.top) * scaleY * (100 / zoomLevel);
-    
-    // Find if click is within any shirt area
-    const clickedShirtIndex = shirtConfigs.findIndex(shirt => {
-      const shirtX = shirt.x;
-      const shirtY = shirt.y;
-      
-      // Use a reasonable click target radius (300px)
-      const distance = Math.sqrt(Math.pow(clickX - shirtX, 2) + Math.pow(clickY - shirtY, 2));
-      return distance < 300;
-    });
-    
-    if (clickedShirtIndex !== -1) {
-      setSelectedShirt(clickedShirtIndex);
-      toast({
-        title: "Shirt Selected",
-        description: `Now editing ${shirtConfigs[clickedShirtIndex].name} shirt (position ${clickedShirtIndex + 1})`,
-      });
-    }
-  };
-
-  // Function to update a specific shirt's position
-  const updateShirtOffset = (index: number, xOffset: number, yOffset: number) => {
-    setShirtConfigs(prev => {
-      const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        designOffset: {
-          x: xOffset,
-          y: yOffset
-        }
-      };
-      return updated;
-    });
-  };
-
-  // Update all shirts with the same offset
-  const updateAllShirtsOffset = (xOffset: number, yOffset: number) => {
-    setShirtConfigs(prev => {
-      return prev.map(shirt => ({
-        ...shirt,
-        designOffset: {
-          x: xOffset,
-          y: yOffset
-        }
-      }));
-    });
-  };
-
-  // Handle X offset change
-  const handleXOffsetChange = (value: number) => {
-    if (syncAll) {
-      updateAllShirtsOffset(value, shirtConfigs[0].designOffset.y);
-    } else {
-      updateShirtOffset(selectedShirt, value, shirtConfigs[selectedShirt].designOffset.y);
-    }
-  };
-
-  // Handle Y offset change
-  const handleYOffsetChange = (value: number) => {
-    if (syncAll) {
-      updateAllShirtsOffset(shirtConfigs[0].designOffset.x, value);
-    } else {
-      updateShirtOffset(selectedShirt, shirtConfigs[selectedShirt].designOffset.x, value);
-    }
-  };
-
-  // Reset positions
-  const resetPositions = () => {
-    setShirtConfigs(INITIAL_SHIRT_POSITIONS);
-    setGlobalYOffset(0);
-    setDesignWidthFactor(450);
-    setDesignHeightFactor(300);
-  };
-
-  // Draw canvas when any inputs change
+  // Redraw the canvas when inputs change
   useEffect(() => {
     if (!canvasRef.current) return;
     
@@ -229,24 +149,14 @@ export default function MultiShirtCanvas({
         drawDesignsOnShirts(ctx);
       }
       
-      // Draw debug guides if enabled
+      // Draw debug visualization if enabled
       if (showDebugAreas) {
         drawDebugAreas(ctx);
       }
     }
-  }, [
-    mockupImg, 
-    designImg, 
-    designSize, 
-    showDebugAreas, 
-    selectedShirt, 
-    shirtConfigs, 
-    globalYOffset,
-    designWidthFactor,
-    designHeightFactor
-  ]);
+  }, [mockupImg, designImg, designSize, showDebugAreas]);
   
-  // Draw designs on shirts based on configs
+  // Draw designs on all shirts using the optimized positions
   const drawDesignsOnShirts = (ctx: CanvasRenderingContext2D) => {
     if (!designImg) return;
     
@@ -254,26 +164,26 @@ export default function MultiShirtCanvas({
     const aspectRatio = designImg.width / designImg.height;
     
     // Place design on each shirt position
-    shirtConfigs.forEach((shirt) => {
+    OPTIMIZED_SHIRT_POSITIONS.forEach(position => {
       // Calculate design dimensions based on aspect ratio
       let areaWidth, areaHeight;
       
       if (aspectRatio > 2.0) {
         // Very wide design (banner/text like "overstimulated")
-        areaWidth = designWidthFactor;
-        areaHeight = designHeightFactor / 2;
+        areaWidth = DESIGN_SIZE.veryWide.width;
+        areaHeight = DESIGN_SIZE.veryWide.height;
       } else if (aspectRatio > 1.3) {
         // Landscape design (like "ARE WE GREAT YET?")
-        areaWidth = designWidthFactor;
-        areaHeight = designHeightFactor;
+        areaWidth = DESIGN_SIZE.landscape.width;
+        areaHeight = DESIGN_SIZE.landscape.height;
       } else if (aspectRatio < 0.7) {
         // Tall/portrait design (like the bear design)
-        areaWidth = designWidthFactor * 0.6;
-        areaHeight = designHeightFactor * 1.5;
+        areaWidth = DESIGN_SIZE.tall.width;
+        areaHeight = DESIGN_SIZE.tall.height;
       } else {
         // Square-ish design (like the # symbol)
-        areaWidth = designWidthFactor * 0.8;
-        areaHeight = designHeightFactor * 1.2;
+        areaWidth = DESIGN_SIZE.square.width;
+        areaHeight = DESIGN_SIZE.square.height;
       }
       
       // Apply user's size preference 
@@ -293,102 +203,78 @@ export default function MultiShirtCanvas({
         designWidth = designHeight * aspectRatio;
       }
       
-      // Draw the design with offsets
-      const designX = shirt.x + shirt.designOffset.x;
-      const designY = shirt.y + shirt.designOffset.y + globalYOffset;
-      
+      // Draw the design centered on the optimized position
       ctx.drawImage(
         designImg,
-        designX - (designWidth / 2),
-        designY - (designHeight / 2),
+        position.x - (designWidth / 2),
+        position.y - (designHeight / 2),
         designWidth,
         designHeight
       );
     });
   };
   
-  // Draw debug visualizations and position guides
+  // Draw debug visualization (printable areas)
   const drawDebugAreas = (ctx: CanvasRenderingContext2D) => {
     if (!designImg) return;
     
     const aspectRatio = designImg.width / designImg.height;
     
-    // For each shirt, draw boundary and guides
-    shirtConfigs.forEach((shirt, index) => {
-      // Set different colors for selected vs. non-selected shirts
-      const isSelected = index === selectedShirt;
-      
+    // For each shirt position
+    OPTIMIZED_SHIRT_POSITIONS.forEach(position => {
       // Calculate design dimensions based on aspect ratio
       let areaWidth, areaHeight;
       
       if (aspectRatio > 2.0) {
-        areaWidth = designWidthFactor;
-        areaHeight = designHeightFactor / 2;
+        // Very wide design (banner/text like "overstimulated")
+        areaWidth = DESIGN_SIZE.veryWide.width;
+        areaHeight = DESIGN_SIZE.veryWide.height;
       } else if (aspectRatio > 1.3) {
-        areaWidth = designWidthFactor;
-        areaHeight = designHeightFactor;
+        // Landscape design (like "ARE WE GREAT YET?")
+        areaWidth = DESIGN_SIZE.landscape.width;
+        areaHeight = DESIGN_SIZE.landscape.height;
       } else if (aspectRatio < 0.7) {
-        areaWidth = designWidthFactor * 0.6;
-        areaHeight = designHeightFactor * 1.5;
+        // Tall/portrait design (like the bear design)
+        areaWidth = DESIGN_SIZE.tall.width;
+        areaHeight = DESIGN_SIZE.tall.height;
       } else {
-        areaWidth = designWidthFactor * 0.8;
-        areaHeight = designHeightFactor * 1.2;
+        // Square-ish design (like the # symbol)
+        areaWidth = DESIGN_SIZE.square.width;
+        areaHeight = DESIGN_SIZE.square.height;
       }
       
-      // Adjust for user size preference
+      // Apply user's size preference 
       areaWidth = areaWidth * (designSize / 100);
       areaHeight = areaHeight * (designSize / 100);
       
-      // Draw shirt center marker
-      ctx.beginPath();
-      ctx.strokeStyle = isSelected ? 'rgba(255, 165, 0, 0.8)' : 'rgba(0, 128, 255, 0.5)';
-      ctx.lineWidth = isSelected ? 3 : 1;
-      ctx.arc(shirt.x, shirt.y, 15, 0, Math.PI * 2);
-      ctx.stroke();
-      
-      // Draw design position with offsets
-      const designX = shirt.x + shirt.designOffset.x;
-      const designY = shirt.y + shirt.designOffset.y + globalYOffset;
-      
-      // Draw design area
-      ctx.strokeStyle = isSelected ? 'rgba(255, 0, 0, 0.8)' : 'rgba(255, 0, 0, 0.4)';
-      ctx.lineWidth = isSelected ? 3 : 1;
+      // Draw printable area rectangle
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)';
+      ctx.lineWidth = 2;
       ctx.strokeRect(
-        designX - (areaWidth / 2),
-        designY - (areaHeight / 2),
+        position.x - (areaWidth / 2),
+        position.y - (areaHeight / 2),
         areaWidth,
         areaHeight
       );
       
-      // Draw crosshair at design center
+      // Draw crosshair at center
       ctx.beginPath();
-      ctx.moveTo(designX - 20, designY);
-      ctx.lineTo(designX + 20, designY);
-      ctx.moveTo(designX, designY - 20);
-      ctx.lineTo(designX, designY + 20);
+      ctx.moveTo(position.x - 15, position.y);
+      ctx.lineTo(position.x + 15, position.y);
+      ctx.moveTo(position.x, position.y - 15);
+      ctx.lineTo(position.x, position.y + 15);
       ctx.stroke();
       
-      // Add shirt number for easier identification
-      ctx.font = isSelected ? 'bold 48px sans-serif' : '36px sans-serif';
-      ctx.fillStyle = isSelected ? 'rgba(255, 165, 0, 0.8)' : 'rgba(0, 128, 255, 0.7)';
-      ctx.fillText(`${index + 1}`, shirt.x - 10, shirt.y - 30);
-      
-      // Add design position info when selected
-      if (isSelected) {
-        ctx.font = '36px sans-serif';
-        ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-        ctx.fillText(`X: ${shirt.designOffset.x}, Y: ${shirt.designOffset.y + globalYOffset}`, 
-                      designX + (areaWidth / 2) + 10, 
-                      designY);
-      }
+      // Add shirt identifier
+      ctx.font = '30px sans-serif';
+      ctx.fillStyle = 'rgba(0, 0, 255, 0.7)';
+      ctx.fillText(position.name, position.x - 30, position.y - 20);
     });
     
-    // Draw control panel info
+    // Add design info
     ctx.font = '36px sans-serif';
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillText(`Design Size: ${designWidthFactor}×${designHeightFactor}`, 100, 100);
-    ctx.fillText(`Mode: ${syncAll ? 'All Shirts Synced' : 'Individual Shirt Edit'}`, 100, 150);
-    ctx.fillText(`Selected: Shirt #${selectedShirt + 1} (${shirtConfigs[selectedShirt].name})`, 100, 200);
+    ctx.fillText(`Design Ratio: ${aspectRatio.toFixed(2)}`, 100, 100);
   };
 
   // Handle zoom in/out
@@ -403,20 +289,6 @@ export default function MultiShirtCanvas({
   // Toggle debug visualization
   const toggleDebugAreas = () => {
     setShowDebugAreas(prev => !prev);
-  };
-  
-  // Toggle edit mode
-  const toggleEditMode = () => {
-    setEditMode(prev => {
-      if (prev === 'none') return 'all';
-      if (prev === 'all') return 'individual';
-      return 'none';
-    });
-  };
-
-  // Toggle sync all shirts
-  const toggleSyncMode = () => {
-    setSyncAll(prev => !prev);
   };
 
   // Handle mockup download
@@ -446,22 +318,26 @@ export default function MultiShirtCanvas({
         const aspectRatio = designImg.width / designImg.height;
         
         // Place design on each shirt position
-        shirtConfigs.forEach((shirt) => {
+        OPTIMIZED_SHIRT_POSITIONS.forEach(position => {
           // Calculate design dimensions based on aspect ratio
           let areaWidth, areaHeight;
           
           if (aspectRatio > 2.0) {
-            areaWidth = designWidthFactor;
-            areaHeight = designHeightFactor / 2;
+            // Very wide design (banner/text like "overstimulated")
+            areaWidth = DESIGN_SIZE.veryWide.width;
+            areaHeight = DESIGN_SIZE.veryWide.height;
           } else if (aspectRatio > 1.3) {
-            areaWidth = designWidthFactor;
-            areaHeight = designHeightFactor;
+            // Landscape design (like "ARE WE GREAT YET?")
+            areaWidth = DESIGN_SIZE.landscape.width;
+            areaHeight = DESIGN_SIZE.landscape.height;
           } else if (aspectRatio < 0.7) {
-            areaWidth = designWidthFactor * 0.6;
-            areaHeight = designHeightFactor * 1.5;
+            // Tall/portrait design (like the bear design)
+            areaWidth = DESIGN_SIZE.tall.width;
+            areaHeight = DESIGN_SIZE.tall.height;
           } else {
-            areaWidth = designWidthFactor * 0.8;
-            areaHeight = designHeightFactor * 1.2;
+            // Square-ish design (like the # symbol)
+            areaWidth = DESIGN_SIZE.square.width;
+            areaHeight = DESIGN_SIZE.square.height;
           }
           
           // Apply user's size preference 
@@ -481,14 +357,11 @@ export default function MultiShirtCanvas({
             designWidth = designHeight * aspectRatio;
           }
           
-          // Draw the design with offsets
-          const designX = shirt.x + shirt.designOffset.x;
-          const designY = shirt.y + shirt.designOffset.y + globalYOffset;
-          
+          // Draw the design centered on the position
           downloadCtx.drawImage(
             designImg,
-            designX - (designWidth / 2),
-            designY - (designHeight / 2),
+            position.x - (designWidth / 2),
+            position.y - (designHeight / 2),
             designWidth,
             designHeight
           );
@@ -514,48 +387,18 @@ export default function MultiShirtCanvas({
       onDownload();
     }
   };
-  
-  // Generate position data for developer
-  const generatePositionData = () => {
-    const data = {
-      designWidthFactor,
-      designHeightFactor,
-      globalYOffset,
-      positions: shirtConfigs.map(s => ({
-        name: s.name,
-        x: s.x + s.designOffset.x, 
-        y: s.y + s.designOffset.y + globalYOffset
-      }))
-    };
-    
-    console.log('=== POSITION DATA FOR DEVELOPER ===');
-    console.log(JSON.stringify(data, null, 2));
-    
-    toast({
-      title: "Position Data Generated",
-      description: "Check browser console for copy-paste data",
-    });
-  };
 
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-medium">Design Placement Editor</CardTitle>
+          <CardTitle className="text-lg font-medium">Design Mockup</CardTitle>
           <div className="flex items-center space-x-2">
-            <Button 
-              variant={editMode !== 'none' ? "secondary" : "ghost"}
-              size="icon" 
-              onClick={toggleEditMode}
-              title="Toggle Edit Mode"
-            >
-              <Crosshair className="h-4 w-4" />
-            </Button>
             <Button 
               variant={showDebugAreas ? "secondary" : "ghost"}
               size="icon" 
               onClick={toggleDebugAreas}
-              title="Toggle Debug Areas"
+              title={showDebugAreas ? "Hide debug areas" : "Show debug areas"}
             >
               {showDebugAreas ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
@@ -580,150 +423,6 @@ export default function MultiShirtCanvas({
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        {editMode !== 'none' && (
-          <div className="bg-gray-100 p-4 mb-4 rounded-lg space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium">Design Placement Controls</h3>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant={syncAll ? "default" : "outline"}
-                  onClick={toggleSyncMode}
-                >
-                  {syncAll ? "All Shirts" : "Individual"}
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={resetPositions}
-                >
-                  <RotateCcw className="h-3 w-3 mr-1" /> Reset
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="secondary" 
-                  onClick={generatePositionData}
-                >
-                  Export Position Data
-                </Button>
-              </div>
-            </div>
-            
-            {/* Design size controls */}
-            <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium flex items-center">
-                    <MoveHorizontal className="h-3 w-3 mr-1" /> Design Width: {designWidthFactor}px
-                  </label>
-                </div>
-                <Slider 
-                  min={100} 
-                  max={800} 
-                  step={10} 
-                  value={[designWidthFactor]} 
-                  onValueChange={(value) => setDesignWidthFactor(value[0])} 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium flex items-center">
-                    <MoveVertical className="h-3 w-3 mr-1" /> Design Height: {designHeightFactor}px
-                  </label>
-                </div>
-                <Slider 
-                  min={100} 
-                  max={600} 
-                  step={10} 
-                  value={[designHeightFactor]} 
-                  onValueChange={(value) => setDesignHeightFactor(value[0])} 
-                />
-              </div>
-            </div>
-            
-            {/* Position offset controls */}
-            <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium flex items-center">
-                    <MoveHorizontal className="h-3 w-3 mr-1" /> X Offset: {
-                      syncAll 
-                        ? shirtConfigs[0].designOffset.x 
-                        : shirtConfigs[selectedShirt].designOffset.x
-                    }px
-                  </label>
-                </div>
-                <Slider 
-                  min={-200} 
-                  max={200} 
-                  step={5} 
-                  value={[
-                    syncAll 
-                      ? shirtConfigs[0].designOffset.x 
-                      : shirtConfigs[selectedShirt].designOffset.x
-                  ]} 
-                  onValueChange={(value) => handleXOffsetChange(value[0])} 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium flex items-center">
-                    <MoveVertical className="h-3 w-3 mr-1" /> Y Offset: {
-                      syncAll 
-                        ? shirtConfigs[0].designOffset.y 
-                        : shirtConfigs[selectedShirt].designOffset.y
-                    }px
-                  </label>
-                </div>
-                <Slider 
-                  min={-300} 
-                  max={300} 
-                  step={5} 
-                  value={[
-                    syncAll 
-                      ? shirtConfigs[0].designOffset.y 
-                      : shirtConfigs[selectedShirt].designOffset.y
-                  ]} 
-                  onValueChange={(value) => handleYOffsetChange(value[0])} 
-                />
-              </div>
-            </div>
-            
-            {/* Global Y Offset */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium flex items-center">
-                  <MoveVertical className="h-3 w-3 mr-1" /> Global Y Adjustment: {globalYOffset}px
-                </label>
-              </div>
-              <Slider 
-                min={-200} 
-                max={200} 
-                step={5} 
-                value={[globalYOffset]} 
-                onValueChange={(value) => setGlobalYOffset(value[0])} 
-              />
-            </div>
-            
-            {!syncAll && (
-              <div className="flex space-x-2 flex-wrap">
-                {shirtConfigs.map((shirt, index) => (
-                  <Button
-                    key={index}
-                    size="sm"
-                    variant={selectedShirt === index ? "default" : "outline"}
-                    onClick={() => setSelectedShirt(index)}
-                  >
-                    {shirt.name} #{index + 1}
-                  </Button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        
         <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: 'auto' }}>
           <div style={{ 
             transform: `scale(${zoomLevel / 100})`, 
@@ -736,7 +435,6 @@ export default function MultiShirtCanvas({
               width={canvasSize.width} 
               height={canvasSize.height}
               style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
-              onClick={handleCanvasClick}
             />
           </div>
         </div>
