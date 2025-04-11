@@ -243,39 +243,74 @@ export default function PreviewCanvas({
     const shirtX = mockupImg.x + (mockupImg.width * gridPos.x) - (shirtWidth / 2);
     const shirtY = mockupImg.y + (mockupImg.height * gridPos.y) - (shirtHeight / 2);
     
-    // Calculate printable area dimensions for this shirt
-    const printableWidth = shirtWidth * printableArea.width;
-    const printableHeight = shirtHeight * printableArea.height;
+    // Hard-coded measurements for printable areas (in pixels) based on a 880x1320px shirt
+    // These values can be adjusted for more precise placement
+    const STANDARD_SHIRT_WIDTH = 880; // px (original 4000px mockup / 4 shirts + small margin)
+    const STANDARD_SHIRT_HEIGHT = 1320; // px (original 3000px mockup / 2 shirts + small margin)
     
-    // Calculate center of printable area within this shirt
-    const centerX = shirtX + (shirtWidth * printableArea.xCenter);
-    const centerY = shirtY + (shirtHeight * printableArea.yCenter);
+    // Calculate scaling factor between our canvas and standard measurements
+    const scaleFactorX = shirtWidth / STANDARD_SHIRT_WIDTH;
+    const scaleFactorY = shirtHeight / STANDARD_SHIRT_HEIGHT;
     
-    // Calculate design size based on percentage of printable area
-    // Use the smaller dimension (width or height) for better stability
-    const maxDesignSize = Math.min(printableWidth, printableHeight) * (designSize / 100);
+    // Standard printable area for a typical t-shirt (in pixels)
+    const STANDARD_PRINTABLE_WIDTH = 500; // px (adjusted for t-shirt mockups)
+    const STANDARD_PRINTABLE_HEIGHT = 600; // px (adjusted for t-shirt mockups)
     
-    // Determine which dimension to scale by based on design ratio
+    // Fixed positions for top, center, bottom placements relative to shirt (in pixels)
+    const POSITIONS = {
+      top: { x: 0, y: -150 },     // 150px above center
+      center: { x: 0, y: 0 },     // At center 
+      bottom: { x: 0, y: 150 }    // 150px below center
+    };
+    
+    // Calculate scaled printable dimensions
+    const printableWidth = STANDARD_PRINTABLE_WIDTH * scaleFactorX;
+    const printableHeight = STANDARD_PRINTABLE_HEIGHT * scaleFactorY;
+    
+    // Center of the shirt
+    const centerX = shirtX + (shirtWidth / 2);
+    const centerY = shirtY + (shirtHeight / 2) - (shirtHeight * 0.08); // Shift up by 8% to account for neckline
+    
+    // Calculate max size based on desired percentage of printable area
+    const maxWidth = printableWidth * (designSize / 100);
+    const maxHeight = printableHeight * (designSize / 100);
+    
+    // Get the original aspect ratio of the design
     const designAspectRatio = designImg.width / designImg.height;
-    let scale, newWidth, newHeight;
+    
+    // Determine new dimensions while maintaining aspect ratio
+    let newWidth, newHeight;
     
     if (designAspectRatio >= 1) {
-      // Landscape or square - scale by width
-      scale = maxDesignSize / designImg.width;
+      // Landscape or square - constrain by width
+      newWidth = maxWidth;
+      newHeight = newWidth / designAspectRatio;
+      
+      // If height exceeds max height, constrain by height instead
+      if (newHeight > maxHeight) {
+        newHeight = maxHeight;
+        newWidth = newHeight * designAspectRatio;
+      }
     } else {
-      // Portrait - scale by height
-      scale = maxDesignSize / designImg.height;
+      // Portrait - constrain by height
+      newHeight = maxHeight;
+      newWidth = newHeight * designAspectRatio;
+      
+      // If width exceeds max width, constrain by width instead
+      if (newWidth > maxWidth) {
+        newWidth = maxWidth;
+        newHeight = newWidth / designAspectRatio;
+      }
     }
     
-    newWidth = designImg.width * scale;
-    newHeight = designImg.height * scale;
+    // Get position offset based on selected position (scaled to actual shirt size)
+    const positionOffset = POSITIONS[designPosition];
+    const scaledOffsetX = positionOffset.x * scaleFactorX;
+    const scaledOffsetY = positionOffset.y * scaleFactorY;
     
-    // Get position offset based on selected position
-    const positionOffset = printableArea.positionOffsets[designPosition];
-    
-    // Calculate position with offsets - maintain stable center point
-    const xPosition = centerX + (shirtWidth * positionOffset.x) - (newWidth / 2) + designXOffset;
-    const yPosition = centerY + (shirtHeight * positionOffset.y) - (newHeight / 2) + designYOffset;
+    // Calculate final position with design centered on target point plus user offset
+    const xPosition = centerX + scaledOffsetX - (newWidth / 2) + designXOffset;
+    const yPosition = centerY + scaledOffsetY - (newHeight / 2) + designYOffset;
     
     // Update design image properties
     const updatedDesign = {
@@ -288,7 +323,6 @@ export default function PreviewCanvas({
     
     setDesignImg(updatedDesign);
     
-    // Update position for parent component
     // Only update offset values, not absolute positions
     onPositionChange(designXOffset, designYOffset);
     
@@ -348,22 +382,38 @@ export default function PreviewCanvas({
     // Get the grid position of the selected shirt
     const gridPos = getShirtGridPosition(shirtPosition);
     
-    // Get the printable area configuration
-    const printableArea = getPrintableArea(mockupId);
-    
     // Calculate the size and position of the selected shirt within the mockup
     const shirtWidth = mockupImg.width * gridPos.width;
     const shirtHeight = mockupImg.height * gridPos.height;
     const shirtX = mockupImg.x + (mockupImg.width * gridPos.x) - (shirtWidth / 2);
     const shirtY = mockupImg.y + (mockupImg.height * gridPos.y) - (shirtHeight / 2);
     
-    // Calculate printable area dimensions for this shirt
-    const printableWidth = shirtWidth * printableArea.width;
-    const printableHeight = shirtHeight * printableArea.height;
+    // Hard-coded measurements for printable areas (in pixels) based on a 880x1320px shirt
+    const STANDARD_SHIRT_WIDTH = 880; // px (original 4000px mockup / 4 shirts + small margin)
+    const STANDARD_SHIRT_HEIGHT = 1320; // px (original 3000px mockup / 2 shirts + small margin)
     
-    // Calculate center of printable area within this shirt
-    const centerX = shirtX + (shirtWidth * printableArea.xCenter);
-    const centerY = shirtY + (shirtHeight * printableArea.yCenter);
+    // Calculate scaling factor between our canvas and standard measurements
+    const scaleFactorX = shirtWidth / STANDARD_SHIRT_WIDTH;
+    const scaleFactorY = shirtHeight / STANDARD_SHIRT_HEIGHT;
+    
+    // Standard printable area for a typical t-shirt (in pixels)
+    const STANDARD_PRINTABLE_WIDTH = 500; // px (adjusted for t-shirt mockups)
+    const STANDARD_PRINTABLE_HEIGHT = 600; // px (adjusted for t-shirt mockups)
+    
+    // Fixed positions for top, center, bottom placements relative to shirt (in pixels)
+    const POSITIONS = {
+      top: { x: 0, y: -150 },     // 150px above center
+      center: { x: 0, y: 0 },     // At center 
+      bottom: { x: 0, y: 150 }    // 150px below center
+    };
+    
+    // Calculate scaled printable dimensions
+    const printableWidth = STANDARD_PRINTABLE_WIDTH * scaleFactorX;
+    const printableHeight = STANDARD_PRINTABLE_HEIGHT * scaleFactorY;
+    
+    // Center of the shirt
+    const centerX = shirtX + (shirtWidth / 2);
+    const centerY = shirtY + (shirtHeight / 2) - (shirtHeight * 0.08); // Shift up by 8% to account for neckline
     
     // Highlight the selected shirt with a transparent overlay
     ctx.fillStyle = 'rgba(255, 255, 0, 0.1)';
@@ -415,9 +465,14 @@ export default function PreviewCanvas({
     
     // Draw the markers for each position with a larger radius
     positions.forEach(position => {
-      const offset = printableArea.positionOffsets[position];
-      const x = centerX + (shirtWidth * offset.x);
-      const y = centerY + (shirtHeight * offset.y);
+      // Get position offset and scale it
+      const positionOffset = POSITIONS[position];
+      const scaledOffsetX = positionOffset.x * scaleFactorX;
+      const scaledOffsetY = positionOffset.y * scaleFactorY;
+      
+      // Calculate center point for this position
+      const x = centerX + scaledOffsetX;
+      const y = centerY + scaledOffsetY;
       
       // Add a white outline to the marker
       ctx.beginPath();
@@ -441,6 +496,16 @@ export default function PreviewCanvas({
         ctx.stroke();
       }
     });
+    
+    // Draw label for the current position
+    const currentPositionLabel = designPosition.charAt(0).toUpperCase() + designPosition.slice(1);
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Position: ${currentPositionLabel}`, centerX, shirtY + shirtHeight + 15);
+    
+    // Draw label for size percentage
+    ctx.fillText(`Size: ${designSize}%`, centerX, shirtY + shirtHeight + 30);
   };
 
   // Handle mouse events for dragging
@@ -485,25 +550,41 @@ export default function PreviewCanvas({
     // Get the grid position of the selected shirt
     const gridPos = getShirtGridPosition(shirtPosition);
     
-    // Get the printable area configuration
-    const printableArea = getPrintableArea(mockupId);
-    
     // Calculate shirt dimensions and position
     const shirtWidth = mockupImg.width * gridPos.width;
     const shirtHeight = mockupImg.height * gridPos.height;
     const shirtX = mockupImg.x + (mockupImg.width * gridPos.x) - (shirtWidth / 2);
     const shirtY = mockupImg.y + (mockupImg.height * gridPos.y) - (shirtHeight / 2);
     
-    // Calculate printable area center within this shirt
-    const centerX = shirtX + (shirtWidth * printableArea.xCenter);
-    const centerY = shirtY + (shirtHeight * printableArea.yCenter);
+    // Hard-coded measurements for printable areas based on a standard shirt
+    const STANDARD_SHIRT_WIDTH = 880; // px
+    const STANDARD_SHIRT_HEIGHT = 1320; // px
     
-    // Get position offset based on selected position
-    const positionOffset = printableArea.positionOffsets[designPosition];
-    const idealCenterX = centerX + (shirtWidth * positionOffset.x);
-    const idealCenterY = centerY + (shirtHeight * positionOffset.y);
+    // Calculate scaling factor between our canvas and standard measurements
+    const scaleFactorX = shirtWidth / STANDARD_SHIRT_WIDTH;
+    const scaleFactorY = shirtHeight / STANDARD_SHIRT_HEIGHT;
     
-    // Calculate the new offsets from the ideal center position
+    // Fixed positions for top, center, bottom placements relative to shirt center
+    const POSITIONS = {
+      top: { x: 0, y: -150 },     // 150px above center
+      center: { x: 0, y: 0 },     // At center 
+      bottom: { x: 0, y: 150 }    // 150px below center
+    };
+    
+    // Center of the shirt, adjusted for neckline
+    const centerX = shirtX + (shirtWidth / 2);
+    const centerY = shirtY + (shirtHeight / 2) - (shirtHeight * 0.08); // Shift up by 8%
+    
+    // Get position offset and scale it
+    const positionOffset = POSITIONS[designPosition];
+    const scaledOffsetX = positionOffset.x * scaleFactorX;
+    const scaledOffsetY = positionOffset.y * scaleFactorY;
+    
+    // Calculate the ideal position for this design
+    const idealCenterX = centerX + scaledOffsetX;
+    const idealCenterY = centerY + scaledOffsetY;
+    
+    // Calculate the offsets from the ideal position
     const newXOffset = Math.round(newX - (idealCenterX - designImg.width / 2));
     const newYOffset = Math.round(newY - (idealCenterY - designImg.height / 2));
     

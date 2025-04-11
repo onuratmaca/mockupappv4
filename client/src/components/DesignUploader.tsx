@@ -47,11 +47,53 @@ export default function DesignUploader({
     reader.onload = (e) => {
       const result = e.target?.result as string;
       if (result) {
-        onDesignUpload(result);
-        toast({
-          title: "Success",
-          description: "Design uploaded successfully",
-        });
+        // Load image to get dimensions
+        const img = new Image();
+        img.onload = () => {
+          // Create a canvas to normalize the image size
+          const canvas = document.createElement('canvas');
+          
+          // Set standard dimensions based on ratio
+          const ratio = DESIGN_RATIOS[designRatio].value;
+          let targetWidth, targetHeight;
+          
+          // Standardize dimensions based on ratio (maintain aspect but with standard size)
+          if (ratio >= 1) { // landscape or square
+            targetWidth = 800; // standard width for all designs
+            targetHeight = 800 / ratio;
+          } else { // portrait
+            targetHeight = 800; // standard height for all designs
+            targetWidth = 800 * ratio;
+          }
+          
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          
+          // Draw and resize the image
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+            
+            // Convert to data URL and pass it to the parent
+            const normalizedImageUrl = canvas.toDataURL('image/png');
+            onDesignUpload(normalizedImageUrl);
+            
+            toast({
+              title: "Success",
+              description: `Design normalized to ${Math.round(targetWidth)}×${Math.round(targetHeight)} pixels`,
+            });
+          } else {
+            // Fallback if canvas context fails
+            onDesignUpload(result);
+            toast({
+              title: "Success",
+              description: "Design uploaded successfully",
+            });
+          }
+        };
+        
+        // Load the image from the file reader result
+        img.src = result;
       }
     };
     reader.onerror = () => {
