@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState } from "react";
-import * as fabric from "fabric";
 import { 
   Card,
   CardContent,
@@ -7,18 +6,11 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Minus, Plus, Undo, Redo, Save, Check } from "lucide-react";
+import { Minus, Plus, Download, Undo, Redo, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DesignRatio, DESIGN_RATIOS } from "@/lib/design-ratios";
-import { MOCKUP_IMAGES, getMockupById } from "@/lib/mockup-data";
-import { getPrintableArea } from "@/lib/printable-areas";
-
-// Extend with data property
-interface FabricObject extends fabric.Object {
-  data?: {
-    type?: string;
-  };
-}
+import { getMockupById, Mockup } from "@/lib/mockup-data";
+import { getPrintableArea, PrintableArea } from "@/lib/printable-areas";
 
 interface PreviewCanvasProps {
   designImage: string | null;
@@ -32,6 +24,15 @@ interface PreviewCanvasProps {
   onZoomChange: (zoom: number) => void;
   onPositionChange: (x: number, y: number) => void;
   onDownload: () => void;
+}
+
+// Types for our image objects
+interface ImageObject {
+  img: HTMLImageElement;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 export default function PreviewCanvas({
@@ -49,405 +50,294 @@ export default function PreviewCanvas({
 }: PreviewCanvasProps) {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasInstanceRef = useRef<fabric.Canvas | null>(null);
-  const designObjectRef = useRef<fabric.Image | null>(null);
-  const tshirtImageRef = useRef<fabric.Image | null>(null);
-  const [history, setHistory] = useState<string[]>([]);
+  const canvasCtxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const [mockupImg, setMockupImg] = useState<ImageObject | null>(null);
+  const [designImg, setDesignImg] = useState<ImageObject | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 600, height: 600 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [history, setHistory] = useState<ImageObject[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [canUndo, setCanUndo] = useState(false);
-  const [canRedo, setCanRedo] = useState(false);
-  
+
   // Initialize canvas
   useEffect(() => {
-    if (canvasRef.current && !canvasInstanceRef.current) {
-      const canvas = new fabric.Canvas(canvasRef.current, {
-        width: 600,
-        height: 600,
-        backgroundColor: '#f9fafb',
-        selection: false,
-      });
-      
-      canvasInstanceRef.current = canvas;
-      
-      // Load initial mockup image
-      loadMockupImage(mockupId);
-      
-      // Add to history
-      updateHistory();
-      
-      // Clean up on component unmount
-      return () => {
-        canvas.dispose();
-        canvasInstanceRef.current = null;
-      };
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      canvas.width = canvasSize.width;
+      canvas.height = canvasSize.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        canvasCtxRef.current = ctx;
+        // Set initial canvas background
+        ctx.fillStyle = '#f9fafb';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
     }
-  }, []);
-  
+  }, [canvasSize]);
+
   // Load mockup image when mockup ID changes
   useEffect(() => {
-    if (canvasInstanceRef.current) {
-      loadMockupImage(mockupId);
-    }
-  }, [mockupId]);
-  
-  // Load design image when it changes
-  useEffect(() => {
-    if (canvasInstanceRef.current && designImage) {
-      loadDesignImage(designImage);
-    }
-  }, [designImage]);
-  
-  // Update design position and size
-  useEffect(() => {
-    if (canvasInstanceRef.current && designObjectRef.current) {
-      updateDesignPosition();
-    }
-  }, [designSize, designPosition, designXOffset, designYOffset]);
-  
-  // Update zoom level
-  useEffect(() => {
-    if (canvasInstanceRef.current) {
-      canvasInstanceRef.current.setZoom(zoomLevel / 100);
-      canvasInstanceRef.current.renderAll();
-    }
-  }, [zoomLevel]);
-  
-  // Update history navigation state
-  useEffect(() => {
-    setCanUndo(historyIndex > 0);
-    setCanRedo(historyIndex < history.length - 1);
-  }, [history, historyIndex]);
-  
-  // Load mockup image
-  const loadMockupImage = (id: number) => {
-    if (!canvasInstanceRef.current) return;
-    
-    const canvas = canvasInstanceRef.current;
-    
-    // Find mockup image by ID
-    const mockup = getMockupById(id);
-    if (!mockup) {
+    const mockup = getMockupById(mockupId);
+    if (mockup) {
+      loadMockupImage(mockup);
+    } else {
       toast({
         title: "Error",
         description: "Mockup not found",
         variant: "destructive",
       });
-      return;
     }
-    
-    // Remove existing mockup image if any
-    if (tshirtImageRef.current) {
-      canvas.remove(tshirtImageRef.current);
+  }, [mockupId]);
+
+  // Load design image when it changes
+  useEffect(() => {
+    if (designImage) {
+      loadDesignImage(designImage);
     }
-    
-    // Clear any existing debug objects
-    canvas.getObjects().forEach((obj: fabric.Object) => {
-      if (obj.data && obj.data.type === 'debug') {
-        canvas.remove(obj);
-      }
-    });
-    
-    // Load mockup image
-    fabric.Image.fromURL(mockup.src, function(img) {
-      // Scale the image to fit canvas
-      const scale = Math.min(
-        canvas.width! / img.width!,
-        canvas.height! / img.height!
-      );
-      
-      img.scale(scale);
-      
-      // Center the image
-      img.set({
-        left: canvas.width! / 2,
-        top: canvas.height! / 2,
-        originX: 'center',
-        originY: 'center',
-        selectable: false,
-        evented: false,
-      });
-      
-      tshirtImageRef.current = img;
-      canvas.add(img);
-      
-      // Make sure it's behind other objects
-      img.moveTo(0);
-      
-      // Draw debug visualization of printable area
-      drawPrintableAreaVisualizer(mockupId);
-      
-      canvas.renderAll();
-      
-      // If design exists, reapply it
-      if (designImage && designObjectRef.current) {
-        updateDesignPosition();
-      }
-    });
-  };
-  
-  // Load design image
-  const loadDesignImage = (imageUrl: string) => {
-    if (!canvasInstanceRef.current) return;
-    
-    const canvas = canvasInstanceRef.current;
-    
-    // Remove existing design image if any
-    if (designObjectRef.current) {
-      canvas.remove(designObjectRef.current);
-    }
-    
-    fabric.Image.fromURL(imageUrl, (img: fabric.Image) => {
-      const ratio = DESIGN_RATIOS[designRatio].value;
-      
-      // If the ratio is different than the image's natural ratio, adjust it
-      if (ratio !== img.width! / img.height!) {
-        // Adjust image dimensions to match the selected ratio
-        const newWidth = ratio > 1 ? img.width : img.height! * ratio;
-        const newHeight = ratio > 1 ? img.width! / ratio : img.height;
-        
-        img.set({
-          width: newWidth,
-          height: newHeight,
-          scaleX: 1,
-          scaleY: 1,
-        });
-      }
-      
-      img.set({
-        selectable: true,
-        evented: true,
-        hasBorders: true,
-        hasControls: true,
-        lockUniScaling: true,
-      });
-      
-      // Set up event listeners for design object
-      img.on('moving', () => {
-        const pos = img.getCenterPoint();
-        onPositionChange(
-          Math.round(pos.x - canvas.width! / 2), 
-          Math.round(pos.y - canvas.height! / 2)
-        );
-      });
-      
-      img.on('modified', updateHistory);
-      
-      designObjectRef.current = img;
-      canvas.add(img);
-      canvas.setActiveObject(img);
-      
-      // Position the design
+  }, [designImage]);
+
+  // Update design position when related props change
+  useEffect(() => {
+    if (mockupImg && designImg) {
       updateDesignPosition();
-      
-      // Add to history
-      updateHistory();
-    });
-  };
-  
-  // Update design position
-  const updateDesignPosition = () => {
-    if (!canvasInstanceRef.current || !designObjectRef.current || !tshirtImageRef.current) {
-      return;
     }
-    
-    const canvas = canvasInstanceRef.current;
-    const design = designObjectRef.current;
-    const tshirt = tshirtImageRef.current;
-    
-    // Get the appropriate printable area for this mockup
-    const printableArea = getPrintableArea(mockupId);
-    
-    // Calculate t-shirt printable area based on configuration
-    const printableWidth = tshirt.getScaledWidth() * printableArea.width;
-    const printableHeight = tshirt.getScaledHeight() * printableArea.height;
-    
-    // Get the center point of the printable area
-    const centerX = tshirt.left! + (tshirt.getScaledWidth() * (printableArea.xCenter - 0.5));
-    const centerY = tshirt.top! + (tshirt.getScaledHeight() * (printableArea.yCenter - 0.5));
-    
-    // Calculate design size based on percentage of printable area
-    const maxDesignWidth = printableWidth * (designSize / 100);
-    
-    // Scale design to fit within printable area while maintaining aspect ratio
-    const scale = maxDesignWidth / design.getScaledWidth();
-    design.scale(scale);
-    
-    // Get position offsets based on selected position (top, center, bottom)
-    const positionOffset = printableArea.positionOffsets[designPosition];
-    
-    // Calculate vertical position based on selected position and configuration
-    const xPosition = centerX + (tshirt.getScaledWidth() * positionOffset.x);
-    const yPosition = centerY + (tshirt.getScaledHeight() * positionOffset.y);
-    
-    // Apply position with user-defined offsets
-    design.set({
-      left: xPosition + designXOffset,
-      top: yPosition + designYOffset,
-      originX: 'center',
-      originY: 'center',
-    });
-    
-    canvas.renderAll();
-  };
-  
-  // Update history
-  const updateHistory = () => {
-    if (!canvasInstanceRef.current) return;
-    
-    const canvas = canvasInstanceRef.current;
-    const json = JSON.stringify(canvas.toJSON(['id']));
-    
-    // If we have made a new change after undoing, remove future history
-    if (historyIndex < history.length - 1) {
-      setHistory(prev => prev.slice(0, historyIndex + 1));
-    }
-    
-    setHistory(prev => [...prev, json]);
-    setHistoryIndex(prev => prev + 1);
-  };
-  
-  // Handle undo
-  const handleUndo = () => {
-    if (!canvasInstanceRef.current || historyIndex <= 0) return;
-    
-    setHistoryIndex(prev => prev - 1);
-    loadFromHistory(historyIndex - 1);
-  };
-  
-  // Handle redo
-  const handleRedo = () => {
-    if (!canvasInstanceRef.current || historyIndex >= history.length - 1) return;
-    
-    setHistoryIndex(prev => prev + 1);
-    loadFromHistory(historyIndex + 1);
-  };
-  
-  // Load from history
-  const loadFromHistory = (index: number) => {
-    if (!canvasInstanceRef.current || !history[index]) return;
-    
-    const canvas = canvasInstanceRef.current;
-    canvas.loadFromJSON(JSON.parse(history[index]), () => {
-      // Find references to the design and t-shirt objects
-      canvas.forEachObject(obj => {
-        if (obj.selectable) {
-          designObjectRef.current = obj as fabric.Image;
-        } else {
-          tshirtImageRef.current = obj as fabric.Image;
-        }
-      });
-      
-      canvas.renderAll();
-      
-      // Update position values based on design position
-      if (designObjectRef.current) {
-        const pos = designObjectRef.current.getCenterPoint();
-        onPositionChange(
-          Math.round(pos.x - canvas.width! / 2),
-          Math.round(pos.y - canvas.height! / 2)
-        );
-      }
-    });
-  };
-  
-  // Handle download
-  const handleDownload = () => {
-    if (!canvasInstanceRef.current) return;
-    
-    if (!designImage) {
-      toast({
-        title: "Error",
-        description: "Please upload a design image before downloading",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Create a temporary canvas for download (without controls)
-    const canvas = canvasInstanceRef.current;
-    const activeObj = canvas.getActiveObject();
-    
-    // Deactivate all objects
-    canvas.discardActiveObject();
-    canvas.renderAll();
-    
-    // Generate a dataURL of the canvas
-    const dataURL = canvas.toDataURL({
-      format: 'png',
-      quality: 1,
-      multiplier: 2, // 2x resolution for better quality
-    });
-    
-    // Create a download link
-    const link = document.createElement('a');
-    link.download = `tshirt-mockup-${mockupId}.png`;
-    link.href = dataURL;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Restore active object if there was one
-    if (activeObj) {
-      canvas.setActiveObject(activeObj);
-      canvas.renderAll();
-    }
-    
-    toast({
-      title: "Success",
-      description: "Mockup downloaded successfully!",
-    });
-    
-    onDownload();
-  };
-  
-  // Handle zoom in
+  }, [designSize, designPosition, designXOffset, designYOffset, designRatio]);
+
+  // Redraw canvas when images or zoom change
+  useEffect(() => {
+    drawCanvas();
+  }, [mockupImg, designImg, zoomLevel]);
+
+  // Handle zoom level
   const handleZoomIn = () => {
     if (zoomLevel < 200) {
       onZoomChange(zoomLevel + 10);
     }
   };
-  
-  // Handle zoom out
+
   const handleZoomOut = () => {
     if (zoomLevel > 50) {
       onZoomChange(zoomLevel - 10);
     }
   };
-  
-  // Draw a visual representation of the printable area
-  const drawPrintableAreaVisualizer = (mockupId: number) => {
-    if (!canvasInstanceRef.current || !tshirtImageRef.current) return;
+
+  // Load mockup image
+  const loadMockupImage = (mockup: Mockup) => {
+    const img = new Image();
+    img.onload = () => {
+      // Calculate scaling to fit canvas
+      const scale = Math.min(
+        canvasSize.width / img.width,
+        canvasSize.height / img.height
+      );
+      
+      const width = img.width * scale;
+      const height = img.height * scale;
+      
+      // Center in canvas
+      const x = (canvasSize.width - width) / 2;
+      const y = (canvasSize.height - height) / 2;
+      
+      setMockupImg({
+        img,
+        x,
+        y,
+        width,
+        height
+      });
+      
+      // If design already exists, update its position
+      if (designImg) {
+        updateDesignPosition();
+      }
+    };
     
-    const canvas = canvasInstanceRef.current;
-    const tshirt = tshirtImageRef.current;
+    img.onerror = () => {
+      toast({
+        title: "Error",
+        description: "Failed to load mockup image",
+        variant: "destructive",
+      });
+    };
+    
+    img.src = mockup.src;
+  };
+
+  // Load design image
+  const loadDesignImage = (imageUrl: string) => {
+    const img = new Image();
+    img.onload = () => {
+      // Apply the selected design ratio
+      const ratio = DESIGN_RATIOS[designRatio].value;
+      let width, height;
+      
+      if (ratio !== img.width / img.height) {
+        // Adjust dimensions to match the selected ratio
+        if (ratio > 1) {
+          // Landscape or wide
+          width = img.width;
+          height = img.width / ratio;
+        } else {
+          // Portrait or square
+          width = img.height * ratio;
+          height = img.height;
+        }
+      } else {
+        width = img.width;
+        height = img.height;
+      }
+      
+      // Create design object with initial position at the center
+      const designObject: ImageObject = {
+        img,
+        x: canvasSize.width / 2 - width / 2,
+        y: canvasSize.height / 2 - height / 2,
+        width,
+        height
+      };
+      
+      setDesignImg(designObject);
+      
+      // Position design correctly
+      if (mockupImg) {
+        updateDesignPosition();
+      }
+      
+      // Save to history
+      addToHistory(designObject);
+    };
+    
+    img.onerror = () => {
+      toast({
+        title: "Error",
+        description: "Failed to load design image",
+        variant: "destructive",
+      });
+    };
+    
+    img.src = imageUrl;
+  };
+
+  // Update design position based on settings
+  const updateDesignPosition = () => {
+    if (!mockupImg || !designImg) return;
+    
     const printableArea = getPrintableArea(mockupId);
     
-    // Calculate the dimensions of the printable area
-    const printableWidth = tshirt.getScaledWidth() * printableArea.width;
-    const printableHeight = tshirt.getScaledHeight() * printableArea.height;
+    // Calculate printable area dimensions
+    const printableWidth = mockupImg.width * printableArea.width;
+    const printableHeight = mockupImg.height * printableArea.height;
     
-    // Calculate the center point of the printable area
-    const centerX = tshirt.left! + (tshirt.getScaledWidth() * (printableArea.xCenter - 0.5));
-    const centerY = tshirt.top! + (tshirt.getScaledHeight() * (printableArea.yCenter - 0.5));
+    // Calculate center of printable area
+    const centerX = mockupImg.x + mockupImg.width * printableArea.xCenter;
+    const centerY = mockupImg.y + mockupImg.height * printableArea.yCenter;
     
-    // Create a rectangle to represent the printable area
-    const rect = new fabric.Rect({
-      left: centerX,
-      top: centerY,
-      width: printableWidth,
-      height: printableHeight,
-      fill: 'transparent',
-      stroke: 'rgba(0, 200, 255, 0.5)',
-      strokeWidth: 2,
-      strokeDashArray: [5, 5],
-      originX: 'center',
-      originY: 'center',
-      selectable: false,
-      evented: false,
-      data: { type: 'debug' }
-    });
+    // Calculate design size based on percentage of printable area
+    const maxDesignWidth = printableWidth * (designSize / 100);
+    const scale = maxDesignWidth / designImg.width;
     
-    // Add position markers for top, center, and bottom positions
+    const newWidth = designImg.width * scale;
+    const newHeight = designImg.height * scale;
+    
+    // Get position offset based on selected position
+    const positionOffset = printableArea.positionOffsets[designPosition];
+    
+    // Calculate position with offsets
+    const xPosition = centerX + (mockupImg.width * positionOffset.x) - (newWidth / 2) + designXOffset;
+    const yPosition = centerY + (mockupImg.height * positionOffset.y) - (newHeight / 2) + designYOffset;
+    
+    // Update design image properties
+    const updatedDesign = {
+      ...designImg,
+      x: xPosition,
+      y: yPosition,
+      width: newWidth,
+      height: newHeight
+    };
+    
+    setDesignImg(updatedDesign);
+    
+    // Update position for parent component
+    onPositionChange(
+      Math.round(xPosition - (canvasSize.width / 2 - newWidth / 2)),
+      Math.round(yPosition - (canvasSize.height / 2 - newHeight / 2))
+    );
+    
+    // Save to history
+    addToHistory(updatedDesign);
+  };
+
+  // Draw functions
+  const drawCanvas = () => {
+    if (!canvasCtxRef.current) return;
+    
+    const ctx = canvasCtxRef.current;
+    
+    // Clear canvas
+    ctx.fillStyle = '#f9fafb';
+    ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
+    
+    // Apply zoom
+    const zoomFactor = zoomLevel / 100;
+    ctx.save();
+    
+    // Scale from center
+    ctx.translate(canvasSize.width / 2, canvasSize.height / 2);
+    ctx.scale(zoomFactor, zoomFactor);
+    ctx.translate(-canvasSize.width / 2, -canvasSize.height / 2);
+    
+    // Draw mockup image
+    if (mockupImg) {
+      ctx.drawImage(
+        mockupImg.img,
+        mockupImg.x,
+        mockupImg.y,
+        mockupImg.width,
+        mockupImg.height
+      );
+      
+      // Draw printable area visualization
+      drawPrintableArea(ctx, mockupImg);
+    }
+    
+    // Draw design image
+    if (designImg) {
+      ctx.drawImage(
+        designImg.img,
+        designImg.x,
+        designImg.y,
+        designImg.width,
+        designImg.height
+      );
+    }
+    
+    ctx.restore();
+  };
+
+  // Draw printable area visualization
+  const drawPrintableArea = (ctx: CanvasRenderingContext2D, mockupImg: ImageObject) => {
+    const printableArea = getPrintableArea(mockupId);
+    
+    // Calculate printable area dimensions
+    const printableWidth = mockupImg.width * printableArea.width;
+    const printableHeight = mockupImg.height * printableArea.height;
+    
+    // Calculate center of printable area
+    const centerX = mockupImg.x + mockupImg.width * printableArea.xCenter;
+    const centerY = mockupImg.y + mockupImg.height * printableArea.yCenter;
+    
+    // Draw printable area rectangle
+    ctx.strokeStyle = 'rgba(0, 200, 255, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.strokeRect(
+      centerX - printableWidth / 2,
+      centerY - printableHeight / 2,
+      printableWidth,
+      printableHeight
+    );
+    
+    // Draw position markers
     const positions = ['top', 'center', 'bottom'] as const;
     const colors = {
       top: 'rgba(255, 0, 0, 0.7)',
@@ -457,28 +347,165 @@ export default function PreviewCanvas({
     
     positions.forEach(position => {
       const offset = printableArea.positionOffsets[position];
-      const x = centerX + (tshirt.getScaledWidth() * offset.x);
-      const y = centerY + (tshirt.getScaledHeight() * offset.y);
+      const x = centerX + (mockupImg.width * offset.x);
+      const y = centerY + (mockupImg.height * offset.y);
       
-      // Create a circle to mark each position
-      const circle = new fabric.Circle({
-        left: x,
-        top: y,
-        radius: 5,
-        fill: colors[position],
-        originX: 'center',
-        originY: 'center',
-        selectable: false,
-        evented: false,
-        data: { type: 'debug' }
-      });
-      
-      canvas.add(circle);
+      ctx.beginPath();
+      ctx.setLineDash([]);
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = colors[position];
+      ctx.fill();
+    });
+  };
+
+  // Handle mouse events for dragging
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!designImg) return;
+    
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const x = (e.clientX - rect.left) * (canvasSize.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvasSize.height / rect.height);
+    
+    // Check if click is inside design
+    const zoomFactor = zoomLevel / 100;
+    const designLeft = (designImg.x - (canvasSize.width * (zoomFactor - 1) / 2)) * zoomFactor;
+    const designTop = (designImg.y - (canvasSize.height * (zoomFactor - 1) / 2)) * zoomFactor;
+    const designRight = designLeft + designImg.width * zoomFactor;
+    const designBottom = designTop + designImg.height * zoomFactor;
+    
+    if (x >= designLeft && x <= designRight && y >= designTop && y <= designBottom) {
+      setIsDragging(true);
+      setDragStart({ x: x - designImg.x, y: y - designImg.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !designImg || !canvasRef.current) return;
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvasSize.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvasSize.height / rect.height);
+    
+    const newX = x - dragStart.x;
+    const newY = y - dragStart.y;
+    
+    setDesignImg({
+      ...designImg,
+      x: newX,
+      y: newY
     });
     
-    canvas.add(rect);
+    // Update position for parent component
+    onPositionChange(
+      Math.round(newX - (canvasSize.width / 2 - designImg.width / 2)),
+      Math.round(newY - (canvasSize.height / 2 - designImg.height / 2))
+    );
+    
+    drawCanvas();
   };
-  
+
+  const handleMouseUp = () => {
+    if (isDragging && designImg) {
+      setIsDragging(false);
+      addToHistory(designImg);
+    }
+  };
+
+  // History management
+  const addToHistory = (designObject: ImageObject) => {
+    // If we have made a new change after undoing, remove future history
+    if (historyIndex < history.length - 1) {
+      setHistory(prev => prev.slice(0, historyIndex + 1));
+    }
+    
+    setHistory(prev => [...prev, { ...designObject }]);
+    setHistoryIndex(prev => prev + 1);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex <= 0) return;
+    
+    const newIndex = historyIndex - 1;
+    setHistoryIndex(newIndex);
+    
+    if (history[newIndex]) {
+      setDesignImg(history[newIndex]);
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex >= history.length - 1) return;
+    
+    const newIndex = historyIndex + 1;
+    setHistoryIndex(newIndex);
+    
+    if (history[newIndex]) {
+      setDesignImg(history[newIndex]);
+    }
+  };
+
+  // Handle download
+  const handleDownload = () => {
+    if (!canvasRef.current || !designImg) {
+      toast({
+        title: "Error",
+        description: "Please upload a design image before downloading",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Create a temporary canvas without debug visuals for download
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvasSize.width;
+    tempCanvas.height = canvasSize.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    if (tempCtx && mockupImg) {
+      // Draw background
+      tempCtx.fillStyle = '#f9fafb';
+      tempCtx.fillRect(0, 0, canvasSize.width, canvasSize.height);
+      
+      // Draw mockup
+      tempCtx.drawImage(
+        mockupImg.img,
+        mockupImg.x,
+        mockupImg.y,
+        mockupImg.width,
+        mockupImg.height
+      );
+      
+      // Draw design
+      tempCtx.drawImage(
+        designImg.img,
+        designImg.x,
+        designImg.y,
+        designImg.width,
+        designImg.height
+      );
+      
+      // Get data URL
+      const dataURL = tempCanvas.toDataURL('image/png');
+      
+      // Create download link
+      const link = document.createElement('a');
+      link.download = `tshirt-mockup-${mockupId}.png`;
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Success",
+        description: "Mockup downloaded successfully!",
+      });
+      
+      onDownload();
+    }
+  };
+
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
@@ -507,7 +534,16 @@ export default function PreviewCanvas({
       </CardHeader>
       <CardContent className="pt-0">
         <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: '600px' }}>
-          <canvas ref={canvasRef} />
+          <canvas 
+            ref={canvasRef} 
+            width={canvasSize.width} 
+            height={canvasSize.height}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            style={{ maxWidth: '100%', maxHeight: '100%' }}
+          />
         </div>
         
         <div className="mt-4 flex justify-between">
@@ -516,8 +552,7 @@ export default function PreviewCanvas({
               variant="outline"
               size="sm"
               onClick={handleUndo}
-              disabled={!canUndo}
-              className={!canUndo ? 'opacity-50 cursor-not-allowed' : ''}
+              disabled={historyIndex <= 0}
             >
               <Undo className="mr-2 h-4 w-4" />
               Undo
@@ -526,8 +561,8 @@ export default function PreviewCanvas({
               variant="outline"
               size="sm"
               onClick={handleRedo}
-              disabled={!canRedo}
-              className={`ml-2 ${!canRedo ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={historyIndex >= history.length - 1}
+              className="ml-2"
             >
               <Redo className="mr-2 h-4 w-4" />
               Redo
@@ -537,19 +572,19 @@ export default function PreviewCanvas({
             <Button 
               variant="outline"
               size="sm"
-              onClick={updateHistory}
+              onClick={() => designImg && addToHistory(designImg)}
             >
               <Save className="mr-2 h-4 w-4" />
-              Quick Save
+              Save Position
             </Button>
             <Button 
               size="sm"
               onClick={handleDownload}
               className="ml-2"
-              disabled={!designImage}
+              disabled={!designImg}
             >
-              <Check className="mr-2 h-4 w-4" />
-              Apply Changes
+              <Download className="mr-2 h-4 w-4" />
+              Download
             </Button>
           </div>
         </div>
