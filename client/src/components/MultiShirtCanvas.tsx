@@ -339,10 +339,11 @@ export default function MultiShirtCanvas({
       const designX = shirt.x + shirt.designOffset.x;
       const designY = shirt.y + shirt.designOffset.y + globalYOffset;
       
+      // Draw from top point instead of center
       ctx.drawImage(
         designImg,
         designX - (designWidth / 2),
-        designY - (designHeight / 2),
+        designY, // No longer subtracting half the height
         designWidth,
         designHeight
       );
@@ -392,12 +393,12 @@ export default function MultiShirtCanvas({
       const designX = shirt.x + shirt.designOffset.x;
       const designY = shirt.y + shirt.designOffset.y + globalYOffset;
       
-      // Draw design area
+      // Draw design area - aligned with top-based positioning
       ctx.strokeStyle = isSelected ? 'rgba(255, 0, 0, 0.8)' : 'rgba(255, 0, 0, 0.4)';
       ctx.lineWidth = isSelected ? 3 : 1;
       ctx.strokeRect(
         designX - (areaWidth / 2),
-        designY - (areaHeight / 2),
+        designY,
         areaWidth,
         areaHeight
       );
@@ -527,10 +528,11 @@ export default function MultiShirtCanvas({
           const designX = shirt.x + shirt.designOffset.x;
           const designY = shirt.y + shirt.designOffset.y + globalYOffset;
           
+          // Draw from top point instead of center for download too
           downloadCtx.drawImage(
             designImg,
             designX - (designWidth / 2),
-            designY - (designHeight / 2),
+            designY, // No longer subtracting half the height
             designWidth,
             designHeight
           );

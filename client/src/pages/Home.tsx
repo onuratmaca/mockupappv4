@@ -18,7 +18,7 @@ export default function Home() {
   const [designSize, setDesignSize] = useState(100); // Start at 100% (will be scaled based on file type)
   const [showSavedProjects, setShowSavedProjects] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
-  const [placementSettings, setPlacementSettings] = useState<PlacementSettings | null>(null);
+  const [placementSettings, setPlacementSettings] = useState<PlacementSettings | undefined>(undefined);
   
   // Fixed position for all designs
   const designPosition = "center";
@@ -221,7 +221,7 @@ export default function Home() {
                 designPosition={designPosition}
                 onDownload={handleDownloadMockup}
                 onSaveSettings={handleSavePlacementSettings}
-                initialSettings={placementSettings}
+                initialSettings={placementSettings || undefined}
               />
             </div>
           </div>
