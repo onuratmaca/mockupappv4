@@ -30,7 +30,7 @@ export default function MultiShirtCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mockupImg, setMockupImg] = useState<HTMLImageElement | null>(null);
   const [designImg, setDesignImg] = useState<HTMLImageElement | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(60); // Reduced to fit entire mockup
+  const [zoomLevel, setZoomLevel] = useState(100); // Full size view
   const [canvasSize] = useState({ width: 4000, height: 3000 });
 
   // Initialize canvas with exact mockup dimensions
@@ -103,12 +103,59 @@ export default function MultiShirtCanvas({
     if (mockupImg) {
       ctx.drawImage(mockupImg, 0, 0, canvas.width, canvas.height);
       
+      // Draw printable areas for debugging
+      drawPrintableAreas(ctx);
+      
       // Draw design on all shirts if we have a design image
       if (designImg) {
         drawDesignOnAllShirts(ctx);
       }
     }
   }, [mockupImg, designImg, designSize, designPosition]);
+  
+  // Helper function to visualize the printable areas
+  const drawPrintableAreas = (ctx: CanvasRenderingContext2D) => {
+    // GRID LAYOUT FOR THE 8 SHIRTS (4 across, 2 down)
+    const shirtCenters = [
+      // Top row (left to right)
+      { x: 500, y: 800 },   // Top left shirt 
+      { x: 1335, y: 800 },  // Top left-center shirt
+      { x: 2665, y: 800 },  // Top right-center shirt 
+      { x: 3500, y: 800 },  // Top right shirt
+      
+      // Bottom row (left to right)
+      { x: 500, y: 2300 },  // Bottom left shirt 
+      { x: 1335, y: 2300 }, // Bottom left-center shirt
+      { x: 2665, y: 2300 }, // Bottom right-center shirt
+      { x: 3500, y: 2300 }  // Bottom right shirt
+    ];
+    
+    // Add rectangles to show the current printable areas
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+    ctx.lineWidth = 2;
+    
+    shirtCenters.forEach(pos => {
+      // Draw a red rectangle for the current positioning
+      // 300x300 pixel area to represent printable area
+      const width = 300;
+      const height = 300;
+      
+      ctx.strokeRect(
+        pos.x - width/2,
+        pos.y - height/2,
+        width,
+        height
+      );
+      
+      // Draw crosshair at the center
+      ctx.beginPath();
+      ctx.moveTo(pos.x - 20, pos.y);
+      ctx.lineTo(pos.x + 20, pos.y);
+      ctx.moveTo(pos.x, pos.y - 20);
+      ctx.lineTo(pos.x, pos.y + 20);
+      ctx.stroke();
+    });
+  };
 
   // Function to draw design on all 8 shirts
   const drawDesignOnAllShirts = (ctx: CanvasRenderingContext2D) => {
@@ -232,19 +279,18 @@ export default function MultiShirtCanvas({
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: '70vh', minHeight: '500px' }}>
+        <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: 'auto' }}>
           <div style={{ 
             transform: `scale(${zoomLevel / 100})`, 
             transformOrigin: 'center', 
             transition: 'transform 0.2s ease',
-            maxHeight: '100%',
-            maxWidth: '100%'
+            width: '100%'
           }}>
             <canvas 
               ref={canvasRef} 
               width={canvasSize.width} 
               height={canvasSize.height}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
             />
           </div>
         </div>
