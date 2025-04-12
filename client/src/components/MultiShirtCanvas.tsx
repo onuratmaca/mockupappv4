@@ -6,7 +6,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw, Save } from "lucide-react";
+import { Calculator, Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw, Save, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getMockupById } from "@/lib/mockup-data";
 import { Slider } from "@/components/ui/slider";
@@ -903,9 +903,48 @@ export default function MultiShirtCanvas({
               </div>
             </div>
             
+            {/* Position Presets */}
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-medium text-gray-700">Position Presets</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={autoPosition}
+                  disabled={!designImg}
+                >
+                  <Zap className="mr-1 h-3 w-3" />
+                  Auto-Position
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-5 gap-2 mb-4">
+                {DESIGN_PRESETS.map((preset, idx) => (
+                  <Button
+                    key={idx}
+                    variant={selectedPreset === idx ? "default" : "outline"}
+                    size="sm"
+                    className="text-xs h-auto py-1 px-2 justify-start flex flex-col items-start"
+                    onClick={() => applyPreset(idx)}
+                  >
+                    <span className="font-semibold">{preset.name}</span>
+                    <span className="text-[10px] opacity-80">{preset.forRatio}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
             {/* Design size controls */}
             <div className="mb-6">
-              <h4 className="text-sm font-medium mb-3 text-gray-700">Design Size</h4>
+              <h4 className="text-sm font-medium mb-3 text-gray-700 flex justify-between">
+                <span>Design Size</span>
+                {selectedPreset !== null && (
+                  <span className="text-xs font-normal text-gray-500">
+                    Using "{DESIGN_PRESETS[selectedPreset].name}" preset
+                  </span>
+                )}
+              </h4>
               <div className="grid grid-cols-2 gap-8">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -917,7 +956,10 @@ export default function MultiShirtCanvas({
                         size="sm" 
                         variant="ghost" 
                         className="h-5 w-5 p-0" 
-                        onClick={() => setDesignWidthFactor(Math.max(100, designWidthFactor - 50))}
+                        onClick={() => {
+                          setDesignWidthFactor(Math.max(100, designWidthFactor - 50));
+                          setSelectedPreset(null); // Custom setting now
+                        }}
                       >
                         <span className="text-xs">-</span>
                       </Button>
@@ -925,7 +967,10 @@ export default function MultiShirtCanvas({
                         size="sm" 
                         variant="ghost" 
                         className="h-5 w-5 p-0" 
-                        onClick={() => setDesignWidthFactor(Math.min(800, designWidthFactor + 50))}
+                        onClick={() => {
+                          setDesignWidthFactor(Math.min(800, designWidthFactor + 50));
+                          setSelectedPreset(null); // Custom setting now
+                        }}
                       >
                         <span className="text-xs">+</span>
                       </Button>
@@ -936,7 +981,10 @@ export default function MultiShirtCanvas({
                     max={800} 
                     step={10} 
                     value={[designWidthFactor]} 
-                    onValueChange={(value) => setDesignWidthFactor(value[0])} 
+                    onValueChange={(value) => {
+                      setDesignWidthFactor(value[0]);
+                      setSelectedPreset(null); // Custom setting now
+                    }} 
                   />
                 </div>
                 
@@ -969,7 +1017,10 @@ export default function MultiShirtCanvas({
                     max={600} 
                     step={10} 
                     value={[designHeightFactor]} 
-                    onValueChange={(value) => setDesignHeightFactor(value[0])} 
+                    onValueChange={(value) => {
+                      setDesignHeightFactor(value[0]);
+                      setSelectedPreset(null); // Custom setting now
+                    }} 
                   />
                 </div>
               </div>
@@ -1232,6 +1283,20 @@ export default function MultiShirtCanvas({
                   <span className="text-xs">+</span>
                 </Button>
               </div>
+              
+              <div className="h-6 w-px bg-gray-300"></div>
+              
+              {/* Auto-Position button */}
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="h-7 text-xs px-2"
+                onClick={autoPosition}
+                disabled={!designImg}
+              >
+                <Zap className="h-3 w-3 mr-1" />
+                Auto
+              </Button>
               
               <div className="h-6 w-px bg-gray-300"></div>
               
