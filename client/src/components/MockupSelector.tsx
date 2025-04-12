@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { MOCKUP_IMAGES } from "@/lib/mockup-data";
+import { MOCKUP_IMAGES, getMockupById } from "@/lib/mockup-data";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface MockupSelectorProps {
   selectedMockupId: number;
@@ -14,58 +16,37 @@ export default function MockupSelector({
   selectedMockupId,
   onMockupSelect
 }: MockupSelectorProps) {
-  const [currentTab, setCurrentTab] = useState("all");
+  const selectedMockup = getMockupById(selectedMockupId);
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium">Mockup Template</h3>
-          
-          <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab} className="w-full">
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="all">All Templates</TabsTrigger>
-              <TabsTrigger value="favorites">Favorites</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="all" className="mt-4">
-              <div className="grid grid-cols-2 gap-2">
-                {MOCKUP_IMAGES.map((mockup) => (
-                  <Button
-                    key={mockup.id}
-                    variant={mockup.id === selectedMockupId ? "default" : "outline"}
-                    className={cn(
-                      "h-24 justify-start px-2 py-1 transition-all",
-                      mockup.id === selectedMockupId ? "border-2 border-primary" : "border border-input"
-                    )}
-                    onClick={() => onMockupSelect(mockup.id)}
-                  >
-                    <div className="flex items-center w-full">
-                      <div className="w-16 h-16 mr-2 overflow-hidden rounded">
-                        <img 
-                          src={mockup.src} 
-                          alt={mockup.name} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex flex-col items-start text-left">
-                        <span className="font-medium">{mockup.name}</span>
-                        <span className="text-xs text-muted-foreground">8 colors</span>
-                      </div>
-                    </div>
-                  </Button>
-                ))}
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-gray-500">Template:</span>
+      <Select
+        value={selectedMockupId.toString()}
+        onValueChange={(value) => onMockupSelect(parseInt(value))}
+      >
+        <SelectTrigger className="h-8 min-w-[180px]">
+          <SelectValue>
+            {selectedMockup?.name || "Select a mockup"}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          {MOCKUP_IMAGES.map((mockup) => (
+            <SelectItem key={mockup.id} value={mockup.id.toString()}>
+              <div className="flex items-center">
+                <div className="w-6 h-6 mr-2 overflow-hidden rounded-sm">
+                  <img 
+                    src={mockup.src} 
+                    alt={mockup.name} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span>{mockup.name}</span>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="favorites" className="mt-4">
-              <div className="p-4 text-center text-muted-foreground">
-                No favorites selected yet
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </CardContent>
-    </Card>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

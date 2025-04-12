@@ -6,6 +6,7 @@ import MockupSelector from "@/components/MockupSelector";
 import DesignControls from "@/components/DesignControls";
 import MultiShirtCanvas, { PlacementSettings } from "@/components/MultiShirtCanvas";
 import SavedProjectsModal from "@/components/SavedProjectsModal";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Project } from "@shared/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -193,37 +194,60 @@ export default function Home() {
       
       <main className="flex-grow">
         <div className="max-w-full mx-auto px-4 py-4">
-          <div className="flex flex-col lg:flex-row">
-            <div className="lg:w-1/5 lg:min-w-[260px]">
-              <div className="bg-white rounded-lg shadow-md p-4 space-y-4 sticky top-0">
-                <DesignUploader
-                  onDesignUpload={setDesignImage}
-                />
-                
-                <MockupSelector
-                  selectedMockupId={selectedMockupId}
-                  onMockupSelect={setSelectedMockupId}
-                />
-                
-                <DesignControls
-                  designSize={designSize}
-                  onDesignSizeChange={setDesignSize}
-                  onResetDesign={handleResetDesign}
-                />
-              </div>
+          {/* Persistent toolbar */}
+          <div className="bg-white rounded-lg shadow-sm p-2 mb-4 flex items-center space-x-4 flex-wrap">
+            <div className="flex items-center space-x-3">
+              <DesignUploader onDesignUpload={setDesignImage} />
+              {designImage && (
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-gray-500">Size:</span>
+                  <input
+                    type="range"
+                    min="50"
+                    max="150"
+                    step="5"
+                    value={designSize}
+                    onChange={(e) => setDesignSize(parseInt(e.target.value))}
+                    className="w-24"
+                  />
+                  <span className="text-xs font-medium">{designSize}%</span>
+                </div>
+              )}
             </div>
             
-            <div className="flex-1 mt-4 lg:mt-0 lg:ml-4">
-              <MultiShirtCanvas
-                designImage={designImage}
-                mockupId={selectedMockupId}
-                designSize={designSize}
-                designPosition={designPosition}
-                onDownload={handleDownloadMockup}
-                onSaveSettings={handleSavePlacementSettings}
-                initialSettings={placementSettings || undefined}
-              />
-            </div>
+            <div className="h-6 border-l border-gray-200"></div>
+            
+            <MockupSelector
+              selectedMockupId={selectedMockupId}
+              onMockupSelect={setSelectedMockupId}
+            />
+            
+            {designImage && (
+              <>
+                <div className="h-6 border-l border-gray-200"></div>
+                <Button 
+                  onClick={handleResetDesign}
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs"
+                >
+                  Reset Size
+                </Button>
+              </>
+            )}
+          </div>
+          
+          {/* Main content - canvas only */}
+          <div className="w-full">
+            <MultiShirtCanvas
+              designImage={designImage}
+              mockupId={selectedMockupId}
+              designSize={designSize}
+              designPosition={designPosition}
+              onDownload={handleDownloadMockup}
+              onSaveSettings={handleSavePlacementSettings}
+              initialSettings={placementSettings || undefined}
+            />
           </div>
         </div>
       </main>
