@@ -219,15 +219,7 @@ export default function Home() {
               variant="ghost" 
               size="sm" 
               className="h-7 text-xs"
-              onClick={() => {
-                const canvasRef = document.getElementById('canvas-container');
-                if (canvasRef) {
-                  const guidesBtn = canvasRef.querySelector('button[data-guides-button="true"]');
-                  if (guidesBtn) {
-                    (guidesBtn as HTMLButtonElement).click();
-                  }
-                }
-              }}
+              onClick={() => guidesFn && guidesFn()}
             >
               Hide Guides
             </Button>
@@ -239,32 +231,16 @@ export default function Home() {
             variant="ghost" 
             size="icon" 
             className="h-7 w-7"
-            onClick={() => {
-              const canvasRef = document.getElementById('canvas-container');
-              if (canvasRef) {
-                const zoomOutBtn = canvasRef.querySelector('button[data-zoom-out="true"]');
-                if (zoomOutBtn) {
-                  (zoomOutBtn as HTMLButtonElement).click();
-                }
-              }
-            }}
+            onClick={() => zoomOutFn && zoomOutFn()}
           >
             <span className="text-xs">-</span>
           </Button>
-          <span className="text-xs font-medium w-12 text-center">100%</span>
+          <span className="text-xs font-medium w-12 text-center">{zoomLevel}%</span>
           <Button 
             variant="ghost" 
             size="icon" 
             className="h-7 w-7"
-            onClick={() => {
-              const canvasRef = document.getElementById('canvas-container');
-              if (canvasRef) {
-                const zoomInBtn = canvasRef.querySelector('button[data-zoom-in="true"]');
-                if (zoomInBtn) {
-                  (zoomInBtn as HTMLButtonElement).click();
-                }
-              }
-            }}
+            onClick={() => zoomInFn && zoomInFn()}
           >
             <span className="text-xs">+</span>
           </Button>
@@ -334,6 +310,11 @@ export default function Home() {
           onDownload={handleDownloadMockup}
           onSaveSettings={handleSavePlacementSettings}
           initialSettings={placementSettings || undefined}
+          onAutoButtonRef={setAutoFn}
+          onEditButtonRef={setEditFn}
+          onGuidesButtonRef={setGuidesFn}
+          onZoomInRef={setZoomInFn}
+          onZoomOutRef={setZoomOutFn}
         />
       </div>
       
