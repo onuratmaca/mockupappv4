@@ -910,237 +910,97 @@ export default function MultiShirtCanvas({
               </div>
             </div>
             
-            {/* Position Presets */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-medium text-gray-700">Position Presets</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={autoPosition}
-                  disabled={!designImg}
-                >
-                  <Zap className="mr-1 h-3 w-3" />
-                  Auto-Position
-                </Button>
+            {/* Basic Controls - Always visible in edit mode */}
+            <div className="pt-3 flex flex-wrap gap-4 items-center justify-between border-t border-gray-200 mt-3">
+              {/* Quick size controls */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">Width: {designWidthFactor}px</span>
+                <Slider 
+                  min={100} 
+                  max={800} 
+                  step={10} 
+                  value={[designWidthFactor]} 
+                  onValueChange={(value) => {
+                    setDesignWidthFactor(value[0]);
+                    setSelectedPreset(null);
+                  }}
+                  className="w-24" 
+                />
+                <div className="flex gap-1">
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-5 w-5 p-0" 
+                    onClick={() => {
+                      setDesignWidthFactor(Math.max(100, designWidthFactor - 50));
+                      setSelectedPreset(null);
+                    }}
+                  >
+                    <span className="text-xs">-</span>
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-5 w-5 p-0" 
+                    onClick={() => {
+                      setDesignWidthFactor(Math.min(800, designWidthFactor + 50));
+                      setSelectedPreset(null);
+                    }}
+                  >
+                    <span className="text-xs">+</span>
+                  </Button>
+                </div>
               </div>
               
-              <div className="grid grid-cols-5 gap-2 mb-4">
-                {DESIGN_PRESETS.map((preset, idx) => (
-                  <Button
-                    key={idx}
-                    variant={selectedPreset === idx ? "default" : "outline"}
-                    size="sm"
-                    className="text-xs h-auto py-1 px-2 justify-start flex flex-col items-start"
-                    onClick={() => applyPreset(idx)}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">Height: {designHeightFactor}px</span>
+                <Slider 
+                  min={100} 
+                  max={600} 
+                  step={10} 
+                  value={[designHeightFactor]} 
+                  onValueChange={(value) => {
+                    setDesignHeightFactor(value[0]);
+                    setSelectedPreset(null);
+                  }}
+                  className="w-24"
+                />
+                <div className="flex gap-1">
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-5 w-5 p-0" 
+                    onClick={() => {
+                      setDesignHeightFactor(Math.max(100, designHeightFactor - 50));
+                      setSelectedPreset(null);
+                    }}
                   >
-                    <span className="font-semibold">{preset.name}</span>
-                    <span className="text-[10px] opacity-80">{preset.forRatio}</span>
+                    <span className="text-xs">-</span>
                   </Button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Design size controls */}
-            <div className="mb-6">
-              <h4 className="text-sm font-medium mb-3 text-gray-700 flex justify-between">
-                <span>Design Size</span>
-                {selectedPreset !== null && (
-                  <span className="text-xs font-normal text-gray-500">
-                    Using "{DESIGN_PRESETS[selectedPreset].name}" preset
-                  </span>
-                )}
-              </h4>
-              <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs text-gray-500 flex items-center">
-                      <MoveHorizontal className="h-3 w-3 mr-1" /> Width: {designWidthFactor}px
-                    </label>
-                    <div className="flex gap-1">
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-5 w-5 p-0" 
-                        onClick={() => {
-                          setDesignWidthFactor(Math.max(100, designWidthFactor - 50));
-                          setSelectedPreset(null); // Custom setting now
-                        }}
-                      >
-                        <span className="text-xs">-</span>
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-5 w-5 p-0" 
-                        onClick={() => {
-                          setDesignWidthFactor(Math.min(800, designWidthFactor + 50));
-                          setSelectedPreset(null); // Custom setting now
-                        }}
-                      >
-                        <span className="text-xs">+</span>
-                      </Button>
-                    </div>
-                  </div>
-                  <Slider 
-                    min={100} 
-                    max={800} 
-                    step={10} 
-                    value={[designWidthFactor]} 
-                    onValueChange={(value) => {
-                      setDesignWidthFactor(value[0]);
-                      setSelectedPreset(null); // Custom setting now
-                    }} 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs text-gray-500 flex items-center">
-                      <MoveVertical className="h-3 w-3 mr-1" /> Height: {designHeightFactor}px
-                    </label>
-                    <div className="flex gap-1">
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-5 w-5 p-0" 
-                        onClick={() => {
-                          setDesignHeightFactor(Math.max(100, designHeightFactor - 50));
-                          setSelectedPreset(null); // Custom setting now
-                        }}
-                      >
-                        <span className="text-xs">-</span>
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-5 w-5 p-0" 
-                        onClick={() => {
-                          setDesignHeightFactor(Math.min(600, designHeightFactor + 50));
-                          setSelectedPreset(null); // Custom setting now
-                        }}
-                      >
-                        <span className="text-xs">+</span>
-                      </Button>
-                    </div>
-                  </div>
-                  <Slider 
-                    min={100} 
-                    max={600} 
-                    step={10} 
-                    value={[designHeightFactor]} 
-                    onValueChange={(value) => {
-                      setDesignHeightFactor(value[0]);
-                      setSelectedPreset(null); // Custom setting now
-                    }} 
-                  />
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="h-5 w-5 p-0" 
+                    onClick={() => {
+                      setDesignHeightFactor(Math.min(600, designHeightFactor + 50));
+                      setSelectedPreset(null);
+                    }}
+                  >
+                    <span className="text-xs">+</span>
+                  </Button>
                 </div>
               </div>
-            </div>
-            
-            {/* Position offset controls */}
-            <div className="mb-6">
-              <h4 className="text-sm font-medium mb-3 text-gray-700">Position Adjustment</h4>
-              <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs text-gray-500 flex items-center">
-                      <MoveHorizontal className="h-3 w-3 mr-1" /> X Offset: {
-                        syncAll 
-                          ? shirtConfigs[0].designOffset.x 
-                          : shirtConfigs[selectedShirt].designOffset.x
-                      }px
-                    </label>
-                    <div className="flex gap-1">
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-5 w-5 p-0" 
-                        onClick={() => handleXOffsetChange(syncAll ? 
-                          Math.max(-200, shirtConfigs[0].designOffset.x - 20) : 
-                          Math.max(-200, shirtConfigs[selectedShirt].designOffset.x - 20))}
-                      >
-                        <span className="text-xs">-</span>
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-5 w-5 p-0" 
-                        onClick={() => handleXOffsetChange(syncAll ? 
-                          Math.min(200, shirtConfigs[0].designOffset.x + 20) : 
-                          Math.min(200, shirtConfigs[selectedShirt].designOffset.x + 20))}
-                      >
-                        <span className="text-xs">+</span>
-                      </Button>
-                    </div>
-                  </div>
-                  <Slider 
-                    min={-200} 
-                    max={200} 
-                    step={5} 
-                    value={[
-                      syncAll 
-                        ? shirtConfigs[0].designOffset.x 
-                        : shirtConfigs[selectedShirt].designOffset.x
-                    ]} 
-                    onValueChange={(value) => handleXOffsetChange(value[0])} 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <label className="text-xs text-gray-500 flex items-center">
-                      <MoveVertical className="h-3 w-3 mr-1" /> Y Offset: {
-                        syncAll 
-                          ? shirtConfigs[0].designOffset.y 
-                          : shirtConfigs[selectedShirt].designOffset.y
-                      }px
-                    </label>
-                    <div className="flex gap-1">
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-5 w-5 p-0" 
-                        onClick={() => handleYOffsetChange(syncAll ? 
-                          Math.max(-300, shirtConfigs[0].designOffset.y - 20) : 
-                          Math.max(-300, shirtConfigs[selectedShirt].designOffset.y - 20))}
-                      >
-                        <span className="text-xs">-</span>
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="h-5 w-5 p-0" 
-                        onClick={() => handleYOffsetChange(syncAll ? 
-                          Math.min(300, shirtConfigs[0].designOffset.y + 20) : 
-                          Math.min(300, shirtConfigs[selectedShirt].designOffset.y + 20))}
-                      >
-                        <span className="text-xs">+</span>
-                      </Button>
-                    </div>
-                  </div>
-                  <Slider 
-                    min={-300} 
-                    max={300} 
-                    step={5} 
-                    value={[
-                      syncAll 
-                        ? shirtConfigs[0].designOffset.y 
-                        : shirtConfigs[selectedShirt].designOffset.y
-                    ]} 
-                    onValueChange={(value) => handleYOffsetChange(value[0])} 
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Global Y Offset */}
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between items-center">
-                <label className="text-xs text-gray-500 flex items-center">
-                  <MoveVertical className="h-3 w-3 mr-1" /> Global Y Adjustment: {globalYOffset}px
-                </label>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">Global Y: {globalYOffset}px</span>
+                <Slider 
+                  min={-300} 
+                  max={100} 
+                  step={5}
+                  value={[globalYOffset]} 
+                  onValueChange={(value) => setGlobalYOffset(value[0])}
+                  className="w-24"
+                />
                 <div className="flex gap-1">
                   <Button 
                     size="sm" 
@@ -1160,44 +1020,24 @@ export default function MultiShirtCanvas({
                   </Button>
                 </div>
               </div>
-              <Slider 
-                min={-300} 
-                max={100} 
-                step={5} 
-                defaultValue={[-200]}
-                value={[globalYOffset]} 
-                onValueChange={(value) => setGlobalYOffset(value[0])} 
-              />
-            </div>
-            
-            {!syncAll && (
-              <div>
-                <h4 className="text-sm font-medium mb-2 text-gray-700">Select Shirt</h4>
-                <div className="grid grid-cols-4 gap-2">
-                  {shirtConfigs.map((shirt, index) => (
+              
+              {/* Presets */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium">Presets:</span>
+                <div className="flex gap-1">
+                  {DESIGN_PRESETS.map((preset, idx) => (
                     <Button
-                      key={index}
+                      key={idx}
+                      variant={selectedPreset === idx ? "default" : "outline"}
                       size="sm"
-                      variant={selectedShirt === index ? "default" : "outline"}
-                      className="text-xs h-7"
-                      onClick={() => setSelectedShirt(index)}
+                      className="text-xs h-7 px-2"
+                      onClick={() => applyPreset(idx)}
                     >
-                      {shirt.name} #{index + 1}
+                      {preset.name}
                     </Button>
                   ))}
                 </div>
               </div>
-            )}
-            
-            <div className="mt-4 pt-3 border-t border-gray-200">
-              <Button 
-                size="sm" 
-                variant="secondary" 
-                className="w-full"
-                onClick={generatePositionData}
-              >
-                <span className="text-xs">Export Position Data for Developer</span>
-              </Button>
             </div>
           </div>
         )}
