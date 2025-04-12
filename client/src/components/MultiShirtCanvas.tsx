@@ -832,51 +832,7 @@ export default function MultiShirtCanvas({
     }
   };
   
-  // Keyboard shortcut handler
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!designImg) return; // Only work when we have a design
 
-    // Common design editing shortcuts
-    switch (e.key.toLowerCase()) {
-      case 'a': // Auto-position design
-        autoPosition();
-        break;
-      case 'd': // Download current mockup
-        handleDownload();
-        break;
-      case 's': // Save settings
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault(); // Prevent browser save
-          saveSettings();
-        }
-        break;
-      case '+': // Increase design size
-      case '=': // = key without shift is actually + on most keyboards
-        setDesignWidthFactor(prev => Math.min(800, prev + 50));
-        setSelectedPreset(null);
-        break;
-      case '-': // Decrease design size
-        setDesignWidthFactor(prev => Math.max(100, prev - 50));
-        setSelectedPreset(null);
-        break;
-      case 'arrowup': // Move design up
-        setGlobalYOffset(prev => prev - 10);
-        break;
-      case 'arrowdown': // Move design down
-        setGlobalYOffset(prev => prev + 10);
-        break;
-    }
-  }, [designImg, autoPosition, handleDownload, saveSettings]);
-
-  // Add and remove keyboard event listener
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    
-    // Clean up
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
 
   return (
     <Card className="h-full">
@@ -1276,103 +1232,7 @@ export default function MultiShirtCanvas({
             </div>
           </div>
           
-          {/* Main Workflow Toolbar - Always visible when design is loaded */}
-          {designImg && (
-            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm shadow-lg rounded-full px-2 py-1 flex items-center gap-1 border border-gray-200">
-              <div className="flex items-center space-x-1 px-2">
-                {/* Workflow steps */}
-                <Button
-                  variant={selectedPreset !== null ? "default" : "ghost"}
-                  size="sm"
-                  className="h-8 rounded-full text-xs"
-                  onClick={autoPosition}
-                >
-                  <Zap className="mr-1 h-3.5 w-3.5" />
-                  Auto-Position
-                </Button>
-                
-                <span className="text-gray-300">|</span>
-                
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 rounded-full p-0"
-                    onClick={() => {
-                      setDesignWidthFactor(Math.max(100, designWidthFactor - 50));
-                      setSelectedPreset(null);
-                    }}
-                  >
-                    <Minus className="h-3.5 w-3.5" />
-                  </Button>
-                  
-                  <span className="text-xs font-medium w-[70px] text-center">Size: {Math.round(designWidthFactor/4.5)}%</span>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 rounded-full p-0"
-                    onClick={() => {
-                      setDesignWidthFactor(Math.min(800, designWidthFactor + 50));
-                      setSelectedPreset(null);
-                    }}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-                
-                <span className="text-gray-300">|</span>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 rounded-full text-xs"
-                  onClick={handleDownload}
-                >
-                  <Download className="mr-1 h-3.5 w-3.5" />
-                  Download
-                </Button>
-                
-                {/* JPEG quality for download */}
-                <div className="flex items-center ml-1">
-                  <span className="text-xs font-medium mr-1">Quality:</span>
-                  <select 
-                    className="text-xs rounded border border-gray-200 h-6 px-1"
-                    value={jpegQuality}
-                    onChange={(e) => setJpegQuality(Number(e.target.value))}
-                  >
-                    <option value="75">75%</option>
-                    <option value="85">85%</option>
-                    <option value="95">95%</option>
-                    <option value="100">100%</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Keyboard Shortcuts Hint */}
-          {designImg && (
-            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm p-2 border border-gray-200">
-              <div className="text-xs text-gray-600">
-                <div className="font-medium mb-1">Keyboard Shortcuts</div>
-                <div className="grid grid-cols-1 gap-x-4 gap-y-1">
-                  <div className="flex items-center">
-                    <span className="inline-flex justify-center items-center w-5 h-5 rounded bg-gray-100 mr-1.5 text-[10px] font-medium">A</span>
-                    <span>Auto-Position</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="inline-flex justify-center items-center w-5 h-5 rounded bg-gray-100 mr-1.5 text-[10px] font-medium">D</span>
-                    <span>Download</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="inline-flex justify-center items-center w-5 h-5 rounded bg-gray-100 mr-1.5 text-[10px] font-medium">+/-</span>
-                    <span>Adjust Size</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+
           
           {editMode !== 'none' && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-full px-4 py-2 flex items-center gap-3 border border-gray-200">
