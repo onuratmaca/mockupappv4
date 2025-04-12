@@ -935,7 +935,6 @@ export default function MultiShirtCanvas({
           </Button>
         </div>
       </div>
-      
       <div className="p-2 flex-grow flex flex-col">
         {editMode !== 'none' && (
           <div className="bg-gray-50 p-2 mb-4 rounded-lg border border-gray-200">

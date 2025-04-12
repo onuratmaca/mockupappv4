@@ -186,78 +186,68 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100 overflow-hidden">
+    <div className="h-screen flex flex-col bg-gray-100 overflow-hidden" style={{ maxHeight: '100vh' }}>
       <Header 
         onSaveProject={() => setShowSavedProjects(true)}
         onDownloadMockup={handleDownloadMockup}
       />
       
-      <main className="flex-grow flex flex-col h-full overflow-hidden">
-        <div className="w-full mx-auto px-4 py-2 flex flex-col h-full">
-          {/* Persistent toolbar - more compact */}
-          <div className="bg-white rounded-lg shadow-sm p-2 mb-2 flex items-center space-x-3 flex-wrap">
-            <div className="flex items-center space-x-2">
-              <DesignUploader onDesignUpload={setDesignImage} />
-              {designImage && (
-                <div className="flex items-center space-x-1">
-                  <span className="text-xs text-gray-500">Size:</span>
-                  <input
-                    type="range"
-                    min="50"
-                    max="150"
-                    step="5"
-                    value={designSize}
-                    onChange={(e) => setDesignSize(parseInt(e.target.value))}
-                    className="w-20"
-                  />
-                  <span className="text-xs font-medium">{designSize}%</span>
-                </div>
-              )}
-            </div>
-            
-            <div className="h-6 border-l border-gray-200"></div>
-            
-            <MockupSelector
-              selectedMockupId={selectedMockupId}
-              onMockupSelect={setSelectedMockupId}
-            />
-            
+      <main className="flex-grow flex flex-col" style={{ minHeight: 0 }}>
+        <div className="flex h-10 items-center px-4 py-1 bg-white border-b border-gray-200">
+          <div className="flex items-center gap-2">
+            <DesignUploader onDesignUpload={setDesignImage} />
             {designImage && (
-              <>
-                <div className="h-6 border-l border-gray-200"></div>
-                <Button 
-                  onClick={handleResetDesign}
-                  variant="outline" 
-                  size="sm"
-                  className="text-xs"
-                >
-                  Reset Size
-                </Button>
-              </>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500">Size:</span>
+                <input
+                  type="range"
+                  min="50"
+                  max="150"
+                  step="5"
+                  value={designSize}
+                  onChange={(e) => setDesignSize(parseInt(e.target.value))}
+                  className="w-20"
+                />
+                <span className="text-xs font-medium">{designSize}%</span>
+              </div>
             )}
           </div>
           
-          {/* Main content - canvas in a flex-grow container */}
-          <div className="flex-grow overflow-hidden">
-            <div className="h-full">
-              <MultiShirtCanvas
-                designImage={designImage}
-                mockupId={selectedMockupId}
-                designSize={designSize}
-                designPosition={designPosition}
-                onDownload={handleDownloadMockup}
-                onSaveSettings={handleSavePlacementSettings}
-                initialSettings={placementSettings || undefined}
-              />
-            </div>
-          </div>
+          <div className="h-6 border-l border-gray-200 mx-2"></div>
+          
+          <MockupSelector
+            selectedMockupId={selectedMockupId}
+            onMockupSelect={setSelectedMockupId}
+          />
+          
+          {designImage && (
+            <>
+              <div className="h-6 border-l border-gray-200 mx-2"></div>
+              <Button 
+                onClick={handleResetDesign}
+                variant="outline" 
+                size="sm"
+                className="text-xs h-7"
+              >
+                Reset Size
+              </Button>
+            </>
+          )}
+        </div>
+        
+        {/* Main content - canvas takes most of the screen */}
+        <div className="flex-grow" style={{ height: 'calc(100% - 10px)' }}>
+          <MultiShirtCanvas
+            designImage={designImage}
+            mockupId={selectedMockupId}
+            designSize={designSize}
+            designPosition={designPosition}
+            onDownload={handleDownloadMockup}
+            onSaveSettings={handleSavePlacementSettings}
+            initialSettings={placementSettings || undefined}
+          />
         </div>
       </main>
-      
-      {/* Minimalistic footer */}
-      <div className="bg-white py-1 px-4 text-center text-xs text-gray-500 border-t">
-        <span>© 2025 T-Shirt Mockup Editor • Version 1.0</span>
-      </div>
       
       {showSavedProjects && (
         <SavedProjectsModal
