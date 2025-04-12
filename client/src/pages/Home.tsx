@@ -287,7 +287,7 @@ export default function Home() {
             )}
             
             <Button 
-              onClick={() => setShowEditPanel(true)}
+              onClick={() => setShowSavedProjects(true)}
               variant="outline" 
               size="sm"
               className="text-xs h-7"

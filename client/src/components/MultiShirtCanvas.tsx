@@ -151,27 +151,7 @@ export default function MultiShirtCanvas({
     if (onZoomOutRef) onZoomOutRef(handleZoomOut);
   }, [onAutoButtonRef, onEditButtonRef, onGuidesButtonRef, onZoomInRef, onZoomOutRef]);
   
-  // Call the handleDownload function when onDownload is called
-  const onDownloadTriggered = () => {
-    handleDownload();
-  };
-  
-  // Connect the download function to the parent component's event
-  useEffect(() => {
-    const originalOnDownload = onDownload;
-    
-    // Override the onDownload function
-    onDownload = () => {
-      handleDownload();
-      // Call the original onDownload function after handling the download
-      originalOnDownload();
-    };
-    
-    return () => {
-      // Restore the original onDownload function when the component unmounts
-      onDownload = originalOnDownload;
-    };
-  }, [onDownload]);
+  // We'll handle downloads directly through the hidden button now
   
   // Sync edit mode with parent component
   useEffect(() => {
