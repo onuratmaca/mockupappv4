@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MOCKUP_IMAGES } from "@/lib/mockup-data";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MockupSelectorProps {
   selectedMockupId: number;
