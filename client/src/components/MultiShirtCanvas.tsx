@@ -998,7 +998,10 @@ export default function MultiShirtCanvas({
                         size="sm" 
                         variant="ghost" 
                         className="h-5 w-5 p-0" 
-                        onClick={() => setDesignHeightFactor(Math.max(100, designHeightFactor - 50))}
+                        onClick={() => {
+                          setDesignHeightFactor(Math.max(100, designHeightFactor - 50));
+                          setSelectedPreset(null); // Custom setting now
+                        }}
                       >
                         <span className="text-xs">-</span>
                       </Button>
@@ -1006,7 +1009,10 @@ export default function MultiShirtCanvas({
                         size="sm" 
                         variant="ghost" 
                         className="h-5 w-5 p-0" 
-                        onClick={() => setDesignHeightFactor(Math.min(600, designHeightFactor + 50))}
+                        onClick={() => {
+                          setDesignHeightFactor(Math.min(600, designHeightFactor + 50));
+                          setSelectedPreset(null); // Custom setting now
+                        }}
                       >
                         <span className="text-xs">+</span>
                       </Button>
