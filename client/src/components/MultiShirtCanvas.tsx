@@ -79,7 +79,10 @@ export default function MultiShirtCanvas({
   onEditButtonRef,
   onGuidesButtonRef,
   onZoomInRef,
-  onZoomOutRef
+  onZoomOutRef,
+  jpegQuality: externalJpegQuality,
+  onJpegQualityChange,
+  onGetLastFileSize
 }: MultiShirtCanvasProps) {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -664,16 +667,33 @@ export default function MultiShirtCanvas({
   };
 
   // JPEG quality setting for download
-  const [jpegQuality, setJpegQuality] = useState<number>(85); // Default 85% quality
+  const [jpegQuality, setJpegQuality] = useState<number>(externalJpegQuality || 85); // Use external value if provided
   const [lastFileSize, setLastFileSize] = useState<number | null>(null); // To store actual file size
+  
+  // Update internal quality if external prop changes
+  useEffect(() => {
+    if (externalJpegQuality && externalJpegQuality !== jpegQuality) {
+      setJpegQuality(externalJpegQuality);
+    }
+  }, [externalJpegQuality]);
   
   // Expose jpeg quality and file size to parent
   useEffect(() => {
+    // Pass quality changes back to parent
+    if (onJpegQualityChange && jpegQuality !== externalJpegQuality) {
+      onJpegQualityChange(jpegQuality);
+    }
+    
+    // Pass file size back to parent
+    if (onGetLastFileSize && lastFileSize !== null) {
+      onGetLastFileSize(lastFileSize);
+    }
+    
     // Calculate estimated file size when jpegQuality changes
     if (designImg && mockupImg) {
       calculateFileSize();
     }
-  }, [jpegQuality, designImg, mockupImg]);
+  }, [jpegQuality, lastFileSize, designImg, mockupImg, onJpegQualityChange, onGetLastFileSize]);
   
   // Handle mockup download
   const handleDownload = () => {

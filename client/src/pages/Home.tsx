@@ -27,6 +27,8 @@ export default function Home() {
   const [zoomInFn, setZoomInFn] = useState<(() => void) | null>(null);
   const [zoomOutFn, setZoomOutFn] = useState<(() => void) | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
+  const [jpegQuality, setJpegQuality] = useState(85);
+  const [lastFileSize, setLastFileSize] = useState<number | null>(null);
   
   // Fixed position for all designs
   const designPosition = "center";
@@ -362,6 +364,9 @@ export default function Home() {
             onGuidesButtonRef={setGuidesFn}
             onZoomInRef={setZoomInFn}
             onZoomOutRef={setZoomOutFn}
+            jpegQuality={jpegQuality}
+            onJpegQualityChange={setJpegQuality}
+            onGetLastFileSize={setLastFileSize}
           />
         </div>
       </div>
@@ -372,6 +377,16 @@ export default function Home() {
           onClose={() => setShowSavedProjects(false)}
           onLoadProject={handleLoadProject}
           onSaveProject={handleSaveProject}
+          jpegQuality={jpegQuality}
+          onJpegQualityChange={setJpegQuality}
+          onDownload={() => {
+            // Directly trigger download from MultiShirtCanvas
+            const downloadBtn = document.getElementById('download-btn');
+            if (downloadBtn) {
+              downloadBtn.click();
+            }
+          }}
+          lastFileSize={lastFileSize}
         />
       )}
     </div>
