@@ -331,40 +331,72 @@ export default function MultiShirtCanvas({
     // Calculate the aspect ratio
     const aspectRatio = designImg.width / designImg.height;
     
-    // Auto-detect the design type and choose the appropriate preset
-    let chosenPresetIndex;
-    let yOffset = -200; // Default Y offset
+    /**
+     * IMPORTANT INSIGHT:
+     * When using presets, we need to account for the additional multipliers that get applied in drawDesignsOnShirts():
+     * - For portrait (aspectRatio < 0.7): width gets multiplied by 0.6 and height by 1.5
+     * - For square (0.7 <= aspectRatio <= 1.3): width gets multiplied by 0.8 and height by 1.2 
+     * 
+     * So we need to counteract these multipliers by adjusting our preset values.
+     */
     
+    // Default position on shirt
+    let yOffset = -200; 
+    
+    // Choose preset and adjust for the right appearance
     if (aspectRatio > 2.0) {
       // Very wide - use wide banner preset
-      chosenPresetIndex = 0;
+      setSelectedPreset(0);
+      setDesignWidthFactor(DESIGN_PRESETS[0].widthFactor);
+      setDesignHeightFactor(DESIGN_PRESETS[0].heightFactor);
       yOffset = -150; // Wide designs a bit lower
-    } else if (aspectRatio > 1.3) {
-      // Standard landscape like 4:3, 16:9
-      chosenPresetIndex = 1;
-      yOffset = -180; // Landscape designs slightly higher
-    } else {
-      // For all other designs (square, portrait, and tall), use square preset
-      // as per user feedback, it works better for these types
-      chosenPresetIndex = 2; // Square preset for all non-landscape designs
-      
-      if (aspectRatio >= 0.7 && aspectRatio <= 1.3) {
-        // Square-ish (between 0.7 and 1.3 ratio)
-        yOffset = -200; // Default middle position
-      } else if (aspectRatio >= 0.4 && aspectRatio < 0.7) {
-        // Portrait designs (like 3:4, 9:16)
-        yOffset = -240; // Higher up for portrait designs
-      } else {
-        // Very tall designs (less than 0.4 aspect ratio)
-        yOffset = -250; // Even higher for very tall designs
-      }
+    } 
+    else if (aspectRatio > 1.3) {
+      // Standard landscape designs
+      setSelectedPreset(1);
+      setDesignWidthFactor(DESIGN_PRESETS[1].widthFactor);
+      setDesignHeightFactor(DESIGN_PRESETS[1].heightFactor);
+      yOffset = -180;
     }
-    
-    // Apply the chosen preset
-    const preset = DESIGN_PRESETS[chosenPresetIndex];
-    setDesignWidthFactor(preset.widthFactor);
-    setDesignHeightFactor(preset.heightFactor);
-    setSelectedPreset(chosenPresetIndex);
+    else if (aspectRatio >= 0.7 && aspectRatio <= 1.3) {
+      // Square designs
+      setSelectedPreset(2);
+      setDesignWidthFactor(DESIGN_PRESETS[2].widthFactor);
+      setDesignHeightFactor(DESIGN_PRESETS[2].heightFactor);
+      yOffset = -200;
+    }
+    else if (aspectRatio >= 0.4 && aspectRatio < 0.7) {
+      // Portrait designs need larger size to counteract the 0.6 width multiplier
+      // Use square preset but with adjusted values
+      setSelectedPreset(2); // Still use square preset...
+      
+      // The drawDesignsOnShirts function will multiply width by 0.6 and height by 1.5
+      // So we need to counter that by dividing width by 0.6 (multiplying by 1.67)
+      // and dividing height by 1.5 (multiplying by 0.67)
+      const adjustedWidth = Math.round(DESIGN_PRESETS[2].widthFactor * 1.67);
+      const adjustedHeight = Math.round(DESIGN_PRESETS[2].heightFactor * 0.67);
+      
+      setDesignWidthFactor(adjustedWidth);
+      setDesignHeightFactor(adjustedHeight);
+      
+      // Position portrait designs a bit lower than square designs
+      yOffset = -180; // Only 20px higher than square
+    }
+    else {
+      // Very tall designs (aspectRatio < 0.4) need even more width adjustment
+      setSelectedPreset(2); // Still use square preset...
+      
+      // The drawDesignsOnShirts function will multiply width by 0.6 and height by 1.5
+      // For very tall designs, we need to counter even more
+      const adjustedWidth = Math.round(DESIGN_PRESETS[2].widthFactor * 1.9); // Even more width
+      const adjustedHeight = Math.round(DESIGN_PRESETS[2].heightFactor * 0.67);
+      
+      setDesignWidthFactor(adjustedWidth);
+      setDesignHeightFactor(adjustedHeight);
+      
+      // Position tall designs at similar position to portrait
+      yOffset = -180;
+    }
     
     // Apply calculated Y offset
     setGlobalYOffset(yOffset);
@@ -373,16 +405,29 @@ export default function MultiShirtCanvas({
     setSyncAll(true);
     setEditMode('all');
     
-    // For portrait/tall designs, note that we're using the square preset
-    let presetDescription = preset.name;
-    if ((aspectRatio < 0.7) && chosenPresetIndex === 2) {
-      presetDescription = `${preset.name} (optimized for ${aspectRatio < 0.4 ? 'tall' : 'portrait'} design)`;
+    // Prepare appropriate description for toast
+    let description;
+    if (aspectRatio < 0.7) {
+      const designType = (aspectRatio < 0.4) ? "tall" : "portrait";
+      description = `Optimized ${designType} design (${aspectRatio.toFixed(2)}:1) at Y=${yOffset}px`;
+    } else {
+      const presetName = DESIGN_PRESETS[getSelectedPresetIndex(aspectRatio)].name;
+      description = `Applied "${presetName}" preset at Y=${yOffset}px`;
     }
     
     toast({
       title: "Auto-Positioned",
-      description: `Applied "${presetDescription}" preset at Y=${yOffset}px`,
+      description
     });
+  };
+  
+  // Helper to get preset index based on aspect ratio
+  const getSelectedPresetIndex = (aspectRatio: number): number => {
+    if (aspectRatio > 2.0) return 0; // Wide banner
+    if (aspectRatio > 1.3) return 1; // Landscape
+    if (aspectRatio >= 0.7) return 2; // Square
+    if (aspectRatio >= 0.4) return 3; // Portrait
+    return 4; // Tall
   };
 
   // Draw canvas when any inputs change
