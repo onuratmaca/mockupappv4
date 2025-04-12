@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, MouseEvent } from "react";
+import React, { useRef, useEffect, useState, MouseEvent, useCallback } from "react";
 import { 
   Card,
   CardContent,
@@ -6,13 +6,30 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw, Save, Zap } from "lucide-react";
+import { 
+  Calculator, 
+  Download, 
+  ZoomIn, 
+  ZoomOut, 
+  Eye, 
+  EyeOff, 
+  MoveHorizontal, 
+  MoveVertical, 
+  Crosshair, 
+  RotateCcw, 
+  Save, 
+  Zap,
+  Check,
+  Plus,
+  Minus
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getMockupById } from "@/lib/mockup-data";
 import { Slider } from "@/components/ui/slider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { Project } from "@shared/schema";
+import { clsx } from "clsx";
 
 interface MultiShirtCanvasProps {
   designImage: string | null;
@@ -814,6 +831,52 @@ export default function MultiShirtCanvas({
       });
     }
   };
+  
+  // Keyboard shortcut handler
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!designImg) return; // Only work when we have a design
+
+    // Common design editing shortcuts
+    switch (e.key.toLowerCase()) {
+      case 'a': // Auto-position design
+        autoPosition();
+        break;
+      case 'd': // Download current mockup
+        handleDownload();
+        break;
+      case 's': // Save settings
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault(); // Prevent browser save
+          saveSettings();
+        }
+        break;
+      case '+': // Increase design size
+      case '=': // = key without shift is actually + on most keyboards
+        setDesignWidthFactor(prev => Math.min(800, prev + 50));
+        setSelectedPreset(null);
+        break;
+      case '-': // Decrease design size
+        setDesignWidthFactor(prev => Math.max(100, prev - 50));
+        setSelectedPreset(null);
+        break;
+      case 'arrowup': // Move design up
+        setGlobalYOffset(prev => prev - 10);
+        break;
+      case 'arrowdown': // Move design down
+        setGlobalYOffset(prev => prev + 10);
+        break;
+    }
+  }, [designImg, autoPosition, handleDownload, saveSettings]);
+
+  // Add and remove keyboard event listener
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <Card className="h-full">
