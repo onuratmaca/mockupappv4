@@ -350,9 +350,8 @@ export default function MultiShirtCanvas({
   };
   
   // Auto-position based on the design's dimensions
-  // Make this function public by adding it to the window object
   const autoPosition = () => {
-    console.log("AutoPosition called");
+    console.log("AutoPosition function called directly");
     if (!designImg) {
       toast({
         title: "No Design",
@@ -909,13 +908,20 @@ export default function MultiShirtCanvas({
 
   return (
     <div className="h-full flex flex-col" id="canvas-container">
-      {/* Hidden download button that can be triggered programmatically */}
+      {/* Hidden buttons that can be triggered programmatically */}
       <button 
         id="download-btn" 
         onClick={handleDownload} 
         style={{ display: 'none' }}
       >
         Download
+      </button>
+      <button 
+        id="auto-btn" 
+        onClick={autoPosition} 
+        style={{ display: 'none' }}
+      >
+        Auto
       </button>
       
       <div className="flex-grow h-full overflow-hidden">

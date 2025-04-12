@@ -229,9 +229,16 @@ export default function Home() {
               size="sm" 
               className="h-7 text-xs"
               onClick={() => {
-                if (autoFn) {
-                  // Call autoFn directly without showing edit panel
-                  autoFn();
+                console.log("Auto button clicked in Home");
+                // Find and click the hidden auto button in MultiShirtCanvas
+                const autoButton = document.getElementById('auto-btn');
+                if (autoButton) {
+                  console.log("Found auto button, clicking it directly");
+                  autoButton.click();
+                } else {
+                  console.log("Auto button not found");
+                  // Fallback to the function reference if available
+                  if (autoFn) autoFn();
                 }
               }}
               disabled={!designImage}
