@@ -314,7 +314,7 @@ export default function MultiShirtCanvas({
     }
   };
   
-  // Auto-position based on the design's dimensions
+  // Auto-position based on the design's dimensions and metadata
   const autoPosition = () => {
     if (!designImg) {
       toast({
@@ -328,20 +328,34 @@ export default function MultiShirtCanvas({
     // Calculate the aspect ratio
     const aspectRatio = designImg.width / designImg.height;
     
-    // Choose the appropriate preset based on aspect ratio
+    // Detect if image URL suggests it has transparency (PNG)
+    const hasPotentialTransparency = designImage?.toLowerCase().includes('.png') || 
+                                    designImage?.toLowerCase().includes('png');
+    
+    // Check if image is large or small (pixel count)
+    const imageArea = designImg.width * designImg.height;
+    const isHighResolution = imageArea > 1000000; // More than ~1000x1000px
+    
+    // Choose the appropriate preset based on aspect ratio (main factor)
     let chosenPresetIndex;
     
-    if (aspectRatio > 2.0) {
-      // Very wide - use wide banner preset
+    if (aspectRatio > 2.5) {
+      // Extra wide - use wide banner preset
       chosenPresetIndex = 0;
-    } else if (aspectRatio > 1.3) {
-      // Standard landscape like 4:3, 16:9
+    } else if (aspectRatio > 1.6) {
+      // Standard landscape like 16:9
       chosenPresetIndex = 1;
-    } else if (aspectRatio >= 0.7 && aspectRatio <= 1.3) {
-      // Square-ish (between 0.7 and 1.3 ratio)
+    } else if (aspectRatio > 1.2) {
+      // Moderate landscape like 5:4
+      chosenPresetIndex = 1;
+    } else if (aspectRatio >= 0.8 && aspectRatio <= 1.2) {
+      // Square-ish (around 1:1 ratio)
       chosenPresetIndex = 2;
-    } else if (aspectRatio >= 0.4 && aspectRatio < 0.7) {
-      // Portrait like 3:4, 9:16
+    } else if (aspectRatio >= 0.5 && aspectRatio < 0.8) {
+      // Portrait like 3:4
+      chosenPresetIndex = 3;
+    } else if (aspectRatio >= 0.3 && aspectRatio < 0.5) {
+      // Tall portrait like 9:16
       chosenPresetIndex = 3;
     } else {
       // Very tall
@@ -351,15 +365,43 @@ export default function MultiShirtCanvas({
     // Apply the chosen preset
     applyPreset(chosenPresetIndex);
     
-    // Adjust global Y offset based on aspect ratio too
-    // Taller designs need to be placed higher up
-    if (aspectRatio < 0.7) {
-      setGlobalYOffset(-250); // Tall designs higher up
-    } else if (aspectRatio > 1.5) {
-      setGlobalYOffset(-150); // Wide designs a bit lower
-    } else {
-      setGlobalYOffset(-200); // Default middle position
+    // Adjust global Y offset based on multiple factors
+    let optimizedYOffset = -200; // Default starting position
+    
+    // Factor 1: Aspect ratio adjustment
+    if (aspectRatio < 0.6) {
+      optimizedYOffset -= 50; // Tall designs higher up (-250)
+    } else if (aspectRatio < 0.8) {
+      optimizedYOffset -= 25; // Moderately tall designs slightly higher (-225)
+    } else if (aspectRatio > 1.8) {
+      optimizedYOffset += 50; // Very wide designs lower (-150)
+    } else if (aspectRatio > 1.4) {
+      optimizedYOffset += 25; // Moderately wide designs slightly lower (-175) 
     }
+    
+    // Factor 2: PNG with transparency typically needs different positioning than JPG/solid designs
+    if (hasPotentialTransparency) {
+      optimizedYOffset -= 15; // Move transparent designs slightly higher
+    }
+    
+    // Factor 3: Image resolution can affect optimal positioning
+    if (isHighResolution) {
+      // High-res images often have more detail and need better positioning
+      optimizedYOffset -= 10;
+    }
+    
+    // Apply the calculated Y offset
+    setGlobalYOffset(optimizedYOffset);
+    
+    // Ensure X offsets are balanced by setting them to zero
+    if (syncAll) {
+      updateAllShirtsOffset(0, shirtConfigs[0].designOffset.y);
+    }
+    
+    toast({
+      title: "Auto-Positioning Applied",
+      description: `Optimized for ${aspectRatio.toFixed(2)} aspect ratio using "${DESIGN_PRESETS[chosenPresetIndex].name}" preset`
+    });
     
     // Always ensure edit mode is on after auto-positioning
     setEditMode('all');
