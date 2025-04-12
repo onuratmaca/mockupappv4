@@ -519,6 +519,14 @@ export default function MultiShirtCanvas({
     // Get design's aspect ratio
     const aspectRatio = designImg.width / designImg.height;
     
+    // Check if the design is an SVG by looking at its source or other characteristics
+    // SVG images typically have perfect 1:1 pixel ratio regardless of content
+    const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
+                      designImage?.toLowerCase().startsWith('data:image/svg+xml');
+    
+    // SVG scaling factor - we'll make SVGs larger by default
+    const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
+    
     // Place design on each shirt position
     shirtConfigs.forEach((shirt) => {
       // Calculate design dimensions based on aspect ratio
@@ -540,6 +548,12 @@ export default function MultiShirtCanvas({
         // Square-ish design (like the # symbol)
         areaWidth = designWidthFactor * 0.8;
         areaHeight = designHeightFactor * 1.2;
+      }
+      
+      // Apply SVG scaling factor if detected
+      if (isSvgImage) {
+        areaWidth = areaWidth * svgScaleFactor;
+        areaHeight = areaHeight * svgScaleFactor;
       }
       
       // Apply user's size preference 
@@ -580,6 +594,13 @@ export default function MultiShirtCanvas({
     
     const aspectRatio = designImg.width / designImg.height;
     
+    // Check if the design is an SVG by looking at its source (maintain consistency)
+    const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
+                      designImage?.toLowerCase().startsWith('data:image/svg+xml');
+    
+    // SVG scaling factor - consistent with other functions
+    const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
+    
     // For each shirt, draw boundary and guides
     shirtConfigs.forEach((shirt, index) => {
       // Set different colors for selected vs. non-selected shirts
@@ -600,6 +621,12 @@ export default function MultiShirtCanvas({
       } else {
         areaWidth = designWidthFactor * 0.8;
         areaHeight = designHeightFactor * 1.2;
+      }
+      
+      // Apply SVG scaling if detected
+      if (isSvgImage) {
+        areaWidth = areaWidth * svgScaleFactor;
+        areaHeight = areaHeight * svgScaleFactor;
       }
       
       // Adjust for user size preference
@@ -721,6 +748,13 @@ export default function MultiShirtCanvas({
         // Get design's aspect ratio
         const aspectRatio = designImg.width / designImg.height;
         
+        // Check if the design is an SVG by looking at its source
+        const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
+                          designImage?.toLowerCase().startsWith('data:image/svg+xml');
+        
+        // SVG scaling factor - we'll make SVGs larger by default
+        const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
+        
         // Place design on each shirt position
         shirtConfigs.forEach((shirt) => {
           // Calculate design dimensions based on aspect ratio
@@ -738,6 +772,12 @@ export default function MultiShirtCanvas({
           } else {
             areaWidth = designWidthFactor * 0.8;
             areaHeight = designHeightFactor * 1.2;
+          }
+          
+          // Apply SVG scaling factor if detected
+          if (isSvgImage) {
+            areaWidth = areaWidth * svgScaleFactor;
+            areaHeight = areaHeight * svgScaleFactor;
           }
           
           // Apply user's size preference 
@@ -819,12 +859,25 @@ export default function MultiShirtCanvas({
         // Get design's aspect ratio
         const aspectRatio = designImg.width / designImg.height;
         
+        // Check if the design is an SVG by looking at its source
+        const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
+                          designImage?.toLowerCase().startsWith('data:image/svg+xml');
+        
+        // SVG scaling factor - consistent with drawing function
+        const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
+        
         // Just draw a single shirt to save processing time
         const shirt = shirtConfigs[0];
         
-        // Use the same calculation logic as the download function
+        // Use the same calculation logic as the draw function
         let areaWidth = designWidthFactor;
         let areaHeight = designHeightFactor;
+        
+        // Apply SVG scaling if detected
+        if (isSvgImage) {
+          areaWidth = areaWidth * svgScaleFactor;
+          areaHeight = areaHeight * svgScaleFactor;
+        }
         
         // Apply user's size preference 
         areaWidth = areaWidth * (designSize / 100);
