@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, MouseEvent, useCallback } from "react";
+import React, { useRef, useEffect, useState, MouseEvent } from "react";
 import { 
   Card,
   CardContent,
@@ -6,30 +6,13 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Calculator, 
-  Download, 
-  ZoomIn, 
-  ZoomOut, 
-  Eye, 
-  EyeOff, 
-  MoveHorizontal, 
-  MoveVertical, 
-  Crosshair, 
-  RotateCcw, 
-  Save, 
-  Zap,
-  Check,
-  Plus,
-  Minus
-} from "lucide-react";
+import { Calculator, Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw, Save, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getMockupById } from "@/lib/mockup-data";
 import { Slider } from "@/components/ui/slider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { Project } from "@shared/schema";
-import { clsx } from "clsx";
 
 interface MultiShirtCanvasProps {
   designImage: string | null;
@@ -367,22 +350,6 @@ export default function MultiShirtCanvas({
     
     // Apply the chosen preset
     applyPreset(chosenPresetIndex);
-    
-    // Position the design vertically (3-4 fingers from top)
-    // This ensures consistent vertical placement across different mockups
-    setGlobalYOffset(-220);
-    
-    // Reset all individual shirt offsets to ensure consistency
-    const resetConfigs = [...shirtConfigs];
-    resetConfigs.forEach(config => {
-      config.designOffset = { x: 0, y: 0 };
-    });
-    setShirtConfigs(resetConfigs);
-    
-    toast({
-      title: "Auto-positioned",
-      description: `Design auto-positioned based on ${aspectRatio.toFixed(2)} aspect ratio`,
-    });
     
     // Adjust global Y offset based on aspect ratio too
     // Taller designs need to be placed higher up
@@ -847,8 +814,6 @@ export default function MultiShirtCanvas({
       });
     }
   };
-  
-
 
   return (
     <Card className="h-full">
@@ -1247,8 +1212,6 @@ export default function MultiShirtCanvas({
               />
             </div>
           </div>
-          
-
           
           {editMode !== 'none' && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-full px-4 py-2 flex items-center gap-3 border border-gray-200">
