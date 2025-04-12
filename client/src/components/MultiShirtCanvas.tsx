@@ -958,22 +958,22 @@ export default function MultiShirtCanvas({
       
       <div className="flex-grow h-full overflow-hidden">
         {editMode !== 'none' && (
-          <div className="absolute top-10 left-0 right-0 z-10 bg-white/90 p-2 shadow-md border-b border-gray-200">
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
+          <div className="absolute top-8 left-0 right-0 z-10 bg-white/90 p-1 shadow-md border-b border-gray-200">
+            <div className="flex items-center justify-between flex-wrap gap-1">
+              <div className="flex items-center gap-1">
                 <div className="flex gap-1">
                   <Button 
                     size="sm" 
                     variant={syncAll ? "default" : "outline"}
-                    className="h-7 text-xs"
+                    className="h-6 text-xs px-2"
                     onClick={toggleSyncMode}
                   >
-                    {syncAll ? "All Shirts" : "Individual"}
+                    {syncAll ? "All" : "Individual"}
                   </Button>
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="h-7 text-xs"
+                    className="h-6 text-xs px-2"
                     onClick={resetPositions}
                   >
                     <RotateCcw className="h-3 w-3 mr-1" /> Reset
@@ -984,7 +984,7 @@ export default function MultiShirtCanvas({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-7 text-xs"
+                    className="h-6 text-xs px-2"
                     onClick={autoPosition}
                     disabled={!designImg}
                   >
@@ -994,7 +994,7 @@ export default function MultiShirtCanvas({
                   <Button 
                     size="sm" 
                     variant="secondary" 
-                    className="h-7 text-xs"
+                    className="h-6 text-xs px-2"
                     onClick={saveSettings}
                   >
                     <Save className="h-3 w-3 mr-1" /> Save
@@ -1004,126 +1004,128 @@ export default function MultiShirtCanvas({
             </div>
             
             {/* Basic Controls - Always visible in edit mode */}
-            <div className="pt-2 flex flex-wrap gap-4 items-center justify-between border-t border-gray-200 mt-2">
-              {/* Quick size controls */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">Width: {designWidthFactor}px</span>
-                <Slider 
-                  min={100} 
-                  max={800} 
-                  step={10} 
-                  value={[designWidthFactor]} 
-                  onValueChange={(value) => {
-                    setDesignWidthFactor(value[0]);
-                    setSelectedPreset(null);
-                  }}
-                  className="w-24" 
-                />
-                <div className="flex gap-1">
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-5 w-5 p-0" 
-                    onClick={() => {
-                      setDesignWidthFactor(Math.max(100, designWidthFactor - 50));
+            <div className="pt-1 flex flex-wrap gap-2 items-center justify-between border-t border-gray-200 mt-1">
+              {/* Even more compact controls */}
+              <div className="grid grid-cols-3 gap-2 w-full">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-500 min-w-[60px]">W: {designWidthFactor}</span>
+                  <Slider 
+                    min={100} 
+                    max={800} 
+                    step={10} 
+                    value={[designWidthFactor]} 
+                    onValueChange={(value) => {
+                      setDesignWidthFactor(value[0]);
                       setSelectedPreset(null);
                     }}
-                  >
-                    <span className="text-xs">-</span>
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-5 w-5 p-0" 
-                    onClick={() => {
-                      setDesignWidthFactor(Math.min(800, designWidthFactor + 50));
-                      setSelectedPreset(null);
-                    }}
-                  >
-                    <span className="text-xs">+</span>
-                  </Button>
+                    className="w-20" 
+                  />
+                  <div className="flex gap-1">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-4 w-4 p-0" 
+                      onClick={() => {
+                        setDesignWidthFactor(Math.max(100, designWidthFactor - 50));
+                        setSelectedPreset(null);
+                      }}
+                    >
+                      <span className="text-[10px]">-</span>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-4 w-4 p-0" 
+                      onClick={() => {
+                        setDesignWidthFactor(Math.min(800, designWidthFactor + 50));
+                        setSelectedPreset(null);
+                      }}
+                    >
+                      <span className="text-[10px]">+</span>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">Height: {designHeightFactor}px</span>
-                <Slider 
-                  min={100} 
-                  max={600} 
-                  step={10} 
-                  value={[designHeightFactor]} 
-                  onValueChange={(value) => {
-                    setDesignHeightFactor(value[0]);
-                    setSelectedPreset(null);
-                  }}
-                  className="w-24"
-                />
-                <div className="flex gap-1">
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-5 w-5 p-0" 
-                    onClick={() => {
-                      setDesignHeightFactor(Math.max(100, designHeightFactor - 50));
+                
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-500 min-w-[60px]">H: {designHeightFactor}</span>
+                  <Slider 
+                    min={100} 
+                    max={600} 
+                    step={10} 
+                    value={[designHeightFactor]} 
+                    onValueChange={(value) => {
+                      setDesignHeightFactor(value[0]);
                       setSelectedPreset(null);
                     }}
-                  >
-                    <span className="text-xs">-</span>
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-5 w-5 p-0" 
-                    onClick={() => {
-                      setDesignHeightFactor(Math.min(600, designHeightFactor + 50));
-                      setSelectedPreset(null);
-                    }}
-                  >
-                    <span className="text-xs">+</span>
-                  </Button>
+                    className="w-20"
+                  />
+                  <div className="flex gap-1">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-4 w-4 p-0" 
+                      onClick={() => {
+                        setDesignHeightFactor(Math.max(100, designHeightFactor - 50));
+                        setSelectedPreset(null);
+                      }}
+                    >
+                      <span className="text-[10px]">-</span>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-4 w-4 p-0" 
+                      onClick={() => {
+                        setDesignHeightFactor(Math.min(600, designHeightFactor + 50));
+                        setSelectedPreset(null);
+                      }}
+                    >
+                      <span className="text-[10px]">+</span>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">Global Y: {globalYOffset}px</span>
-                <Slider 
-                  min={-300} 
-                  max={100} 
-                  step={5}
-                  value={[globalYOffset]} 
-                  onValueChange={(value) => setGlobalYOffset(value[0])}
-                  className="w-24"
-                />
-                <div className="flex gap-1">
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-5 w-5 p-0" 
-                    onClick={() => setGlobalYOffset(Math.max(-300, globalYOffset - 20))}
-                  >
-                    <span className="text-xs">-</span>
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-5 w-5 p-0" 
-                    onClick={() => setGlobalYOffset(Math.min(100, globalYOffset + 20))}
-                  >
-                    <span className="text-xs">+</span>
-                  </Button>
+                
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-500 min-w-[60px]">Y: {globalYOffset}</span>
+                  <Slider 
+                    min={-300} 
+                    max={100} 
+                    step={5}
+                    value={[globalYOffset]} 
+                    onValueChange={(value) => setGlobalYOffset(value[0])}
+                    className="w-20"
+                  />
+                  <div className="flex gap-1">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-4 w-4 p-0" 
+                      onClick={() => setGlobalYOffset(Math.max(-300, globalYOffset - 20))}
+                    >
+                      <span className="text-[10px]">-</span>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-4 w-4 p-0" 
+                      onClick={() => setGlobalYOffset(Math.min(100, globalYOffset + 20))}
+                    >
+                      <span className="text-[10px]">+</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
               
               {/* Presets */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium">Presets:</span>
-                <div className="flex gap-1">
+              <div className="flex items-center gap-1 pt-1 border-t border-gray-200 w-full">
+                <span className="text-[10px] text-gray-500">Presets:</span>
+                <div className="flex gap-1 flex-wrap">
                   {DESIGN_PRESETS.map((preset, idx) => (
                     <Button
                       key={idx}
                       variant={selectedPreset === idx ? "default" : "outline"}
                       size="sm"
-                      className="text-xs h-7 px-2"
+                      className="text-[10px] h-5 px-1"
                       onClick={() => applyPreset(idx)}
                     >
                       {preset.name}
@@ -1152,9 +1154,10 @@ export default function MultiShirtCanvas({
                 width={canvasSize.width} 
                 height={canvasSize.height}
                 style={{ 
-                  width: '100%',
+                  width: 'auto',
                   height: 'auto',
-                  maxHeight: '80vh',
+                  maxWidth: '100%',
+                  maxHeight: '100vh',
                   objectFit: 'contain',
                   display: 'block' 
                 }}
@@ -1162,8 +1165,6 @@ export default function MultiShirtCanvas({
               />
             </div>
           </div>
-          
-          {/* No bottom toolbar */}
         </div>
       </div>
     </div>

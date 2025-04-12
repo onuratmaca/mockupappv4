@@ -212,8 +212,8 @@ export default function Home() {
 
   return (
     <div className="h-screen flex bg-white overflow-hidden" style={{ maxHeight: '100vh' }}>
-      {/* Left sidebar - small and compact */}
-      <div className="w-14 bg-gray-50 border-r border-gray-200 z-10 flex flex-col items-center py-4 gap-4">
+      {/* Left sidebar - minimized further */}
+      <div className="w-12 bg-gray-50 border-r border-gray-200 z-10 flex flex-col items-center py-4 gap-4">
         <MockupSelector
           selectedMockupId={selectedMockupId}
           onMockupSelect={setSelectedMockupId}
@@ -221,15 +221,15 @@ export default function Home() {
       </div>
       
       <div className="flex-1 flex flex-col relative">
-        {/* Top header - minimal controls */}
-        <div className="h-10 px-2 flex items-center justify-between shadow-sm border-b border-gray-200 bg-white z-10">
-          <div className="flex items-center space-x-2">
+        {/* Top header - even more compact */}
+        <div className="h-8 px-2 flex items-center justify-between shadow-sm border-b border-gray-200 bg-white z-10">
+          <div className="flex items-center space-x-1">
             <DesignUploader onDesignUpload={setDesignImage} />
             
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-7 text-xs"
+              className="h-6 text-xs px-2"
               onClick={() => {
                 console.log("Auto button clicked in Home");
                 // Find and click the hidden auto button in MultiShirtCanvas
@@ -251,7 +251,7 @@ export default function Home() {
             <Button 
               variant={showEditPanel ? "secondary" : "ghost"}
               size="sm" 
-              className="h-7 text-xs"
+              className="h-6 text-xs px-2"
               onClick={handleEditClick}
               disabled={!designImage}
             >
@@ -261,17 +261,17 @@ export default function Home() {
             <Button 
               variant={!showGuides ? "secondary" : "ghost"}
               size="sm" 
-              className="h-7 text-xs"
+              className="h-6 text-xs px-2"
               onClick={handleGuidesClick}
               disabled={!designImage}
             >
-              {showGuides ? "Hide Guides" : "Show Guides"}
+              {showGuides ? "Hide" : "Guides"}
             </Button>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1">
             {designImage && (
-              <div className="flex items-center gap-1 mr-2">
+              <div className="flex items-center gap-1 mr-1">
                 <span className="text-xs text-gray-500">Size:</span>
                 <input
                   type="range"
@@ -280,14 +280,14 @@ export default function Home() {
                   step="5"
                   value={designSize}
                   onChange={(e) => setDesignSize(parseInt(e.target.value))}
-                  className="w-20"
+                  className="w-16"
                 />
                 <span className="text-xs font-medium">{designSize}%</span>
                 <Button 
                   onClick={handleResetDesign}
                   variant="outline" 
                   size="sm"
-                  className="text-xs h-7 ml-1"
+                  className="text-xs h-6 px-2"
                 >
                   Reset
                 </Button>
@@ -298,10 +298,10 @@ export default function Home() {
               onClick={() => setShowSavedProjects(true)}
               variant="outline" 
               size="sm"
-              className="text-xs h-7"
+              className="text-xs h-6 px-2"
               disabled={!designImage}
             >
-              Export Settings
+              Export
             </Button>
             
             <Button 
@@ -319,27 +319,27 @@ export default function Home() {
               }}
               variant="default" 
               size="sm"
-              className="text-xs h-7 mx-1"
+              className="text-xs h-6 px-2 mx-1"
               disabled={!designImage}
             >
               <Download className="mr-1 h-3 w-3" />
               Download
             </Button>
             
-            <div className="flex items-center bg-gray-100 p-1 rounded-md">
+            <div className="flex items-center bg-gray-100 p-0.5 rounded-md">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7"
+                className="h-5 w-5"
                 onClick={() => zoomOutFn && zoomOutFn()}
               >
                 <span className="text-xs">-</span>
               </Button>
-              <span className="text-xs font-medium w-12 text-center">{zoomLevel}%</span>
+              <span className="text-xs font-medium w-10 text-center">{zoomLevel}%</span>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7"
+                className="h-5 w-5"
                 onClick={() => zoomInFn && zoomInFn()}
               >
                 <span className="text-xs">+</span>
@@ -348,8 +348,8 @@ export default function Home() {
           </div>
         </div>
         
-        {/* Main content - canvas takes most of the screen */}
-        <div className="flex-1" style={{ height: 'calc(100vh - 40px)' }}>
+        {/* Main content - canvas takes even more of the screen */}
+        <div className="flex-1" style={{ height: 'calc(100vh - 32px)' }}>
           <MultiShirtCanvas
             designImage={designImage}
             mockupId={selectedMockupId}
