@@ -192,55 +192,58 @@ export default function Home() {
     setDesignSize(100); // Reset to default 100% size
   };
 
+  const [showEditPanel, setShowEditPanel] = useState(false);
+
   return (
-    <div className="h-screen flex flex-col bg-white overflow-hidden" style={{ maxHeight: '100vh' }}>
-      <div className="fixed top-0 left-0 right-0 z-10 p-1 flex items-center shadow-sm border-b border-gray-200 bg-white">
-        <div className="flex items-center space-x-2 px-2">
-          <DesignUploader onDesignUpload={setDesignImage} />
+    <div className="h-screen flex bg-white overflow-hidden" style={{ maxHeight: '100vh' }}>
+      {/* Left sidebar - small and compact */}
+      <div className="w-14 bg-gray-50 border-r border-gray-200 z-10 flex flex-col items-center py-4 gap-4">
+        <MockupSelector
+          selectedMockupId={selectedMockupId}
+          onMockupSelect={setSelectedMockupId}
+        />
+      </div>
+      
+      <div className="flex-1 flex flex-col relative">
+        {/* Top header - minimal controls */}
+        <div className="h-10 px-2 flex items-center justify-between shadow-sm border-b border-gray-200 bg-white z-10">
+          <div className="flex items-center space-x-2">
+            <DesignUploader onDesignUpload={setDesignImage} />
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => autoFn && autoFn()}
+            >
+              Auto
+            </Button>
+            
+            <Button 
+              variant={showEditPanel ? "secondary" : "ghost"}
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => {
+                setShowEditPanel(!showEditPanel);
+                if (editFn) editFn();
+              }}
+            >
+              {showEditPanel ? "Exit Edit" : "Edit"}
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => guidesFn && guidesFn()}
+            >
+              Hide Guides
+            </Button>
+          </div>
           
-          <div className="border-l border-gray-200 h-5 mx-2"></div>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-7 text-xs"
-            onClick={() => autoFn && autoFn()}
-          >
-            Auto
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-7 text-xs"
-            onClick={() => editFn && editFn()}
-          >
-            Edit
-          </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="h-7 text-xs"
-            onClick={() => guidesFn && guidesFn()}
-          >
-            Hide Guides
-          </Button>
-          
-          <div className="border-l border-gray-200 h-5 mx-2"></div>
-          
-          <MockupSelector
-            selectedMockupId={selectedMockupId}
-            onMockupSelect={setSelectedMockupId}
-          />
-        </div>
-        
-        <div className="flex-1"></div>
-        
-        <div className="flex items-center space-x-2 px-2">
-          {designImage && (
-            <>
-              <div className="flex items-center gap-1">
+          <div className="flex items-center space-x-2">
+            {designImage && (
+              <div className="flex items-center gap-1 mr-2">
                 <span className="text-xs text-gray-500">Size:</span>
                 <input
                   type="range"
@@ -252,81 +255,76 @@ export default function Home() {
                   className="w-20"
                 />
                 <span className="text-xs font-medium">{designSize}%</span>
+                <Button 
+                  onClick={handleResetDesign}
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs h-7 ml-1"
+                >
+                  Reset
+                </Button>
               </div>
-              
+            )}
+            
+            <Button 
+              onClick={() => setShowSavedProjects(true)}
+              variant="outline" 
+              size="sm"
+              className="text-xs h-7"
+            >
+              Projects
+            </Button>
+            
+            <Button 
+              onClick={handleDownloadMockup}
+              variant="default" 
+              size="sm"
+              className="text-xs h-7 mx-1"
+              disabled={!designImage}
+            >
+              <Download className="mr-1 h-3 w-3" />
+              Download
+            </Button>
+            
+            <div className="flex items-center bg-gray-100 p-1 rounded-md">
               <Button 
-                onClick={handleResetDesign}
-                variant="outline" 
-                size="sm"
-                className="text-xs h-7"
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+                onClick={() => zoomOutFn && zoomOutFn()}
               >
-                Reset Size
+                <span className="text-xs">-</span>
               </Button>
-              
-              <div className="border-l border-gray-200 h-5 mx-2"></div>
-            </>
-          )}
-          
-          <Button 
-            onClick={() => setShowSavedProjects(true)}
-            variant="outline" 
-            size="sm"
-            className="text-xs h-7"
-          >
-            Projects
-          </Button>
-          
-          <Button 
-            onClick={handleDownloadMockup}
-            variant="default" 
-            size="sm"
-            className="text-xs h-7"
-            disabled={!designImage}
-          >
-            <Download className="mr-1 h-3 w-3" />
-            Download
-          </Button>
-          
-          <div className="border-l border-gray-200 h-5 mx-2"></div>
-          
-          <div className="flex items-center bg-gray-100 p-1 rounded-md">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7"
-              onClick={() => zoomOutFn && zoomOutFn()}
-            >
-              <span className="text-xs">-</span>
-            </Button>
-            <span className="text-xs font-medium w-12 text-center">{zoomLevel}%</span>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7"
-              onClick={() => zoomInFn && zoomInFn()}
-            >
-              <span className="text-xs">+</span>
-            </Button>
+              <span className="text-xs font-medium w-12 text-center">{zoomLevel}%</span>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+                onClick={() => zoomInFn && zoomInFn()}
+              >
+                <span className="text-xs">+</span>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Main content - canvas takes most of the screen */}
-      <div className="flex-grow pt-12" style={{ height: 'calc(100vh - 40px)' }}>
-        <MultiShirtCanvas
-          designImage={designImage}
-          mockupId={selectedMockupId}
-          designSize={designSize}
-          designPosition={designPosition}
-          onDownload={handleDownloadMockup}
-          onSaveSettings={handleSavePlacementSettings}
-          initialSettings={placementSettings || undefined}
-          onAutoButtonRef={setAutoFn}
-          onEditButtonRef={setEditFn}
-          onGuidesButtonRef={setGuidesFn}
-          onZoomInRef={setZoomInFn}
-          onZoomOutRef={setZoomOutFn}
-        />
+        
+        {/* Main content - canvas takes most of the screen */}
+        <div className="flex-1" style={{ height: 'calc(100vh - 40px)' }}>
+          <MultiShirtCanvas
+            designImage={designImage}
+            mockupId={selectedMockupId}
+            designSize={designSize}
+            designPosition={designPosition}
+            onDownload={handleDownloadMockup}
+            onSaveSettings={handleSavePlacementSettings}
+            initialSettings={placementSettings || undefined}
+            onAutoButtonRef={setAutoFn}
+            onEditButtonRef={setEditFn}
+            onGuidesButtonRef={setGuidesFn}
+            onZoomInRef={setZoomInFn}
+            onZoomOutRef={setZoomOutFn}
+          />
+        </div>
       </div>
       
       {showSavedProjects && (
