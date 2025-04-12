@@ -21,6 +21,12 @@ export default function Home() {
   const [showSavedProjects, setShowSavedProjects] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<number | null>(null);
   const [placementSettings, setPlacementSettings] = useState<PlacementSettings | undefined>(undefined);
+  const [autoFn, setAutoFn] = useState<(() => void) | null>(null);
+  const [editFn, setEditFn] = useState<(() => void) | null>(null);
+  const [guidesFn, setGuidesFn] = useState<(() => void) | null>(null);
+  const [zoomInFn, setZoomInFn] = useState<(() => void) | null>(null);
+  const [zoomOutFn, setZoomOutFn] = useState<(() => void) | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(100);
   
   // Fixed position for all designs
   const designPosition = "center";
@@ -187,76 +193,139 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100 overflow-hidden" style={{ maxHeight: '100vh' }}>
-      <div className="bg-white flex items-center h-12 px-4 py-1 shadow-sm border-b border-gray-200 justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-lg font-medium">T-Shirt Designer</h2>
-          <div className="flex items-center gap-2">
-            <DesignUploader onDesignUpload={setDesignImage} />
-            {designImage && (
-              <div className="flex items-center gap-1">
-                <span className="text-xs text-gray-500">Size:</span>
-                <input
-                  type="range"
-                  min="50"
-                  max="150"
-                  step="5"
-                  value={designSize}
-                  onChange={(e) => setDesignSize(parseInt(e.target.value))}
-                  className="w-20"
-                />
-                <span className="text-xs font-medium">{designSize}%</span>
-              </div>
-            )}
+    <div className="h-screen flex flex-col bg-white overflow-hidden" style={{ maxHeight: '100vh' }}>
+      <div className="absolute top-0 left-0 right-0 z-10 p-1 flex items-center justify-between bg-white">
+        <div className="flex items-center space-x-2 ml-2">
+          <h2 className="text-lg font-medium hidden">T-Shirt Designer</h2>
+          <DesignUploader onDesignUpload={setDesignImage} />
+          <div className="flex items-center gap-2 text-gray-500 text-xs" id="editor-toolbar">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => autoFn && autoFn()}
+            >
+              Auto
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => editFn && editFn()}
+            >
+              Edit
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={() => {
+                const canvasRef = document.getElementById('canvas-container');
+                if (canvasRef) {
+                  const guidesBtn = canvasRef.querySelector('button[data-guides-button="true"]');
+                  if (guidesBtn) {
+                    (guidesBtn as HTMLButtonElement).click();
+                  }
+                }
+              }}
+            >
+              Hide Guides
+            </Button>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center space-x-2 bg-gray-100 p-1 rounded-md">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7"
+            onClick={() => {
+              const canvasRef = document.getElementById('canvas-container');
+              if (canvasRef) {
+                const zoomOutBtn = canvasRef.querySelector('button[data-zoom-out="true"]');
+                if (zoomOutBtn) {
+                  (zoomOutBtn as HTMLButtonElement).click();
+                }
+              }
+            }}
+          >
+            <span className="text-xs">-</span>
+          </Button>
+          <span className="text-xs font-medium w-12 text-center">100%</span>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7"
+            onClick={() => {
+              const canvasRef = document.getElementById('canvas-container');
+              if (canvasRef) {
+                const zoomInBtn = canvasRef.querySelector('button[data-zoom-in="true"]');
+                if (zoomInBtn) {
+                  (zoomInBtn as HTMLButtonElement).click();
+                }
+              }
+            }}
+          >
+            <span className="text-xs">+</span>
+          </Button>
+        </div>
+      </div>
+      
+      {/* Hidden/hover-visible controls */}
+      <div className="fixed top-10 left-0 right-0 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 bg-white/90 rounded-lg shadow-md p-1">
           <MockupSelector
             selectedMockupId={selectedMockupId}
             onMockupSelect={setSelectedMockupId}
           />
-          
           {designImage && (
-            <>
-              <Button 
-                onClick={handleResetDesign}
-                variant="outline" 
-                size="sm"
-                className="text-xs h-8"
-              >
-                Reset Size
-              </Button>
-            </>
+            <div className="flex items-center gap-1 mx-2">
+              <span className="text-xs text-gray-500">Size:</span>
+              <input
+                type="range"
+                min="50"
+                max="150"
+                step="5"
+                value={designSize}
+                onChange={(e) => setDesignSize(parseInt(e.target.value))}
+                className="w-20"
+              />
+              <span className="text-xs font-medium">{designSize}%</span>
+            </div>
           )}
-          
-          <div className="h-6 border-l border-gray-200"></div>
-          
-          <div className="flex items-center gap-2">
+          {designImage && (
             <Button 
-              onClick={() => setShowSavedProjects(true)}
+              onClick={handleResetDesign}
               variant="outline" 
               size="sm"
-              className="text-xs h-8 px-3"
+              className="text-xs h-7 mx-1"
             >
-              Projects
+              Reset
             </Button>
-            <Button 
-              onClick={handleDownloadMockup}
-              variant="default" 
-              size="sm"
-              className="text-xs h-8"
-              disabled={!designImage}
-            >
-              <Download className="mr-1 h-3 w-3" />
-              Download
-            </Button>
-          </div>
+          )}
+          <Button 
+            onClick={() => setShowSavedProjects(true)}
+            variant="outline" 
+            size="sm"
+            className="text-xs h-7 px-3"
+          >
+            Projects
+          </Button>
+          <Button 
+            onClick={handleDownloadMockup}
+            variant="default" 
+            size="sm"
+            className="text-xs h-7"
+            disabled={!designImage}
+          >
+            <Download className="mr-1 h-3 w-3" />
+            Download
+          </Button>
         </div>
       </div>
       
       {/* Main content - canvas takes most of the screen */}
-      <div className="flex-grow" style={{ height: 'calc(100% - 48px)' }}>
+      <div className="flex-grow" style={{ height: '100vh' }}>
         <MultiShirtCanvas
           designImage={designImage}
           mockupId={selectedMockupId}

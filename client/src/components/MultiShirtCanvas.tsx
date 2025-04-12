@@ -22,6 +22,11 @@ interface MultiShirtCanvasProps {
   onDownload: () => void;
   onSaveSettings?: (settings: PlacementSettings) => void;
   initialSettings?: PlacementSettings;
+  onAutoButtonRef?: (fn: () => void) => void;
+  onEditButtonRef?: (fn: () => void) => void;
+  onGuidesButtonRef?: (fn: () => void) => void;
+  onZoomInRef?: (fn: () => void) => void;
+  onZoomOutRef?: (fn: () => void) => void;
 }
 
 // Define a placement settings type
@@ -63,7 +68,12 @@ export default function MultiShirtCanvas({
   designPosition,
   onDownload,
   onSaveSettings,
-  initialSettings
+  initialSettings,
+  onAutoButtonRef,
+  onEditButtonRef,
+  onGuidesButtonRef,
+  onZoomInRef,
+  onZoomOutRef
 }: MultiShirtCanvasProps) {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -129,6 +139,15 @@ export default function MultiShirtCanvas({
   const [designHeightFactor, setDesignHeightFactor] = useState(300); // Default design height
   const [syncAll, setSyncAll] = useState(true); // Sync all shirts by default
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null); // Track selected preset
+
+  // Expose functions to parent component through refs
+  useEffect(() => {
+    if (onAutoButtonRef) onAutoButtonRef(autoPosition);
+    if (onEditButtonRef) onEditButtonRef(toggleEditMode);
+    if (onGuidesButtonRef) onGuidesButtonRef(toggleDebugAreas);
+    if (onZoomInRef) onZoomInRef(handleZoomIn);
+    if (onZoomOutRef) onZoomOutRef(handleZoomOut);
+  }, [onAutoButtonRef, onEditButtonRef, onGuidesButtonRef, onZoomInRef, onZoomOutRef]);
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -882,8 +901,8 @@ export default function MultiShirtCanvas({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="z-10 p-1 flex items-center justify-between absolute top-0 left-0 right-0 bg-white/80 backdrop-blur-sm">
+    <div className="h-full flex flex-col" id="canvas-container">
+      <div className="z-10 p-1 flex items-center justify-between absolute top-0 left-0 right-0 bg-white/80 backdrop-blur-sm hidden">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -891,6 +910,7 @@ export default function MultiShirtCanvas({
             className="h-7 text-xs"
             onClick={autoPosition}
             disabled={!designImg}
+            data-auto-button="true"
           >
             <Zap className="h-3 w-3 mr-1" /> Auto
           </Button>
@@ -900,6 +920,7 @@ export default function MultiShirtCanvas({
             size="sm" 
             className="h-7 text-xs"
             onClick={toggleEditMode}
+            data-edit-button="true"
           >
             <Crosshair className="h-3 w-3 mr-1" /> {editMode === 'none' ? 'Edit' : 'Exit Edit'}
           </Button>
@@ -909,6 +930,7 @@ export default function MultiShirtCanvas({
             size="sm" 
             className="h-7 text-xs"
             onClick={toggleDebugAreas}
+            data-guides-button="true"
           >
             {showDebugAreas ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
             {showDebugAreas ? 'Hide Guides' : 'Show Guides'}
@@ -933,6 +955,7 @@ export default function MultiShirtCanvas({
             className="h-7 w-7"
             onClick={handleZoomOut}
             disabled={zoomLevel <= 50}
+            data-zoom-out="true"
           >
             <ZoomOut className="h-3.5 w-3.5" />
           </Button>
@@ -943,6 +966,7 @@ export default function MultiShirtCanvas({
             className="h-7 w-7"
             onClick={handleZoomIn}
             disabled={zoomLevel >= 200}
+            data-zoom-in="true"
           >
             <ZoomIn className="h-3.5 w-3.5" />
           </Button>
