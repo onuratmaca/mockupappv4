@@ -19,6 +19,7 @@ interface MultiShirtCanvasProps {
   mockupId: number;
   designSize: number;
   designPosition: string; 
+  editModeEnabled?: boolean; // New prop to control edit mode from parent
   onDownload: () => void;
   onSaveSettings?: (settings: PlacementSettings) => void;
   initialSettings?: PlacementSettings;
@@ -66,6 +67,7 @@ export default function MultiShirtCanvas({
   mockupId,
   designSize,
   designPosition,
+  editModeEnabled = false, // Default to not showing edit panel
   onDownload,
   onSaveSettings,
   initialSettings,
@@ -148,6 +150,11 @@ export default function MultiShirtCanvas({
     if (onZoomInRef) onZoomInRef(handleZoomIn);
     if (onZoomOutRef) onZoomOutRef(handleZoomOut);
   }, [onAutoButtonRef, onEditButtonRef, onGuidesButtonRef, onZoomInRef, onZoomOutRef]);
+  
+  // Sync edit mode with parent component
+  useEffect(() => {
+    setEditMode(editModeEnabled ? 'all' : 'none');
+  }, [editModeEnabled]);
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -650,6 +657,7 @@ export default function MultiShirtCanvas({
   
   // Toggle edit mode (simplified to just on/off for better parent component integration)
   const toggleEditMode = () => {
+    // First update our local state
     setEditMode(prev => {
       // Just toggle between 'none' and 'all' modes
       return prev === 'none' ? 'all' : 'none';

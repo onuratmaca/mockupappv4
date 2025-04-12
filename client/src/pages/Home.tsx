@@ -332,6 +332,7 @@ export default function Home() {
             mockupId={selectedMockupId}
             designSize={designSize}
             designPosition={designPosition}
+            editModeEnabled={showEditPanel} // Pass the edit panel state
             onDownload={handleDownloadMockup}
             onSaveSettings={handleSavePlacementSettings}
             initialSettings={placementSettings || undefined}
