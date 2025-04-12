@@ -883,18 +883,19 @@ export default function MultiShirtCanvas({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-2 bg-white border-b flex items-center justify-between">
+      <div className="z-10 p-1 flex items-center justify-between absolute top-0 left-0 right-0 bg-white/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-medium">T-Shirt Editor</h2>
-          <Button 
+          <Button
             variant="outline"
-            size="sm" 
+            size="sm"
             className="h-7 text-xs"
             onClick={autoPosition}
+            disabled={!designImg}
           >
             <Zap className="h-3 w-3 mr-1" /> Auto
           </Button>
-          <Button 
+          
+          <Button
             variant={editMode !== 'none' ? "secondary" : "outline"}
             size="sm" 
             className="h-7 text-xs"
@@ -902,6 +903,7 @@ export default function MultiShirtCanvas({
           >
             <Crosshair className="h-3 w-3 mr-1" /> {editMode === 'none' ? 'Edit' : 'Exit Edit'}
           </Button>
+          
           <Button 
             variant={showDebugAreas ? "secondary" : "outline"}
             size="sm" 
@@ -911,6 +913,17 @@ export default function MultiShirtCanvas({
             {showDebugAreas ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
             {showDebugAreas ? 'Hide Guides' : 'Show Guides'}
           </Button>
+          
+          {designImg && editMode === 'none' && (
+            <Button 
+              size="sm"
+              variant="secondary" 
+              className="h-7 text-xs"
+              onClick={saveSettings}
+            >
+              <Save className="h-3 w-3 mr-1" /> Save
+            </Button>
+          )}
         </div>
         
         <div className="flex items-center space-x-2 bg-gray-100 p-1 rounded-md">
@@ -936,9 +949,9 @@ export default function MultiShirtCanvas({
         </div>
       </div>
       
-      <div className="p-2 flex-grow flex flex-col">
+      <div className="flex-grow h-full overflow-hidden">
         {editMode !== 'none' && (
-          <div className="bg-gray-50 p-2 mb-4 rounded-lg border border-gray-200">
+          <div className="absolute top-10 left-0 right-0 z-10 bg-white/90 p-2 shadow-md border-b border-gray-200">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <div className="flex gap-1">
@@ -984,7 +997,7 @@ export default function MultiShirtCanvas({
             </div>
             
             {/* Basic Controls - Always visible in edit mode */}
-            <div className="pt-3 flex flex-wrap gap-4 items-center justify-between border-t border-gray-200 mt-3">
+            <div className="pt-2 flex flex-wrap gap-4 items-center justify-between border-t border-gray-200 mt-2">
               {/* Quick size controls */}
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">Width: {designWidthFactor}px</span>
@@ -1115,8 +1128,8 @@ export default function MultiShirtCanvas({
           </div>
         )}
         
-        <div className="relative flex-grow h-full">
-          <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center h-full overflow-hidden">
+        <div className="relative h-full">
+          <div className="bg-gray-50 flex items-center justify-center h-full w-full">
             <div style={{ 
               transform: `scale(${zoomLevel / 100})`, 
               transformOrigin: 'center', 
@@ -1134,7 +1147,7 @@ export default function MultiShirtCanvas({
                 style={{ 
                   width: '100%',
                   height: 'auto',
-                  maxHeight: '65vh',
+                  maxHeight: '80vh',
                   objectFit: 'contain',
                   display: 'block' 
                 }}
@@ -1219,110 +1232,8 @@ export default function MultiShirtCanvas({
                   <span className="text-xs">+</span>
                 </Button>
               </div>
-              
-              <div className="h-6 w-px bg-gray-300"></div>
-              
-              {/* Auto-Position button */}
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="h-7 text-xs px-2"
-                onClick={autoPosition}
-                disabled={!designImg}
-              >
-                <Zap className="h-3 w-3 mr-1" />
-                Auto
-              </Button>
-              
-              <div className="h-6 w-px bg-gray-300"></div>
-              
-              {/* Toggle mode button */}
-              <Button 
-                size="sm" 
-                variant={syncAll ? "secondary" : "outline"} 
-                className="h-7 text-xs px-2"
-                onClick={toggleSyncMode}
-              >
-                {syncAll ? "All" : "Indiv."}
-              </Button>
-              
-              <div className="h-6 w-px bg-gray-300"></div>
-              
-              {/* Save button */}
-              <Button 
-                size="sm" 
-                variant="default"
-                className="h-7 text-xs"
-                onClick={saveSettings}
-              >
-                <Save className="h-3 w-3 mr-1" /> Save
-              </Button>
             </div>
           )}
-        </div>
-        
-        <div className="mt-2">
-          <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-medium">Quality: {jpegQuality}%</span>
-                <Slider 
-                  min={30} 
-                  max={100} 
-                  step={5} 
-                  value={[jpegQuality]} 
-                  onValueChange={(value) => setJpegQuality(value[0])}
-                  disabled={!designImg}
-                  className="w-24"
-                />
-                <div className="flex gap-1">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="h-6 px-2 text-xs" 
-                    onClick={() => setJpegQuality(70)}
-                  >
-                    70%
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="h-6 px-2 text-xs" 
-                    onClick={() => setJpegQuality(100)}
-                  >
-                    100%
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold px-2 py-1 bg-gray-200 rounded-md">
-                  {lastFileSize 
-                    ? `${lastFileSize.toFixed(2)}MB` 
-                    : `~${(0.12 + (jpegQuality/100) * 7).toFixed(1)}MB`}
-                </span>
-                <Button 
-                  size="sm"
-                  variant="outline"
-                  onClick={calculateFileSize}
-                  disabled={!designImg}
-                  className="h-8 text-xs"
-                >
-                  <Calculator className="mr-1 h-3 w-3" />
-                  Size
-                </Button>
-                <Button 
-                  size="sm"
-                  onClick={handleDownload}
-                  disabled={!designImg}
-                  className="h-8 text-xs"
-                >
-                  <Download className="mr-1 h-3 w-3" />
-                  Download
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

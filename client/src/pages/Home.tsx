@@ -7,6 +7,7 @@ import DesignControls from "@/components/DesignControls";
 import MultiShirtCanvas, { PlacementSettings } from "@/components/MultiShirtCanvas";
 import SavedProjectsModal from "@/components/SavedProjectsModal";
 import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Project } from "@shared/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -187,13 +188,9 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col bg-gray-100 overflow-hidden" style={{ maxHeight: '100vh' }}>
-      <Header 
-        onSaveProject={() => setShowSavedProjects(true)}
-        onDownloadMockup={handleDownloadMockup}
-      />
-      
-      <main className="flex-grow flex flex-col" style={{ minHeight: 0 }}>
-        <div className="flex h-10 items-center px-4 py-1 bg-white border-b border-gray-200">
+      <div className="bg-white flex items-center h-12 px-4 py-1 shadow-sm border-b border-gray-200 justify-between">
+        <div className="flex items-center space-x-4">
+          <h2 className="text-lg font-medium">T-Shirt Designer</h2>
           <div className="flex items-center gap-2">
             <DesignUploader onDesignUpload={setDesignImage} />
             {designImage && (
@@ -212,9 +209,9 @@ export default function Home() {
               </div>
             )}
           </div>
-          
-          <div className="h-6 border-l border-gray-200 mx-2"></div>
-          
+        </div>
+        
+        <div className="flex items-center gap-3">
           <MockupSelector
             selectedMockupId={selectedMockupId}
             onMockupSelect={setSelectedMockupId}
@@ -222,32 +219,54 @@ export default function Home() {
           
           {designImage && (
             <>
-              <div className="h-6 border-l border-gray-200 mx-2"></div>
               <Button 
                 onClick={handleResetDesign}
                 variant="outline" 
                 size="sm"
-                className="text-xs h-7"
+                className="text-xs h-8"
               >
                 Reset Size
               </Button>
             </>
           )}
+          
+          <div className="h-6 border-l border-gray-200"></div>
+          
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => setShowSavedProjects(true)}
+              variant="outline" 
+              size="sm"
+              className="text-xs h-8 px-3"
+            >
+              Projects
+            </Button>
+            <Button 
+              onClick={handleDownloadMockup}
+              variant="default" 
+              size="sm"
+              className="text-xs h-8"
+              disabled={!designImage}
+            >
+              <Download className="mr-1 h-3 w-3" />
+              Download
+            </Button>
+          </div>
         </div>
-        
-        {/* Main content - canvas takes most of the screen */}
-        <div className="flex-grow" style={{ height: 'calc(100% - 10px)' }}>
-          <MultiShirtCanvas
-            designImage={designImage}
-            mockupId={selectedMockupId}
-            designSize={designSize}
-            designPosition={designPosition}
-            onDownload={handleDownloadMockup}
-            onSaveSettings={handleSavePlacementSettings}
-            initialSettings={placementSettings || undefined}
-          />
-        </div>
-      </main>
+      </div>
+      
+      {/* Main content - canvas takes most of the screen */}
+      <div className="flex-grow" style={{ height: 'calc(100% - 48px)' }}>
+        <MultiShirtCanvas
+          designImage={designImage}
+          mockupId={selectedMockupId}
+          designSize={designSize}
+          designPosition={designPosition}
+          onDownload={handleDownloadMockup}
+          onSaveSettings={handleSavePlacementSettings}
+          initialSettings={placementSettings || undefined}
+        />
+      </div>
       
       {showSavedProjects && (
         <SavedProjectsModal
