@@ -343,25 +343,21 @@ export default function MultiShirtCanvas({
       // Standard landscape like 4:3, 16:9
       chosenPresetIndex = 1;
       yOffset = -180; // Landscape designs slightly higher
-    } else if (aspectRatio >= 0.7 && aspectRatio <= 1.3) {
-      // Square-ish (between 0.7 and 1.3 ratio)
-      chosenPresetIndex = 2;
-      yOffset = -200; // Default middle position
-    } else if (aspectRatio >= 0.4 && aspectRatio < 0.7) {
-      // Portrait like 3:4, 9:16
-      chosenPresetIndex = 3;
-      
-      // Use a formula to calculate a good Y offset for portrait designs
-      // As aspect ratio gets smaller (more portrait), we move design higher
-      const portraitAdjustment = Math.round((0.7 - aspectRatio) * 150); // 0 to ~45px adjustment
-      yOffset = -200 - portraitAdjustment; // Between -200 and -245
     } else {
-      // Very tall (less than 0.4 aspect ratio)
-      chosenPresetIndex = 4;
-      // Tall designs need more precise positioning with finer control
-      // The taller the design, the higher it should be
-      const tallAdjustment = Math.round((0.4 - aspectRatio) * 200); // Taller = more adjustment
-      yOffset = -220 - tallAdjustment; // Between -220 and -280 based on tallness
+      // For all other designs (square, portrait, and tall), use square preset
+      // as per user feedback, it works better for these types
+      chosenPresetIndex = 2; // Square preset for all non-landscape designs
+      
+      if (aspectRatio >= 0.7 && aspectRatio <= 1.3) {
+        // Square-ish (between 0.7 and 1.3 ratio)
+        yOffset = -200; // Default middle position
+      } else if (aspectRatio >= 0.4 && aspectRatio < 0.7) {
+        // Portrait designs (like 3:4, 9:16)
+        yOffset = -240; // Higher up for portrait designs
+      } else {
+        // Very tall designs (less than 0.4 aspect ratio)
+        yOffset = -250; // Even higher for very tall designs
+      }
     }
     
     // Apply the chosen preset
@@ -377,9 +373,15 @@ export default function MultiShirtCanvas({
     setSyncAll(true);
     setEditMode('all');
     
+    // For portrait/tall designs, note that we're using the square preset
+    let presetDescription = preset.name;
+    if ((aspectRatio < 0.7) && chosenPresetIndex === 2) {
+      presetDescription = `${preset.name} (optimized for ${aspectRatio < 0.4 ? 'tall' : 'portrait'} design)`;
+    }
+    
     toast({
       title: "Auto-Positioned",
-      description: `Applied "${preset.name}" preset at Y=${yOffset}px for ${aspectRatio.toFixed(2)}:1 ratio design`,
+      description: `Applied "${presetDescription}" preset at Y=${yOffset}px`,
     });
   };
 
