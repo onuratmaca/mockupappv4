@@ -1,9 +1,9 @@
-// Import mockup images
-import mockup1 from "@assets/1.jpg";
-import mockup2 from "@assets/2.jpg";
-import mockup3 from "@assets/3.jpg";
-import mockup4 from "@assets/4.jpg";
-import mockup5 from "@assets/5.jpg";
+// Import mockup images (with watermark)
+import mockup1 from "@assets/1 copy.jpg";
+import mockup2 from "@assets/2 copy.jpg";
+import mockup3 from "@assets/3 copy.jpg";
+import mockup4 from "@assets/4 copy.jpg";
+import mockup5 from "@assets/5 copy.jpg";
 
 // Shirt positions in the grid (8 shirts in a 2x4 grid)
 export type ShirtPosition = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
