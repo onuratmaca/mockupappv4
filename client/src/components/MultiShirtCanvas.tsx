@@ -73,6 +73,53 @@ export default function MultiShirtCanvas({
   const [canvasSize] = useState({ width: 4000, height: 3000 });
   const [showDebugAreas, setShowDebugAreas] = useState(true); 
   
+  // Preset configurations for different aspect ratios
+  interface DesignPreset {
+    name: string;
+    description: string;
+    widthFactor: number;
+    heightFactor: number;
+    forRatio: string;
+  }
+  
+  const DESIGN_PRESETS: DesignPreset[] = [
+    {
+      name: "Wide Banner",
+      description: "For wide horizontal designs (ratio > 2:1)",
+      widthFactor: 600,
+      heightFactor: 200,
+      forRatio: "> 2:1"
+    },
+    {
+      name: "Landscape",
+      description: "For landscape designs (ratio 4:3, 16:9)",
+      widthFactor: 500,
+      heightFactor: 300,
+      forRatio: "4:3 to 16:9"
+    },
+    {
+      name: "Square",
+      description: "For square designs (ratio 1:1)",
+      widthFactor: 400,
+      heightFactor: 400,
+      forRatio: "~1:1"
+    },
+    {
+      name: "Portrait",
+      description: "For portrait designs (ratio 3:4, 9:16)",
+      widthFactor: 300,
+      heightFactor: 450,
+      forRatio: "3:4 to 9:16"
+    },
+    {
+      name: "Tall",
+      description: "For tall vertical designs (ratio < 1:2)",
+      widthFactor: 250,
+      heightFactor: 550,
+      forRatio: "< 1:2"
+    }
+  ];
+  
   // Design placement adjustment controls
   const [shirtConfigs, setShirtConfigs] = useState<ShirtConfig[]>(INITIAL_SHIRT_POSITIONS);
   const [selectedShirt, setSelectedShirt] = useState<number>(0);
@@ -81,6 +128,7 @@ export default function MultiShirtCanvas({
   const [designWidthFactor, setDesignWidthFactor] = useState(450); // Default design width for avg design
   const [designHeightFactor, setDesignHeightFactor] = useState(300); // Default design height
   const [syncAll, setSyncAll] = useState(true); // Sync all shirts by default
+  const [selectedPreset, setSelectedPreset] = useState<number | null>(null); // Track selected preset
 
   // Initialize canvas with exact mockup dimensions
   useEffect(() => {
@@ -248,6 +296,73 @@ export default function MultiShirtCanvas({
     setGlobalYOffset(-200); // Reset to optimal default Y offset
     setDesignWidthFactor(450);
     setDesignHeightFactor(300);
+    setSelectedPreset(null);
+  };
+  
+  // Apply a preset based on index
+  const applyPreset = (presetIndex: number) => {
+    if (presetIndex >= 0 && presetIndex < DESIGN_PRESETS.length) {
+      const preset = DESIGN_PRESETS[presetIndex];
+      setDesignWidthFactor(preset.widthFactor);
+      setDesignHeightFactor(preset.heightFactor);
+      setSelectedPreset(presetIndex);
+      
+      toast({
+        title: "Preset Applied",
+        description: `Applied "${preset.name}" preset for ${preset.forRatio} ratio designs`,
+      });
+    }
+  };
+  
+  // Auto-position based on the design's dimensions
+  const autoPosition = () => {
+    if (!designImg) {
+      toast({
+        title: "No Design",
+        description: "Please upload a design first to use auto-positioning",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Calculate the aspect ratio
+    const aspectRatio = designImg.width / designImg.height;
+    
+    // Choose the appropriate preset based on aspect ratio
+    let chosenPresetIndex;
+    
+    if (aspectRatio > 2.0) {
+      // Very wide - use wide banner preset
+      chosenPresetIndex = 0;
+    } else if (aspectRatio > 1.3) {
+      // Standard landscape like 4:3, 16:9
+      chosenPresetIndex = 1;
+    } else if (aspectRatio >= 0.7 && aspectRatio <= 1.3) {
+      // Square-ish (between 0.7 and 1.3 ratio)
+      chosenPresetIndex = 2;
+    } else if (aspectRatio >= 0.4 && aspectRatio < 0.7) {
+      // Portrait like 3:4, 9:16
+      chosenPresetIndex = 3;
+    } else {
+      // Very tall
+      chosenPresetIndex = 4;
+    }
+    
+    // Apply the chosen preset
+    applyPreset(chosenPresetIndex);
+    
+    // Adjust global Y offset based on aspect ratio too
+    // Taller designs need to be placed higher up
+    if (aspectRatio < 0.7) {
+      setGlobalYOffset(-250); // Tall designs higher up
+    } else if (aspectRatio > 1.5) {
+      setGlobalYOffset(-150); // Wide designs a bit lower
+    } else {
+      setGlobalYOffset(-200); // Default middle position
+    }
+    
+    // Always ensure edit mode is on after auto-positioning
+    setEditMode('all');
   };
 
   // Draw canvas when any inputs change
