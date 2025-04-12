@@ -230,9 +230,8 @@ export default function Home() {
               className="h-7 text-xs"
               onClick={() => {
                 if (autoFn) {
+                  // Call autoFn directly without showing edit panel
                   autoFn();
-                  // Enable edit panel when auto is clicked
-                  setShowEditPanel(true);
                 }
               }}
               disabled={!designImage}

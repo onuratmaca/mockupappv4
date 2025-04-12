@@ -429,9 +429,9 @@ export default function MultiShirtCanvas({
     // Apply calculated Y offset
     setGlobalYOffset(yOffset);
     
-    // Force All Shirts mode
+    // Force All Shirts mode but don't change edit mode
+    // (let the parent component control this)
     setSyncAll(true);
-    setEditMode('all');
     
     // Prepare appropriate description for toast - make it clearer what's happening
     let description;
