@@ -1151,9 +1151,9 @@ export default function MultiShirtCanvas({
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500 min-w-[60px]">Y: {globalYOffset}</span>
                   <Slider 
-                    min={-300} 
-                    max={100} 
-                    step={5}
+                    min={-400} 
+                    max={200} 
+                    step={2}
                     value={[globalYOffset]} 
                     onValueChange={(value) => setGlobalYOffset(value[0])}
                     className="w-20"
@@ -1163,7 +1163,7 @@ export default function MultiShirtCanvas({
                       size="sm" 
                       variant="ghost" 
                       className="h-4 w-4 p-0" 
-                      onClick={() => setGlobalYOffset(Math.max(-300, globalYOffset - 20))}
+                      onClick={() => setGlobalYOffset(Math.max(-400, globalYOffset - 10))}
                     >
                       <span className="text-[10px]">-</span>
                     </Button>
@@ -1171,7 +1171,7 @@ export default function MultiShirtCanvas({
                       size="sm" 
                       variant="ghost" 
                       className="h-4 w-4 p-0" 
-                      onClick={() => setGlobalYOffset(Math.min(100, globalYOffset + 20))}
+                      onClick={() => setGlobalYOffset(Math.min(200, globalYOffset + 10))}
                     >
                       <span className="text-[10px]">+</span>
                     </Button>
