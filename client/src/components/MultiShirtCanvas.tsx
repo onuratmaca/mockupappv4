@@ -151,6 +151,28 @@ export default function MultiShirtCanvas({
     if (onZoomOutRef) onZoomOutRef(handleZoomOut);
   }, [onAutoButtonRef, onEditButtonRef, onGuidesButtonRef, onZoomInRef, onZoomOutRef]);
   
+  // Call the handleDownload function when onDownload is called
+  const onDownloadTriggered = () => {
+    handleDownload();
+  };
+  
+  // Connect the download function to the parent component's event
+  useEffect(() => {
+    const originalOnDownload = onDownload;
+    
+    // Override the onDownload function
+    onDownload = () => {
+      handleDownload();
+      // Call the original onDownload function after handling the download
+      originalOnDownload();
+    };
+    
+    return () => {
+      // Restore the original onDownload function when the component unmounts
+      onDownload = originalOnDownload;
+    };
+  }, [onDownload]);
+  
   // Sync edit mode with parent component
   useEffect(() => {
     setEditMode(editModeEnabled ? 'all' : 'none');
@@ -618,39 +640,21 @@ export default function MultiShirtCanvas({
       ctx.lineTo(designX, designY + 20);
       ctx.stroke();
       
-      // Add shirt number for easier identification
-      ctx.font = isSelected ? 'bold 48px sans-serif' : '36px sans-serif';
-      ctx.fillStyle = isSelected ? 'rgba(255, 165, 0, 0.8)' : 'rgba(0, 128, 255, 0.7)';
-      ctx.fillText(`${index + 1}`, shirt.x - 10, shirt.y - 30);
+      // Add position label near the crosshair
+      ctx.font = '24px Arial';
+      ctx.fillStyle = isSelected ? 'rgba(255, 165, 0, 0.8)' : 'rgba(0, 128, 255, 0.5)';
+      ctx.fillText(`${shirt.name}`, designX + 25, designY);
       
-      // Add design position info when selected
+      // Show position coordinates for selected shirt
       if (isSelected) {
-        ctx.font = '36px sans-serif';
+        ctx.font = '18px Arial';
         ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-        ctx.fillText(`X: ${shirt.designOffset.x}, Y: ${shirt.designOffset.y + globalYOffset}`, 
-                      designX + (areaWidth / 2) + 10, 
-                      designY);
+        ctx.fillText(`x: ${shirt.designOffset.x}, y: ${shirt.designOffset.y + globalYOffset}`, designX + 25, designY + 25);
       }
     });
-    
-    // Draw control panel info
-    ctx.font = '36px sans-serif';
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillText(`Design Size: ${designWidthFactor}×${designHeightFactor}`, 100, 100);
-    ctx.fillText(`Mode: ${syncAll ? 'All Shirts Synced' : 'Individual Shirt Edit'}`, 100, 150);
-    ctx.fillText(`Selected: Shirt #${selectedShirt + 1} (${shirtConfigs[selectedShirt].name})`, 100, 200);
-  };
-
-  // Handle zoom in/out
-  const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 10, 200));
-  };
-
-  const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 10, 50));
   };
   
-  // Toggle debug visualization
+  // Toggle debug overlay
   const toggleDebugAreas = () => {
     setShowDebugAreas(prev => !prev);
   };
@@ -904,9 +908,26 @@ export default function MultiShirtCanvas({
       });
     }
   };
+  
+  // Handle zoom level changes
+  const handleZoomIn = () => {
+    setZoomLevel(Math.min(200, zoomLevel + 10));
+  };
+  
+  const handleZoomOut = () => {
+    setZoomLevel(Math.max(50, zoomLevel - 10));
+  };
 
   return (
     <div className="h-full flex flex-col" id="canvas-container">
+      {/* Hidden download button that can be triggered programmatically */}
+      <button 
+        id="download-btn" 
+        onClick={handleDownload} 
+        style={{ display: 'none' }}
+      >
+        Download
+      </button>
       
       <div className="flex-grow h-full overflow-hidden">
         {editMode !== 'none' && (

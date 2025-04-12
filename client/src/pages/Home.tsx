@@ -147,7 +147,7 @@ export default function Home() {
   };
 
   // Handle download mockup
-  const handleDownloadMockup = () => {
+  const handleDownloadMockup = useCallback(() => {
     if (!designImage) {
       toast({
         title: "Error",
@@ -156,7 +156,8 @@ export default function Home() {
       });
       return;
     }
-  };
+    // The actual download is handled by the canvas component
+  }, [designImage, toast]);
 
   // Handle load project
   const handleLoadProject = (project: Project) => {
@@ -227,7 +228,13 @@ export default function Home() {
               variant="ghost" 
               size="sm" 
               className="h-7 text-xs"
-              onClick={() => autoFn && autoFn()}
+              onClick={() => {
+                if (autoFn) {
+                  autoFn();
+                  // Enable edit panel when auto is clicked
+                  setShowEditPanel(true);
+                }
+              }}
               disabled={!designImage}
             >
               Auto
@@ -280,16 +287,28 @@ export default function Home() {
             )}
             
             <Button 
-              onClick={() => setShowSavedProjects(true)}
+              onClick={() => setShowEditPanel(true)}
               variant="outline" 
               size="sm"
               className="text-xs h-7"
+              disabled={!designImage}
             >
-              Projects
+              Export Settings
             </Button>
             
             <Button 
-              onClick={handleDownloadMockup}
+              onClick={() => {
+                if (designImage) {
+                  // Directly trigger download from MultiShirtCanvas
+                  const downloadBtn = document.getElementById('download-btn');
+                  if (downloadBtn) {
+                    downloadBtn.click();
+                  } else {
+                    console.error("Download button not found");
+                    handleDownloadMockup();
+                  }
+                }
+              }}
               variant="default" 
               size="sm"
               className="text-xs h-7 mx-1"
