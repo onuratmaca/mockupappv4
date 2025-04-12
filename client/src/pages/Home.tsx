@@ -186,20 +186,20 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="h-screen flex flex-col bg-gray-100 overflow-hidden">
       <Header 
         onSaveProject={() => setShowSavedProjects(true)}
         onDownloadMockup={handleDownloadMockup}
       />
       
-      <main className="flex-grow">
-        <div className="max-w-full mx-auto px-4 py-4">
-          {/* Persistent toolbar */}
-          <div className="bg-white rounded-lg shadow-sm p-2 mb-4 flex items-center space-x-4 flex-wrap">
-            <div className="flex items-center space-x-3">
+      <main className="flex-grow flex flex-col h-full overflow-hidden">
+        <div className="w-full mx-auto px-4 py-2 flex flex-col h-full">
+          {/* Persistent toolbar - more compact */}
+          <div className="bg-white rounded-lg shadow-sm p-2 mb-2 flex items-center space-x-3 flex-wrap">
+            <div className="flex items-center space-x-2">
               <DesignUploader onDesignUpload={setDesignImage} />
               {designImage && (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
                   <span className="text-xs text-gray-500">Size:</span>
                   <input
                     type="range"
@@ -208,7 +208,7 @@ export default function Home() {
                     step="5"
                     value={designSize}
                     onChange={(e) => setDesignSize(parseInt(e.target.value))}
-                    className="w-24"
+                    className="w-20"
                   />
                   <span className="text-xs font-medium">{designSize}%</span>
                 </div>
@@ -237,22 +237,27 @@ export default function Home() {
             )}
           </div>
           
-          {/* Main content - canvas only */}
-          <div className="w-full">
-            <MultiShirtCanvas
-              designImage={designImage}
-              mockupId={selectedMockupId}
-              designSize={designSize}
-              designPosition={designPosition}
-              onDownload={handleDownloadMockup}
-              onSaveSettings={handleSavePlacementSettings}
-              initialSettings={placementSettings || undefined}
-            />
+          {/* Main content - canvas in a flex-grow container */}
+          <div className="flex-grow overflow-hidden">
+            <div className="h-full">
+              <MultiShirtCanvas
+                designImage={designImage}
+                mockupId={selectedMockupId}
+                designSize={designSize}
+                designPosition={designPosition}
+                onDownload={handleDownloadMockup}
+                onSaveSettings={handleSavePlacementSettings}
+                initialSettings={placementSettings || undefined}
+              />
+            </div>
           </div>
         </div>
       </main>
       
-      <Footer />
+      {/* Minimalistic footer */}
+      <div className="bg-white py-1 px-4 text-center text-xs text-gray-500 border-t">
+        <span>© 2025 T-Shirt Mockup Editor • Version 1.0</span>
+      </div>
       
       {showSavedProjects && (
         <SavedProjectsModal

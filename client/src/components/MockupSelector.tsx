@@ -1,11 +1,5 @@
 import { MOCKUP_IMAGES, getMockupById } from "@/lib/mockup-data";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface MockupSelectorProps {
   selectedMockupId: number;
@@ -16,37 +10,37 @@ export default function MockupSelector({
   selectedMockupId,
   onMockupSelect
 }: MockupSelectorProps) {
-  const selectedMockup = getMockupById(selectedMockupId);
-
   return (
     <div className="flex items-center gap-2">
       <span className="text-xs text-gray-500">Template:</span>
-      <Select
-        value={selectedMockupId.toString()}
-        onValueChange={(value) => onMockupSelect(parseInt(value))}
-      >
-        <SelectTrigger className="h-8 min-w-[180px]">
-          <SelectValue>
-            {selectedMockup?.name || "Select a mockup"}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
+      <div className="flex items-center gap-2">
+        <TooltipProvider>
           {MOCKUP_IMAGES.map((mockup) => (
-            <SelectItem key={mockup.id} value={mockup.id.toString()}>
-              <div className="flex items-center">
-                <div className="w-6 h-6 mr-2 overflow-hidden rounded-sm">
+            <Tooltip key={mockup.id}>
+              <TooltipTrigger asChild>
+                <button 
+                  type="button"
+                  onClick={() => onMockupSelect(mockup.id)}
+                  className={`w-8 h-8 rounded-md border transition-all ${
+                    selectedMockupId === mockup.id 
+                    ? 'border-blue-500 ring-2 ring-blue-200' 
+                    : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
                   <img 
                     src={mockup.src} 
                     alt={mockup.name} 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-sm"
                   />
-                </div>
-                <span>{mockup.name}</span>
-              </div>
-            </SelectItem>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">{mockup.name}</p>
+              </TooltipContent>
+            </Tooltip>
           ))}
-        </SelectContent>
-      </Select>
+        </TooltipProvider>
+      </div>
     </div>
   );
 }

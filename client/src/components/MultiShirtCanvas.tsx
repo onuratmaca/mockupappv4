@@ -405,11 +405,12 @@ export default function MultiShirtCanvas({
     setSyncAll(true);
     setEditMode('all');
     
-    // Prepare appropriate description for toast
+    // Prepare appropriate description for toast - make it clearer what's happening
     let description;
     if (aspectRatio < 0.7) {
       const designType = (aspectRatio < 0.4) ? "tall" : "portrait";
-      description = `Optimized ${designType} design (${aspectRatio.toFixed(2)}:1) at Y=${yOffset}px`;
+      const size = `${designWidthFactor}×${designHeightFactor}`;
+      description = `${designType.toUpperCase()} design optimized with size ${size} at Y=${yOffset}px`;
     } else {
       const presetName = DESIGN_PRESETS[getSelectedPresetIndex(aspectRatio)].name;
       description = `Applied "${presetName}" preset at Y=${yOffset}px`;
@@ -886,6 +887,14 @@ export default function MultiShirtCanvas({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg font-medium flex-none">Editor</CardTitle>
+            <Button 
+              variant="outline"
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={autoPosition}
+            >
+              <Zap className="h-3 w-3 mr-1" /> Auto
+            </Button>
             <Button 
               variant={editMode !== 'none' ? "secondary" : "outline"}
               size="sm" 
