@@ -107,15 +107,15 @@ export default function MultiShirtCanvas({
     {
       name: "Portrait",
       description: "For portrait designs (ratio 3:4, 9:16)",
-      widthFactor: 300,
-      heightFactor: 450,
+      widthFactor: 320,
+      heightFactor: 400,
       forRatio: "3:4 to 9:16"
     },
     {
       name: "Tall",
       description: "For tall vertical designs (ratio < 1:2)",
-      widthFactor: 250,
-      heightFactor: 550,
+      widthFactor: 280,
+      heightFactor: 450,
       forRatio: "< 1:2"
     }
   ];
@@ -359,13 +359,15 @@ export default function MultiShirtCanvas({
     setSelectedPreset(chosenPresetIndex);
     
     // Adjust global Y offset based on aspect ratio
-    // Taller designs need to be placed higher up
-    if (aspectRatio < 0.7) {
-      setGlobalYOffset(-250); // Tall designs higher up
+    // We'll position tall designs lower as requested
+    if (aspectRatio < 0.5) {
+      setGlobalYOffset(-120); // Very tall designs lower 
+    } else if (aspectRatio < 0.7) {
+      setGlobalYOffset(-150); // Portrait designs
     } else if (aspectRatio > 1.5) {
-      setGlobalYOffset(-150); // Wide designs a bit lower
+      setGlobalYOffset(-150); // Wide designs
     } else {
-      setGlobalYOffset(-200); // Default middle position
+      setGlobalYOffset(-180); // Default middle position
     }
     
     // Force All Shirts mode
