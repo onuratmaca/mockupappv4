@@ -819,27 +819,25 @@ export default function MultiShirtCanvas({
     <Card className="h-full">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <CardTitle className="text-lg font-medium">Shirt Design Editor</CardTitle>
-            <div className="ml-3 flex items-center space-x-1">
-              <Button 
-                variant={editMode !== 'none' ? "secondary" : "outline"}
-                size="sm" 
-                className="h-7 text-xs"
-                onClick={toggleEditMode}
-              >
-                <Crosshair className="h-3 w-3 mr-1" /> {editMode === 'none' ? 'Edit' : 'Editing'}
-              </Button>
-              <Button 
-                variant={showDebugAreas ? "secondary" : "outline"}
-                size="sm" 
-                className="h-7 text-xs"
-                onClick={toggleDebugAreas}
-              >
-                {showDebugAreas ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
-                {showDebugAreas ? 'Hide Guides' : 'Show Guides'}
-              </Button>
-            </div>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-lg font-medium flex-none">Editor</CardTitle>
+            <Button 
+              variant={editMode !== 'none' ? "secondary" : "outline"}
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={toggleEditMode}
+            >
+              <Crosshair className="h-3 w-3 mr-1" /> {editMode === 'none' ? 'Edit' : 'Exit Edit'}
+            </Button>
+            <Button 
+              variant={showDebugAreas ? "secondary" : "outline"}
+              size="sm" 
+              className="h-7 text-xs"
+              onClick={toggleDebugAreas}
+            >
+              {showDebugAreas ? <EyeOff className="h-3 w-3 mr-1" /> : <Eye className="h-3 w-3 mr-1" />}
+              {showDebugAreas ? 'Hide Guides' : 'Show Guides'}
+            </Button>
           </div>
           
           <div className="flex items-center space-x-2 bg-gray-100 p-1 rounded-md">
@@ -867,39 +865,48 @@ export default function MultiShirtCanvas({
       </CardHeader>
       <CardContent className="pt-0">
         {editMode !== 'none' && (
-          <div className="bg-gray-50 p-4 mb-4 rounded-lg border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center">
-                <h3 className="font-medium text-gray-800">Design Placement</h3>
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {editMode === 'all' ? 'All Shirts Mode' : editMode === 'individual' ? 'Individual Mode' : 'View Mode'}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant={syncAll ? "default" : "outline"}
-                  className="h-8"
-                  onClick={toggleSyncMode}
-                >
-                  {syncAll ? "All Shirts" : "Individual"}
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="h-8"
-                  onClick={resetPositions}
-                >
-                  <RotateCcw className="h-3 w-3 mr-1" /> Reset
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="secondary" 
-                  className="h-8"
-                  onClick={saveSettings}
-                >
-                  <Save className="h-3 w-3 mr-1" /> Save Settings
-                </Button>
+          <div className="bg-gray-50 p-2 mb-4 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <Button 
+                    size="sm" 
+                    variant={syncAll ? "default" : "outline"}
+                    className="h-7 text-xs"
+                    onClick={toggleSyncMode}
+                  >
+                    {syncAll ? "All Shirts" : "Individual"}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-7 text-xs"
+                    onClick={resetPositions}
+                  >
+                    <RotateCcw className="h-3 w-3 mr-1" /> Reset
+                  </Button>
+                </div>
+                
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={autoPosition}
+                    disabled={!designImg}
+                  >
+                    <Zap className="h-3 w-3 mr-1" />
+                    Auto
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    className="h-7 text-xs"
+                    onClick={saveSettings}
+                  >
+                    <Save className="h-3 w-3 mr-1" /> Save
+                  </Button>
+                </div>
               </div>
             </div>
             
