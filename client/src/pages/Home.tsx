@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DesignUploader from "@/components/DesignUploader";
@@ -196,20 +196,16 @@ export default function Home() {
   const [showGuides, setShowGuides] = useState(true);
 
   // Toggle edit panel
-  const handleEditClick = () => {
-    if (editFn) {
-      setShowEditPanel(!showEditPanel);
-      editFn();
-    }
-  };
+  const handleEditClick = useCallback(() => {
+    setShowEditPanel(prevState => !prevState);
+    // We removed the call to editFn() as we're now controlling the state from here
+  }, []);
 
   // Toggle guides visibility
-  const handleGuidesClick = () => {
-    if (guidesFn) {
-      setShowGuides(!showGuides);
-      guidesFn();
-    }
-  };
+  const handleGuidesClick = useCallback(() => {
+    setShowGuides(prevState => !prevState);
+    if (guidesFn) guidesFn();
+  }, [guidesFn]);
 
   return (
     <div className="h-screen flex bg-white overflow-hidden" style={{ maxHeight: '100vh' }}>

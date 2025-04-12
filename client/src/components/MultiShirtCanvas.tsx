@@ -656,12 +656,10 @@ export default function MultiShirtCanvas({
   };
   
   // Toggle edit mode (simplified to just on/off for better parent component integration)
+  // We're now being controlled by the parent, so this just serves as an API for the parent
   const toggleEditMode = () => {
-    // First update our local state
-    setEditMode(prev => {
-      // Just toggle between 'none' and 'all' modes
-      return prev === 'none' ? 'all' : 'none';
-    });
+    // This no longer updates internal state directly, parent will handle it
+    // Parent component is listening via the callback reference
   };
 
   // Toggle sync all shirts
