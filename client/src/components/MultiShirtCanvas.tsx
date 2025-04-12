@@ -28,6 +28,10 @@ interface MultiShirtCanvasProps {
   onGuidesButtonRef?: (fn: () => void) => void;
   onZoomInRef?: (fn: () => void) => void;
   onZoomOutRef?: (fn: () => void) => void;
+  // JPEG quality settings
+  jpegQuality?: number;
+  onJpegQualityChange?: (quality: number) => void;
+  onGetLastFileSize?: (size: number | null) => void;
 }
 
 // Define a placement settings type
@@ -662,6 +666,14 @@ export default function MultiShirtCanvas({
   // JPEG quality setting for download
   const [jpegQuality, setJpegQuality] = useState<number>(85); // Default 85% quality
   const [lastFileSize, setLastFileSize] = useState<number | null>(null); // To store actual file size
+  
+  // Expose jpeg quality and file size to parent
+  useEffect(() => {
+    // Calculate estimated file size when jpegQuality changes
+    if (designImg && mockupImg) {
+      calculateFileSize();
+    }
+  }, [jpegQuality, designImg, mockupImg]);
   
   // Handle mockup download
   const handleDownload = () => {
