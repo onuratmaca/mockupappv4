@@ -882,7 +882,7 @@ export default function MultiShirtCanvas({
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -937,7 +937,7 @@ export default function MultiShirtCanvas({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 flex-grow flex flex-col">
         {editMode !== 'none' && (
           <div className="bg-gray-50 p-2 mb-4 rounded-lg border border-gray-200">
             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -1116,19 +1116,23 @@ export default function MultiShirtCanvas({
           </div>
         )}
         
-        <div className="relative">
-          <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: 'auto' }}>
+        <div className="relative flex-grow h-full">
+          <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center h-full overflow-hidden">
             <div style={{ 
               transform: `scale(${zoomLevel / 100})`, 
               transformOrigin: 'center', 
               transition: 'transform 0.2s ease',
-              width: '100%'
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
               <canvas 
                 ref={canvasRef} 
                 width={canvasSize.width} 
                 height={canvasSize.height}
-                style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                 onClick={handleCanvasClick}
               />
             </div>
@@ -1252,32 +1256,21 @@ export default function MultiShirtCanvas({
           )}
         </div>
         
-        <div className="mt-4 space-y-3">
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <div className="mb-3">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-sm font-medium text-gray-700">Export Settings</h3>
-                <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <span className="px-2 py-1 bg-gray-200 rounded-md">
-                    {lastFileSize 
-                      ? `${lastFileSize.toFixed(2)}MB` 
-                      : `~${(0.12 + (jpegQuality/100) * 7).toFixed(1)}MB`}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between mb-1">
-                <div className="text-xs text-gray-500 flex items-center gap-2">
-                  <span className="font-medium">{jpegQuality}% Quality</span>
-                  {jpegQuality > 80 ? 
-                    <span className="px-1.5 py-0.5 bg-red-100 text-red-800 rounded text-[10px]">LARGER FILES</span> : 
-                    jpegQuality > 60 ? 
-                    <span className="px-1.5 py-0.5 bg-green-100 text-green-800 rounded text-[10px]">BALANCED</span> : 
-                    <span className="px-1.5 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px]">SMALLER FILES</span>
-                  }
-                </div>
-                
-                <div className="flex gap-2">
+        <div className="mt-2">
+          <div className="bg-gray-50 p-2 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium">Quality: {jpegQuality}%</span>
+                <Slider 
+                  min={30} 
+                  max={100} 
+                  step={5} 
+                  value={[jpegQuality]} 
+                  onValueChange={(value) => setJpegQuality(value[0])}
+                  disabled={!designImg}
+                  className="w-24"
+                />
+                <div className="flex gap-1">
                   <Button 
                     size="sm" 
                     variant="outline" 
@@ -1290,14 +1283,6 @@ export default function MultiShirtCanvas({
                     size="sm" 
                     variant="outline" 
                     className="h-6 px-2 text-xs" 
-                    onClick={() => setJpegQuality(85)}
-                  >
-                    85%
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="h-6 px-2 text-xs" 
                     onClick={() => setJpegQuality(100)}
                   >
                     100%
@@ -1305,38 +1290,32 @@ export default function MultiShirtCanvas({
                 </div>
               </div>
               
-              <div className="w-full mt-1">
-                <Slider 
-                  min={30} 
-                  max={100} 
-                  step={5} 
-                  value={[jpegQuality]} 
-                  onValueChange={(value) => setJpegQuality(value[0])}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold px-2 py-1 bg-gray-200 rounded-md">
+                  {lastFileSize 
+                    ? `${lastFileSize.toFixed(2)}MB` 
+                    : `~${(0.12 + (jpegQuality/100) * 7).toFixed(1)}MB`}
+                </span>
+                <Button 
+                  size="sm"
+                  variant="outline"
+                  onClick={calculateFileSize}
                   disabled={!designImg}
-                />
+                  className="h-8 text-xs"
+                >
+                  <Calculator className="mr-1 h-3 w-3" />
+                  Size
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={handleDownload}
+                  disabled={!designImg}
+                  className="h-8 text-xs"
+                >
+                  <Download className="mr-1 h-3 w-3" />
+                  Download
+                </Button>
               </div>
-            </div>
-            
-            <div className="flex gap-2 mt-4">
-              <Button 
-                className="flex-1"
-                size="sm"
-                variant="outline"
-                onClick={calculateFileSize}
-                disabled={!designImg}
-              >
-                <Calculator className="mr-2 h-4 w-4" />
-                Calculate Size
-              </Button>
-              <Button 
-                className="flex-1"
-                size="sm"
-                onClick={handleDownload}
-                disabled={!designImg}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download JPEG
-              </Button>
             </div>
           </div>
         </div>
