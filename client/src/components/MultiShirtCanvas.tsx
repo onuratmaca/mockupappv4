@@ -882,7 +882,7 @@ export default function MultiShirtCanvas({
                           Math.max(-200, shirtConfigs[0].designOffset.x - 20) : 
                           Math.max(-200, shirtConfigs[selectedShirt].designOffset.x - 20))}
                       >
-                        <span className="text-xs">←</span>
+                        <span className="text-xs">-</span>
                       </Button>
                       <Button 
                         size="sm" 
@@ -892,7 +892,7 @@ export default function MultiShirtCanvas({
                           Math.min(200, shirtConfigs[0].designOffset.x + 20) : 
                           Math.min(200, shirtConfigs[selectedShirt].designOffset.x + 20))}
                       >
-                        <span className="text-xs">→</span>
+                        <span className="text-xs">+</span>
                       </Button>
                     </div>
                   </div>
@@ -927,7 +927,7 @@ export default function MultiShirtCanvas({
                           Math.max(-300, shirtConfigs[0].designOffset.y - 20) : 
                           Math.max(-300, shirtConfigs[selectedShirt].designOffset.y - 20))}
                       >
-                        <span className="text-xs">↑</span>
+                        <span className="text-xs">-</span>
                       </Button>
                       <Button 
                         size="sm" 
@@ -937,7 +937,7 @@ export default function MultiShirtCanvas({
                           Math.min(300, shirtConfigs[0].designOffset.y + 20) : 
                           Math.min(300, shirtConfigs[selectedShirt].designOffset.y + 20))}
                       >
-                        <span className="text-xs">↓</span>
+                        <span className="text-xs">+</span>
                       </Button>
                     </div>
                   </div>
@@ -969,7 +969,7 @@ export default function MultiShirtCanvas({
                     className="h-5 w-5 p-0" 
                     onClick={() => setGlobalYOffset(Math.max(-300, globalYOffset - 20))}
                   >
-                    <span className="text-xs">↑</span>
+                    <span className="text-xs">-</span>
                   </Button>
                   <Button 
                     size="sm" 
@@ -977,7 +977,7 @@ export default function MultiShirtCanvas({
                     className="h-5 w-5 p-0" 
                     onClick={() => setGlobalYOffset(Math.min(100, globalYOffset + 20))}
                   >
-                    <span className="text-xs">↓</span>
+                    <span className="text-xs">+</span>
                   </Button>
                 </div>
               </div>
@@ -1023,21 +1023,126 @@ export default function MultiShirtCanvas({
           </div>
         )}
         
-        <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: 'auto' }}>
-          <div style={{ 
-            transform: `scale(${zoomLevel / 100})`, 
-            transformOrigin: 'center', 
-            transition: 'transform 0.2s ease',
-            width: '100%'
-          }}>
-            <canvas 
-              ref={canvasRef} 
-              width={canvasSize.width} 
-              height={canvasSize.height}
-              style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
-              onClick={handleCanvasClick}
-            />
+        <div className="relative">
+          <div className="bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden" style={{ height: 'auto' }}>
+            <div style={{ 
+              transform: `scale(${zoomLevel / 100})`, 
+              transformOrigin: 'center', 
+              transition: 'transform 0.2s ease',
+              width: '100%'
+            }}>
+              <canvas 
+                ref={canvasRef} 
+                width={canvasSize.width} 
+                height={canvasSize.height}
+                style={{ maxWidth: '100%', height: 'auto', objectFit: 'contain' }}
+                onClick={handleCanvasClick}
+              />
+            </div>
           </div>
+          
+          {editMode !== 'none' && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white shadow-lg rounded-full px-4 py-2 flex items-center gap-3 border border-gray-200">
+              {/* Quick access controls for X position */}
+              <div className="flex items-center">
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-6 w-6 p-0" 
+                  onClick={() => handleXOffsetChange(syncAll ? 
+                    Math.max(-200, shirtConfigs[0].designOffset.x - 10) : 
+                    Math.max(-200, shirtConfigs[selectedShirt].designOffset.x - 10))}
+                >
+                  <span className="text-xs">-</span>
+                </Button>
+                <span className="text-xs mx-1">X</span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-6 w-6 p-0" 
+                  onClick={() => handleXOffsetChange(syncAll ? 
+                    Math.min(200, shirtConfigs[0].designOffset.x + 10) : 
+                    Math.min(200, shirtConfigs[selectedShirt].designOffset.x + 10))}
+                >
+                  <span className="text-xs">+</span>
+                </Button>
+              </div>
+              
+              <div className="h-6 w-px bg-gray-300"></div>
+              
+              {/* Quick access controls for Y position */}
+              <div className="flex items-center">
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-6 w-6 p-0" 
+                  onClick={() => handleYOffsetChange(syncAll ? 
+                    Math.max(-300, shirtConfigs[0].designOffset.y - 10) : 
+                    Math.max(-300, shirtConfigs[selectedShirt].designOffset.y - 10))}
+                >
+                  <span className="text-xs">-</span>
+                </Button>
+                <span className="text-xs mx-1">Y</span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-6 w-6 p-0" 
+                  onClick={() => handleYOffsetChange(syncAll ? 
+                    Math.min(300, shirtConfigs[0].designOffset.y + 10) : 
+                    Math.min(300, shirtConfigs[selectedShirt].designOffset.y + 10))}
+                >
+                  <span className="text-xs">+</span>
+                </Button>
+              </div>
+              
+              <div className="h-6 w-px bg-gray-300"></div>
+              
+              {/* Global Y adjustment */}
+              <div className="flex items-center">
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-6 w-6 p-0" 
+                  onClick={() => setGlobalYOffset(Math.max(-300, globalYOffset - 10))}
+                >
+                  <span className="text-xs">-</span>
+                </Button>
+                <span className="text-xs mx-1">Global&nbsp;Y</span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  className="h-6 w-6 p-0" 
+                  onClick={() => setGlobalYOffset(Math.min(100, globalYOffset + 10))}
+                >
+                  <span className="text-xs">+</span>
+                </Button>
+              </div>
+              
+              <div className="h-6 w-px bg-gray-300"></div>
+              
+              {/* Toggle mode button */}
+              <Button 
+                size="sm" 
+                variant={syncAll ? "secondary" : "outline"} 
+                className="h-7 text-xs px-2"
+                onClick={toggleSyncMode}
+              >
+                {syncAll ? "All" : "Indiv."}
+              </Button>
+              
+              <div className="h-6 w-px bg-gray-300"></div>
+              
+              {/* Save button */}
+              <Button 
+                size="sm" 
+                variant="default"
+                className="h-7 text-xs"
+                onClick={saveSettings}
+              >
+                <Save className="h-3 w-3 mr-1" /> Save
+              </Button>
+            </div>
+          )}
         </div>
         
         <div className="mt-4 space-y-3">
@@ -1070,17 +1175,17 @@ export default function MultiShirtCanvas({
                     size="sm" 
                     variant="outline" 
                     className="h-6 px-2 text-xs" 
-                    onClick={() => setJpegQuality(30)}
+                    onClick={() => setJpegQuality(70)}
                   >
-                    30%
+                    70%
                   </Button>
                   <Button 
                     size="sm" 
                     variant="outline" 
                     className="h-6 px-2 text-xs" 
-                    onClick={() => setJpegQuality(70)}
+                    onClick={() => setJpegQuality(85)}
                   >
-                    70%
+                    85%
                   </Button>
                   <Button 
                     size="sm" 
