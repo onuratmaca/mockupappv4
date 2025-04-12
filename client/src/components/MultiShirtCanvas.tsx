@@ -327,46 +327,51 @@ export default function MultiShirtCanvas({
     
     // Reset positions first for consistency
     setShirtConfigs(INITIAL_SHIRT_POSITIONS);
-    setSelectedPreset(null);
     
     // Calculate the aspect ratio
     const aspectRatio = designImg.width / designImg.height;
     
-    // Choose the appropriate preset based on aspect ratio
+    // Auto-detect the design type and choose the appropriate preset
     let chosenPresetIndex;
+    let yOffset = -200; // Default Y offset
     
     if (aspectRatio > 2.0) {
       // Very wide - use wide banner preset
       chosenPresetIndex = 0;
+      yOffset = -150; // Wide designs a bit lower
     } else if (aspectRatio > 1.3) {
       // Standard landscape like 4:3, 16:9
       chosenPresetIndex = 1;
+      yOffset = -180; // Landscape designs slightly higher
     } else if (aspectRatio >= 0.7 && aspectRatio <= 1.3) {
       // Square-ish (between 0.7 and 1.3 ratio)
       chosenPresetIndex = 2;
+      yOffset = -200; // Default middle position
     } else if (aspectRatio >= 0.4 && aspectRatio < 0.7) {
       // Portrait like 3:4, 9:16
       chosenPresetIndex = 3;
+      
+      // Use a formula to calculate a good Y offset for portrait designs
+      // As aspect ratio gets smaller (more portrait), we move design higher
+      const portraitAdjustment = Math.round((0.7 - aspectRatio) * 150); // 0 to ~45px adjustment
+      yOffset = -200 - portraitAdjustment; // Between -200 and -245
     } else {
-      // Very tall
+      // Very tall (less than 0.4 aspect ratio)
       chosenPresetIndex = 4;
+      // Tall designs need more precise positioning with finer control
+      // The taller the design, the higher it should be
+      const tallAdjustment = Math.round((0.4 - aspectRatio) * 200); // Taller = more adjustment
+      yOffset = -220 - tallAdjustment; // Between -220 and -280 based on tallness
     }
     
-    // Apply the chosen preset (this sets width/height factors)
+    // Apply the chosen preset
     const preset = DESIGN_PRESETS[chosenPresetIndex];
     setDesignWidthFactor(preset.widthFactor);
     setDesignHeightFactor(preset.heightFactor);
     setSelectedPreset(chosenPresetIndex);
     
-    // Adjust global Y offset based on aspect ratio
-    // Taller designs need to be placed higher up
-    if (aspectRatio < 0.7) {
-      setGlobalYOffset(-250); // Tall designs higher up
-    } else if (aspectRatio > 1.5) {
-      setGlobalYOffset(-150); // Wide designs a bit lower
-    } else {
-      setGlobalYOffset(-200); // Default middle position
-    }
+    // Apply calculated Y offset
+    setGlobalYOffset(yOffset);
     
     // Force All Shirts mode
     setSyncAll(true);
@@ -374,7 +379,7 @@ export default function MultiShirtCanvas({
     
     toast({
       title: "Auto-Positioned",
-      description: `Applied "${preset.name}" preset for ${aspectRatio.toFixed(2)}:1 ratio design`,
+      description: `Applied "${preset.name}" preset at Y=${yOffset}px for ${aspectRatio.toFixed(2)}:1 ratio design`,
     });
   };
 
