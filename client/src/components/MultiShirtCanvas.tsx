@@ -648,12 +648,11 @@ export default function MultiShirtCanvas({
     setShowDebugAreas(prev => !prev);
   };
   
-  // Toggle edit mode
+  // Toggle edit mode (simplified to just on/off for better parent component integration)
   const toggleEditMode = () => {
     setEditMode(prev => {
-      if (prev === 'none') return 'all';
-      if (prev === 'all') return 'individual';
-      return 'none';
+      // Just toggle between 'none' and 'all' modes
+      return prev === 'none' ? 'all' : 'none';
     });
   };
 
