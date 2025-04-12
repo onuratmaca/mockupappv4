@@ -14,7 +14,7 @@ export default function MockupSelector({
     <div className="flex flex-col items-center gap-2">
       <TooltipProvider>
         {MOCKUP_IMAGES.map((mockup) => (
-          <Tooltip key={mockup.id} side="right">
+          <Tooltip key={mockup.id}>
             <TooltipTrigger asChild>
               <button 
                 type="button"
