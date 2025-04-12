@@ -144,12 +144,19 @@ export default function MultiShirtCanvas({
 
   // Expose functions to parent component through refs
   useEffect(() => {
-    if (onAutoButtonRef) onAutoButtonRef(autoPosition);
+    // Create a stable reference to autoPosition that won't change on rerenders
+    const stableAutoPosition = autoPosition;
+    
+    if (onAutoButtonRef) onAutoButtonRef(() => {
+      console.log("Auto position callback called from parent");
+      stableAutoPosition();
+    });
+    
     if (onEditButtonRef) onEditButtonRef(toggleEditMode);
     if (onGuidesButtonRef) onGuidesButtonRef(toggleDebugAreas);
     if (onZoomInRef) onZoomInRef(handleZoomIn);
     if (onZoomOutRef) onZoomOutRef(handleZoomOut);
-  }, [onAutoButtonRef, onEditButtonRef, onGuidesButtonRef, onZoomInRef, onZoomOutRef]);
+  }, []);
   
   // We'll handle downloads directly through the hidden button now
   
@@ -343,7 +350,9 @@ export default function MultiShirtCanvas({
   };
   
   // Auto-position based on the design's dimensions
+  // Make this function public by adding it to the window object
   const autoPosition = () => {
+    console.log("AutoPosition called");
     if (!designImg) {
       toast({
         title: "No Design",
