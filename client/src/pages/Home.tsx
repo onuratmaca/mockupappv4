@@ -193,6 +193,23 @@ export default function Home() {
   };
 
   const [showEditPanel, setShowEditPanel] = useState(false);
+  const [showGuides, setShowGuides] = useState(true);
+
+  // Toggle edit panel
+  const handleEditClick = () => {
+    if (editFn) {
+      setShowEditPanel(!showEditPanel);
+      editFn();
+    }
+  };
+
+  // Toggle guides visibility
+  const handleGuidesClick = () => {
+    if (guidesFn) {
+      setShowGuides(!showGuides);
+      guidesFn();
+    }
+  };
 
   return (
     <div className="h-screen flex bg-white overflow-hidden" style={{ maxHeight: '100vh' }}>
@@ -215,6 +232,7 @@ export default function Home() {
               size="sm" 
               className="h-7 text-xs"
               onClick={() => autoFn && autoFn()}
+              disabled={!designImage}
             >
               Auto
             </Button>
@@ -223,21 +241,20 @@ export default function Home() {
               variant={showEditPanel ? "secondary" : "ghost"}
               size="sm" 
               className="h-7 text-xs"
-              onClick={() => {
-                setShowEditPanel(!showEditPanel);
-                if (editFn) editFn();
-              }}
+              onClick={handleEditClick}
+              disabled={!designImage}
             >
               {showEditPanel ? "Exit Edit" : "Edit"}
             </Button>
             
             <Button 
-              variant="ghost" 
+              variant={!showGuides ? "secondary" : "ghost"}
               size="sm" 
               className="h-7 text-xs"
-              onClick={() => guidesFn && guidesFn()}
+              onClick={handleGuidesClick}
+              disabled={!designImage}
             >
-              Hide Guides
+              {showGuides ? "Hide Guides" : "Show Guides"}
             </Button>
           </div>
           
