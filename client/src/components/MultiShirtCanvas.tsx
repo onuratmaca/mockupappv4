@@ -383,6 +383,10 @@ export default function MultiShirtCanvas({
      * So we need to counteract these multipliers by adjusting our preset values.
      */
     
+    // Check if the design is an SVG by looking at its source
+    const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
+                      designImage?.toLowerCase().startsWith('data:image/svg+xml');
+    
     // Default position on shirt
     let yOffset = -200; 
     
@@ -439,6 +443,12 @@ export default function MultiShirtCanvas({
       
       // Position tall designs at similar position to portrait
       yOffset = -180;
+    }
+    
+    // If it's an SVG, adjust the position to compensate for the larger scaling factor
+    // SVGs are scaled by 1.5x in the rendering process, so need to position higher
+    if (isSvgImage) {
+      yOffset -= 70; // SVGs should be positioned 70px higher to maintain consistent position
     }
     
     // Apply calculated Y offset
