@@ -194,99 +194,88 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden" style={{ maxHeight: '100vh' }}>
-      <div className="absolute top-0 left-0 right-0 z-10 p-1 flex items-center justify-between bg-white">
-        <div className="flex items-center space-x-2 ml-2">
-          <h2 className="text-lg font-medium hidden">T-Shirt Designer</h2>
+      <div className="fixed top-0 left-0 right-0 z-10 p-1 flex items-center shadow-sm border-b border-gray-200 bg-white">
+        <div className="flex items-center space-x-2 px-2">
           <DesignUploader onDesignUpload={setDesignImage} />
-          <div className="flex items-center gap-2 text-gray-500 text-xs" id="editor-toolbar">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs"
-              onClick={() => autoFn && autoFn()}
-            >
-              Auto
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs"
-              onClick={() => editFn && editFn()}
-            >
-              Edit
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 text-xs"
-              onClick={() => guidesFn && guidesFn()}
-            >
-              Hide Guides
-            </Button>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-2 bg-gray-100 p-1 rounded-md">
+          
+          <div className="border-l border-gray-200 h-5 mx-2"></div>
+          
           <Button 
             variant="ghost" 
-            size="icon" 
-            className="h-7 w-7"
-            onClick={() => zoomOutFn && zoomOutFn()}
+            size="sm" 
+            className="h-7 text-xs"
+            onClick={() => autoFn && autoFn()}
           >
-            <span className="text-xs">-</span>
+            Auto
           </Button>
-          <span className="text-xs font-medium w-12 text-center">{zoomLevel}%</span>
+          
           <Button 
             variant="ghost" 
-            size="icon" 
-            className="h-7 w-7"
-            onClick={() => zoomInFn && zoomInFn()}
+            size="sm" 
+            className="h-7 text-xs"
+            onClick={() => editFn && editFn()}
           >
-            <span className="text-xs">+</span>
+            Edit
           </Button>
-        </div>
-      </div>
-      
-      {/* Hidden/hover-visible controls */}
-      <div className="fixed top-10 left-0 right-0 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-        <div className="flex items-center gap-2 bg-white/90 rounded-lg shadow-md p-1">
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 text-xs"
+            onClick={() => guidesFn && guidesFn()}
+          >
+            Hide Guides
+          </Button>
+          
+          <div className="border-l border-gray-200 h-5 mx-2"></div>
+          
           <MockupSelector
             selectedMockupId={selectedMockupId}
             onMockupSelect={setSelectedMockupId}
           />
+        </div>
+        
+        <div className="flex-1"></div>
+        
+        <div className="flex items-center space-x-2 px-2">
           {designImage && (
-            <div className="flex items-center gap-1 mx-2">
-              <span className="text-xs text-gray-500">Size:</span>
-              <input
-                type="range"
-                min="50"
-                max="150"
-                step="5"
-                value={designSize}
-                onChange={(e) => setDesignSize(parseInt(e.target.value))}
-                className="w-20"
-              />
-              <span className="text-xs font-medium">{designSize}%</span>
-            </div>
+            <>
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500">Size:</span>
+                <input
+                  type="range"
+                  min="50"
+                  max="150"
+                  step="5"
+                  value={designSize}
+                  onChange={(e) => setDesignSize(parseInt(e.target.value))}
+                  className="w-20"
+                />
+                <span className="text-xs font-medium">{designSize}%</span>
+              </div>
+              
+              <Button 
+                onClick={handleResetDesign}
+                variant="outline" 
+                size="sm"
+                className="text-xs h-7"
+              >
+                Reset Size
+              </Button>
+              
+              <div className="border-l border-gray-200 h-5 mx-2"></div>
+            </>
           )}
-          {designImage && (
-            <Button 
-              onClick={handleResetDesign}
-              variant="outline" 
-              size="sm"
-              className="text-xs h-7 mx-1"
-            >
-              Reset
-            </Button>
-          )}
+          
           <Button 
             onClick={() => setShowSavedProjects(true)}
             variant="outline" 
             size="sm"
-            className="text-xs h-7 px-3"
+            className="text-xs h-7"
           >
             Projects
           </Button>
+          
           <Button 
             onClick={handleDownloadMockup}
             variant="default" 
@@ -297,11 +286,33 @@ export default function Home() {
             <Download className="mr-1 h-3 w-3" />
             Download
           </Button>
+          
+          <div className="border-l border-gray-200 h-5 mx-2"></div>
+          
+          <div className="flex items-center bg-gray-100 p-1 rounded-md">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7"
+              onClick={() => zoomOutFn && zoomOutFn()}
+            >
+              <span className="text-xs">-</span>
+            </Button>
+            <span className="text-xs font-medium w-12 text-center">{zoomLevel}%</span>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7"
+              onClick={() => zoomInFn && zoomInFn()}
+            >
+              <span className="text-xs">+</span>
+            </Button>
+          </div>
         </div>
       </div>
       
       {/* Main content - canvas takes most of the screen */}
-      <div className="flex-grow" style={{ height: '100vh' }}>
+      <div className="flex-grow pt-12" style={{ height: 'calc(100vh - 40px)' }}>
         <MultiShirtCanvas
           designImage={designImage}
           mockupId={selectedMockupId}
