@@ -519,6 +519,7 @@ export default function MultiShirtCanvas({
     selectedShirt, 
     shirtConfigs, 
     globalYOffset,
+    globalXOffset,
     designWidthFactor,
     designHeightFactor
   ]);
