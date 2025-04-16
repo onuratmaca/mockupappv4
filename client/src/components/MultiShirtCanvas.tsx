@@ -1074,7 +1074,7 @@ export default function MultiShirtCanvas({
                   <span className="text-xs text-gray-500 min-w-[60px]">W: {designWidthFactor}</span>
                   <Slider 
                     min={100} 
-                    max={800} 
+                    max={1200} 
                     step={10} 
                     value={[designWidthFactor]} 
                     onValueChange={(value) => {
@@ -1113,7 +1113,7 @@ export default function MultiShirtCanvas({
                   <span className="text-xs text-gray-500 min-w-[60px]">H: {designHeightFactor}</span>
                   <Slider 
                     min={100} 
-                    max={600} 
+                    max={1000} 
                     step={10} 
                     value={[designHeightFactor]} 
                     onValueChange={(value) => {
@@ -1151,8 +1151,8 @@ export default function MultiShirtCanvas({
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500 min-w-[60px]">Y: {globalYOffset}</span>
                   <Slider 
-                    min={-400} 
-                    max={200} 
+                    min={-800} 
+                    max={400} 
                     step={2}
                     value={[globalYOffset]} 
                     onValueChange={(value) => setGlobalYOffset(value[0])}
