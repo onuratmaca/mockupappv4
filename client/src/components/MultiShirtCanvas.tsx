@@ -58,7 +58,7 @@ const INITIAL_SHIRT_POSITIONS: ShirtConfig[] = [
   { x: 1500, y: 750, name: "Ivory", index: 1, designOffset: { x: 30, y: -75 } },
   { x: 2500, y: 750, name: "Butter", index: 2, designOffset: { x: -45, y: -80 } },
   { x: 3500, y: 750, name: "Banana", index: 3, designOffset: { x: -90, y: -90 } },
-  
+
   // BOTTOM ROW (Left to Right)
   { x: 500, y: 2250, name: "Mustard", index: 4, designOffset: { x: 95, y: -160 } },
   { x: 1500, y: 2250, name: "Peachy", index: 5, designOffset: { x: 30, y: -180 } },
@@ -91,7 +91,7 @@ export default function MultiShirtCanvas({
   const [zoomLevel, setZoomLevel] = useState(100); // Full size view
   const [canvasSize] = useState({ width: 4000, height: 3000 });
   const [showDebugAreas, setShowDebugAreas] = useState(true); 
-  
+
   // Preset configurations for different aspect ratios
   interface DesignPreset {
     name: string;
@@ -100,7 +100,7 @@ export default function MultiShirtCanvas({
     heightFactor: number;
     forRatio: string;
   }
-  
+
   const DESIGN_PRESETS: DesignPreset[] = [
     {
       name: "Wide Banner",
@@ -138,7 +138,7 @@ export default function MultiShirtCanvas({
       forRatio: "< 1:2"
     }
   ];
-  
+
   // Design placement adjustment controls
   const [shirtConfigs, setShirtConfigs] = useState<ShirtConfig[]>(INITIAL_SHIRT_POSITIONS);
   const [selectedShirt, setSelectedShirt] = useState<number>(0);
@@ -154,20 +154,20 @@ export default function MultiShirtCanvas({
   useEffect(() => {
     // Create a stable reference to autoPosition that won't change on rerenders
     const stableAutoPosition = autoPosition;
-    
+
     if (onAutoButtonRef) onAutoButtonRef(() => {
       console.log("Auto position callback called from parent");
       stableAutoPosition();
     });
-    
+
     if (onEditButtonRef) onEditButtonRef(toggleEditMode);
     if (onGuidesButtonRef) onGuidesButtonRef(toggleDebugAreas);
     if (onZoomInRef) onZoomInRef(handleZoomIn);
     if (onZoomOutRef) onZoomOutRef(handleZoomOut);
   }, []);
-  
+
   // We'll handle downloads directly through the hidden button now
-  
+
   // Sync edit mode with parent component
   useEffect(() => {
     setEditMode(editModeEnabled ? 'all' : 'none');
@@ -226,17 +226,17 @@ export default function MultiShirtCanvas({
       setDesignImg(null);
     }
   }, [designImage, toast]);
-  
+
   // Load initial placement settings when provided
   useEffect(() => {
     if (initialSettings) {
       // Set design width and height
       setDesignWidthFactor(initialSettings.designWidthFactor);
       setDesignHeightFactor(initialSettings.designHeightFactor);
-      
+
       // Set global Y offset
       setGlobalYOffset(initialSettings.globalYOffset);
-      
+
       // Set shirt configurations if available
       if (initialSettings.placementSettings) {
         try {
@@ -248,7 +248,7 @@ export default function MultiShirtCanvas({
           console.error("Failed to parse saved shirt configurations:", error);
         }
       }
-      
+
       // Automatically enable edit mode for better user experience
       setEditMode('all');
     }
@@ -257,27 +257,27 @@ export default function MultiShirtCanvas({
   // Handle mouse click on canvas for selecting shirts
   const handleCanvasClick = (e: MouseEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || editMode === 'none') return;
-    
+
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    
+
     // Calculate click position adjusted for canvas scaling and zoom
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    
+
     const clickX = (e.clientX - rect.left) * scaleX * (100 / zoomLevel);
     const clickY = (e.clientY - rect.top) * scaleY * (100 / zoomLevel);
-    
+
     // Find if click is within any shirt area
     const clickedShirtIndex = shirtConfigs.findIndex(shirt => {
       const shirtX = shirt.x;
       const shirtY = shirt.y;
-      
+
       // Use a reasonable click target radius (300px)
       const distance = Math.sqrt(Math.pow(clickX - shirtX, 2) + Math.pow(clickY - shirtY, 2));
       return distance < 300;
     });
-    
+
     if (clickedShirtIndex !== -1) {
       setSelectedShirt(clickedShirtIndex);
       toast({
@@ -341,7 +341,7 @@ export default function MultiShirtCanvas({
     setDesignHeightFactor(300);
     setSelectedPreset(null);
   };
-  
+
   // Apply a preset based on index
   const applyPreset = (presetIndex: number) => {
     if (presetIndex >= 0 && presetIndex < DESIGN_PRESETS.length) {
@@ -349,14 +349,14 @@ export default function MultiShirtCanvas({
       setDesignWidthFactor(preset.widthFactor);
       setDesignHeightFactor(preset.heightFactor);
       setSelectedPreset(presetIndex);
-      
+
       toast({
         title: "Preset Applied",
         description: `Applied "${preset.name}" preset for ${preset.forRatio} ratio designs`,
       });
     }
   };
-  
+
   // Auto-position based on the design's dimensions
   const autoPosition = () => {
     console.log("AutoPosition function called directly");
@@ -368,13 +368,13 @@ export default function MultiShirtCanvas({
       });
       return;
     }
-    
+
     // Reset positions first for consistency
     setShirtConfigs(INITIAL_SHIRT_POSITIONS);
-    
+
     // Calculate the aspect ratio
     const aspectRatio = designImg.width / designImg.height;
-    
+
     /**
      * IMPORTANT INSIGHT:
      * When using presets, we need to account for the additional multipliers that get applied in drawDesignsOnShirts():
@@ -383,14 +383,14 @@ export default function MultiShirtCanvas({
      * 
      * So we need to counteract these multipliers by adjusting our preset values.
      */
-    
+
     // Check if the design is an SVG by looking at its source
     const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
                       designImage?.toLowerCase().startsWith('data:image/svg+xml');
-    
+
     // Default position on shirt
     let yOffset = -200; 
-    
+
     // Choose preset and adjust for the right appearance
     if (aspectRatio > 2.0) {
       // Very wide - use wide banner preset
@@ -417,48 +417,48 @@ export default function MultiShirtCanvas({
       // Portrait designs need larger size to counteract the 0.6 width multiplier
       // Use square preset but with adjusted values
       setSelectedPreset(2); // Still use square preset...
-      
+
       // The drawDesignsOnShirts function will multiply width by 0.6 and height by 1.5
       // So we need to counter that by dividing width by 0.6 (multiplying by 1.67)
       // and dividing height by 1.5 (multiplying by 0.67)
       const adjustedWidth = Math.round(DESIGN_PRESETS[2].widthFactor * 1.67);
       const adjustedHeight = Math.round(DESIGN_PRESETS[2].heightFactor * 0.67);
-      
+
       setDesignWidthFactor(adjustedWidth);
       setDesignHeightFactor(adjustedHeight);
-      
+
       // Position portrait designs a bit lower than square designs
       yOffset = -180; // Only 20px higher than square
     }
     else {
       // Very tall designs (aspectRatio < 0.4) need even more width adjustment
       setSelectedPreset(2); // Still use square preset...
-      
+
       // The drawDesignsOnShirts function will multiply width by 0.6 and height by 1.5
       // For very tall designs, we need to counter even more
       const adjustedWidth = Math.round(DESIGN_PRESETS[2].widthFactor * 1.9); // Even more width
       const adjustedHeight = Math.round(DESIGN_PRESETS[2].heightFactor * 0.67);
-      
+
       setDesignWidthFactor(adjustedWidth);
       setDesignHeightFactor(adjustedHeight);
-      
+
       // Position tall designs at similar position to portrait
       yOffset = -180;
     }
-    
+
     // If it's an SVG, adjust the position to compensate for the larger scaling factor
     // SVGs are scaled by 1.5x in the rendering process, so need to position higher
     if (isSvgImage) {
       yOffset -= 70; // SVGs should be positioned 70px higher to maintain consistent position
     }
-    
+
     // Apply calculated Y offset
     setGlobalYOffset(yOffset);
-    
+
     // Force All Shirts mode but don't change edit mode
     // (let the parent component control this)
     setSyncAll(true);
-    
+
     // Prepare appropriate description for toast - make it clearer what's happening
     let description;
     if (aspectRatio < 0.7) {
@@ -469,13 +469,13 @@ export default function MultiShirtCanvas({
       const presetName = DESIGN_PRESETS[getSelectedPresetIndex(aspectRatio)].name;
       description = `Applied "${presetName}" preset at Y=${yOffset}px`;
     }
-    
+
     toast({
       title: "Auto-Positioned",
       description
     });
   };
-  
+
   // Helper to get preset index based on aspect ratio
   const getSelectedPresetIndex = (aspectRatio: number): number => {
     if (aspectRatio > 2.0) return 0; // Wide banner
@@ -488,24 +488,24 @@ export default function MultiShirtCanvas({
   // Draw canvas when any inputs change
   useEffect(() => {
     if (!canvasRef.current) return;
-    
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     // Clear canvas
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     // Draw mockup image
     if (mockupImg) {
       ctx.drawImage(mockupImg, 0, 0, canvas.width, canvas.height);
-      
+
       // Draw designs if available
       if (designImg) {
         drawDesignsOnShirts(ctx);
       }
-      
+
       // Draw debug guides if enabled
       if (showDebugAreas) {
         drawDebugAreas(ctx);
@@ -522,27 +522,27 @@ export default function MultiShirtCanvas({
     designWidthFactor,
     designHeightFactor
   ]);
-  
+
   // Draw designs on shirts based on configs
   const drawDesignsOnShirts = (ctx: CanvasRenderingContext2D) => {
     if (!designImg) return;
-    
+
     // Get design's aspect ratio
     const aspectRatio = designImg.width / designImg.height;
-    
+
     // Check if the design is an SVG by looking at its source or other characteristics
     // SVG images typically have perfect 1:1 pixel ratio regardless of content
     const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
                       designImage?.toLowerCase().startsWith('data:image/svg+xml');
-    
+
     // SVG scaling factor - we'll make SVGs larger by default
     const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
-    
+
     // Place design on each shirt position
     shirtConfigs.forEach((shirt) => {
       // Calculate design dimensions based on aspect ratio
       let areaWidth, areaHeight;
-      
+
       if (aspectRatio > 2.0) {
         // Very wide design (banner/text like "overstimulated")
         areaWidth = designWidthFactor;
@@ -560,20 +560,20 @@ export default function MultiShirtCanvas({
         areaWidth = designWidthFactor * 0.8;
         areaHeight = designHeightFactor * 1.2;
       }
-      
+
       // Apply SVG scaling factor if detected
       if (isSvgImage) {
         areaWidth = areaWidth * svgScaleFactor;
         areaHeight = areaHeight * svgScaleFactor;
       }
-      
+
       // Apply user's size preference 
       areaWidth = areaWidth * (designSize / 100);
       areaHeight = areaHeight * (designSize / 100);
-      
+
       // Calculate final design dimensions preserving aspect ratio
       let designWidth, designHeight;
-      
+
       if (aspectRatio > areaWidth / areaHeight) {
         // Width-constrained
         designWidth = areaWidth;
@@ -583,11 +583,11 @@ export default function MultiShirtCanvas({
         designHeight = areaHeight;
         designWidth = designHeight * aspectRatio;
       }
-      
+
       // Draw the design with offsets
-      const designX = shirt.x + shirt.designOffset.x;
+      const designX = shirt.x + shirt.designOffset.x + globalXOffset;
       const designY = shirt.y + shirt.designOffset.y + globalYOffset;
-      
+
       // Draw from top point instead of center
       ctx.drawImage(
         designImg,
@@ -598,28 +598,28 @@ export default function MultiShirtCanvas({
       );
     });
   };
-  
+
   // Draw debug visualizations and position guides
   const drawDebugAreas = (ctx: CanvasRenderingContext2D) => {
     if (!designImg) return;
-    
+
     const aspectRatio = designImg.width / designImg.height;
-    
+
     // Check if the design is an SVG by looking at its source (maintain consistency)
     const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
                       designImage?.toLowerCase().startsWith('data:image/svg+xml');
-    
+
     // SVG scaling factor - consistent with other functions
     const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
-    
+
     // For each shirt, draw boundary and guides
     shirtConfigs.forEach((shirt, index) => {
       // Set different colors for selected vs. non-selected shirts
       const isSelected = index === selectedShirt;
-      
+
       // Calculate design dimensions based on aspect ratio
       let areaWidth, areaHeight;
-      
+
       if (aspectRatio > 2.0) {
         areaWidth = designWidthFactor;
         areaHeight = designHeightFactor / 2;
@@ -633,28 +633,28 @@ export default function MultiShirtCanvas({
         areaWidth = designWidthFactor * 0.8;
         areaHeight = designHeightFactor * 1.2;
       }
-      
+
       // Apply SVG scaling if detected
       if (isSvgImage) {
         areaWidth = areaWidth * svgScaleFactor;
         areaHeight = areaHeight * svgScaleFactor;
       }
-      
+
       // Adjust for user size preference
       areaWidth = areaWidth * (designSize / 100);
       areaHeight = areaHeight * (designSize / 100);
-      
+
       // Draw shirt center marker
       ctx.beginPath();
       ctx.strokeStyle = isSelected ? 'rgba(255, 165, 0, 0.8)' : 'rgba(0, 128, 255, 0.5)';
       ctx.lineWidth = isSelected ? 3 : 1;
       ctx.arc(shirt.x, shirt.y, 15, 0, Math.PI * 2);
       ctx.stroke();
-      
+
       // Draw design position with offsets
-      const designX = shirt.x + shirt.designOffset.x;
+      const designX = shirt.x + shirt.designOffset.x + globalXOffset;
       const designY = shirt.y + shirt.designOffset.y + globalYOffset;
-      
+
       // Draw design area - aligned with top-based positioning
       ctx.strokeStyle = isSelected ? 'rgba(255, 0, 0, 0.8)' : 'rgba(255, 0, 0, 0.4)';
       ctx.lineWidth = isSelected ? 3 : 1;
@@ -664,7 +664,7 @@ export default function MultiShirtCanvas({
         areaWidth,
         areaHeight
       );
-      
+
       // Draw crosshair at design center
       ctx.beginPath();
       ctx.moveTo(designX - 20, designY);
@@ -672,26 +672,26 @@ export default function MultiShirtCanvas({
       ctx.moveTo(designX, designY - 20);
       ctx.lineTo(designX, designY + 20);
       ctx.stroke();
-      
+
       // Add position label near the crosshair
       ctx.font = '24px Arial';
       ctx.fillStyle = isSelected ? 'rgba(255, 165, 0, 0.8)' : 'rgba(0, 128, 255, 0.5)';
       ctx.fillText(`${shirt.name}`, designX + 25, designY);
-      
+
       // Show position coordinates for selected shirt
       if (isSelected) {
         ctx.font = '18px Arial';
         ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-        ctx.fillText(`x: ${shirt.designOffset.x}, y: ${shirt.designOffset.y + globalYOffset}`, designX + 25, designY + 25);
+        ctx.fillText(`x: ${shirt.designOffset.x + globalXOffset}, y: ${shirt.designOffset.y + globalYOffset}`, designX + 25, designY + 25);
       }
     });
   };
-  
+
   // Toggle debug overlay
   const toggleDebugAreas = () => {
     setShowDebugAreas(prev => !prev);
   };
-  
+
   // Toggle edit mode (simplified to just on/off for better parent component integration)
   // We're now being controlled by the parent, so this just serves as an API for the parent
   const toggleEditMode = () => {
@@ -707,32 +707,32 @@ export default function MultiShirtCanvas({
   // JPEG quality setting for download
   const [jpegQuality, setJpegQuality] = useState<number>(externalJpegQuality || 85); // Use external value if provided
   const [lastFileSize, setLastFileSize] = useState<number | null>(null); // To store actual file size
-  
+
   // Update internal quality if external prop changes
   useEffect(() => {
     if (externalJpegQuality && externalJpegQuality !== jpegQuality) {
       setJpegQuality(externalJpegQuality);
     }
   }, [externalJpegQuality]);
-  
+
   // Expose jpeg quality and file size to parent
   useEffect(() => {
     // Pass quality changes back to parent
     if (onJpegQualityChange && jpegQuality !== externalJpegQuality) {
       onJpegQualityChange(jpegQuality);
     }
-    
+
     // Pass file size back to parent
     if (onGetLastFileSize && lastFileSize !== null) {
       onGetLastFileSize(lastFileSize);
     }
-    
+
     // Calculate estimated file size when jpegQuality changes
     if (designImg && mockupImg) {
       calculateFileSize();
     }
   }, [jpegQuality, lastFileSize, designImg, mockupImg, onJpegQualityChange, onGetLastFileSize]);
-  
+
   // Handle mockup download
   const handleDownload = () => {
     if (!canvasRef.current || !designImg || !mockupImg) {
@@ -743,34 +743,34 @@ export default function MultiShirtCanvas({
       });
       return;
     }
-    
+
     // Create a temporary canvas for the download (without debug markers)
     const downloadCanvas = document.createElement('canvas');
     downloadCanvas.width = canvasSize.width;
     downloadCanvas.height = canvasSize.height;
     const downloadCtx = downloadCanvas.getContext('2d');
-    
+
     if (downloadCtx) {
       // Draw mockup
       downloadCtx.drawImage(mockupImg, 0, 0, canvasSize.width, canvasSize.height);
-      
+
       // Draw designs without debug markers
       if (designImg) {
         // Get design's aspect ratio
         const aspectRatio = designImg.width / designImg.height;
-        
+
         // Check if the design is an SVG by looking at its source
         const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
                           designImage?.toLowerCase().startsWith('data:image/svg+xml');
-        
+
         // SVG scaling factor - we'll make SVGs larger by default
         const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
-        
+
         // Place design on each shirt position
         shirtConfigs.forEach((shirt) => {
           // Calculate design dimensions based on aspect ratio
           let areaWidth, areaHeight;
-          
+
           if (aspectRatio > 2.0) {
             areaWidth = designWidthFactor;
             areaHeight = designHeightFactor / 2;
@@ -784,20 +784,20 @@ export default function MultiShirtCanvas({
             areaWidth = designWidthFactor * 0.8;
             areaHeight = designHeightFactor * 1.2;
           }
-          
+
           // Apply SVG scaling factor if detected
           if (isSvgImage) {
             areaWidth = areaWidth * svgScaleFactor;
             areaHeight = areaHeight * svgScaleFactor;
           }
-          
+
           // Apply user's size preference 
           areaWidth = areaWidth * (designSize / 100);
           areaHeight = areaHeight * (designSize / 100);
-          
+
           // Calculate final design dimensions preserving aspect ratio
           let designWidth, designHeight;
-          
+
           if (aspectRatio > areaWidth / areaHeight) {
             // Width-constrained
             designWidth = areaWidth;
@@ -807,11 +807,11 @@ export default function MultiShirtCanvas({
             designHeight = areaHeight;
             designWidth = designHeight * aspectRatio;
           }
-          
+
           // Draw the design with offsets
           const designX = shirt.x + shirt.designOffset.x + globalXOffset;
           const designY = shirt.y + shirt.designOffset.y + globalYOffset;
-          
+
           // Draw from top point instead of center for download too
           downloadCtx.drawImage(
             designImg,
@@ -822,81 +822,81 @@ export default function MultiShirtCanvas({
           );
         });
       }
-      
+
       // Get canvas data URL as JPEG with quality setting
       const dataURL = downloadCanvas.toDataURL('image/jpeg', jpegQuality / 100);
-      
+
       // Calculate file size
       const binaryString = atob(dataURL.split(',')[1]);
       const fileSizeBytes = binaryString.length;
       const fileSizeMB = fileSizeBytes / (1024 * 1024);
       setLastFileSize(fileSizeMB);
-      
+
       // Create download link
       const link = document.createElement('a');
-      link.download = `tshirt-mockup-${mockupId}.jpg`;
+link.download = `tshirt-mockup-${mockupId}.jpg`;
       link.href = dataURL;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       toast({
         title: "Success",
         description: `Downloaded JPEG (${fileSizeMB.toFixed(2)}MB at ${jpegQuality}% quality)`,
       });
-      
+
       onDownload();
     }
   };
-  
+
   // Generate a sample file to get an exact size estimate without downloading
   const calculateFileSize = () => {
     if (!canvasRef.current || !designImg || !mockupImg) {
       return; // Can't calculate without images
     }
-    
+
     // Create a temporary canvas for size calculation
     const downloadCanvas = document.createElement('canvas');
     downloadCanvas.width = canvasSize.width;
     downloadCanvas.height = canvasSize.height;
     const downloadCtx = downloadCanvas.getContext('2d');
-    
+
     if (downloadCtx) {
       // Draw mockup
       downloadCtx.drawImage(mockupImg, 0, 0, canvasSize.width, canvasSize.height);
-      
+
       // Draw designs without debug markers
       if (designImg) {
         // Get design's aspect ratio
         const aspectRatio = designImg.width / designImg.height;
-        
+
         // Check if the design is an SVG by looking at its source
         const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
                           designImage?.toLowerCase().startsWith('data:image/svg+xml');
-        
+
         // SVG scaling factor - consistent with drawing function
         const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
-        
+
         // Just draw a single shirt to save processing time
         const shirt = shirtConfigs[0];
-        
+
         // Use the same calculation logic as the draw function
         let areaWidth = designWidthFactor;
         let areaHeight = designHeightFactor;
-        
+
         // Apply SVG scaling if detected
         if (isSvgImage) {
           areaWidth = areaWidth * svgScaleFactor;
           areaHeight = areaHeight * svgScaleFactor;
         }
-        
+
         // Apply user's size preference 
         areaWidth = areaWidth * (designSize / 100);
         areaHeight = areaHeight * (designSize / 100);
-        
+
         // Calculate final design dimensions preserving aspect ratio
         let designWidth, designHeight;
-        
+
         if (aspectRatio > areaWidth / areaHeight) {
           designWidth = areaWidth;
           designHeight = designWidth / aspectRatio;
@@ -904,11 +904,11 @@ export default function MultiShirtCanvas({
           designHeight = areaHeight;
           designWidth = designHeight * aspectRatio;
         }
-        
+
         // Draw the design with offsets
-        const designX = shirt.x + shirt.designOffset.x;
+        const designX = shirt.x + shirt.designOffset.x + globalXOffset;
         const designY = shirt.y + shirt.designOffset.y + globalYOffset;
-        
+
         downloadCtx.drawImage(
           designImg,
           designX - (designWidth / 2),
@@ -917,24 +917,24 @@ export default function MultiShirtCanvas({
           designHeight
         );
       }
-      
+
       // Generate the data URL at the current quality
       const dataURL = downloadCanvas.toDataURL('image/jpeg', jpegQuality / 100);
-      
+
       // Calculate file size
       const binaryString = atob(dataURL.split(',')[1]);
       const fileSizeBytes = binaryString.length;
       const fileSizeMB = fileSizeBytes / (1024 * 1024);
-      
+
       // Update the last file size
       setLastFileSize(fileSizeMB);
-      
+
       toast({
         description: `JPEG file size at ${jpegQuality}% quality: ${fileSizeMB.toFixed(2)}MB`,
       });
     }
   };
-  
+
   // Generate position data for developer
   const generatePositionData = () => {
     const data = {
@@ -943,22 +943,22 @@ export default function MultiShirtCanvas({
       globalYOffset,
       positions: shirtConfigs.map(s => ({
         name: s.name,
-        x: s.x + s.designOffset.x, 
+        x: s.x + s.designOffset.x + globalXOffset, 
         y: s.y + s.designOffset.y + globalYOffset
       }))
     };
-    
+
     console.log('=== POSITION DATA FOR DEVELOPER ===');
     console.log(JSON.stringify(data, null, 2));
-    
+
     toast({
       title: "Position Data Generated",
       description: "Check browser console for copy-paste data",
     });
-    
+
     return data;
   };
-  
+
   // Save placement settings to project
   const saveSettings = () => {
     if (!designImage) {
@@ -969,10 +969,10 @@ export default function MultiShirtCanvas({
       });
       return;
     }
-    
+
     // Generate the position data
     const positionData = generatePositionData();
-    
+
     // Create the settings object to save
     const settings: PlacementSettings = {
       designWidthFactor,
@@ -980,11 +980,11 @@ export default function MultiShirtCanvas({
       globalYOffset,
       placementSettings: JSON.stringify(shirtConfigs)
     };
-    
+
     // Call the parent's save function if provided
     if (onSaveSettings) {
       onSaveSettings(settings);
-      
+
       toast({
         title: "Success",
         description: "Design placement settings saved successfully!",
@@ -992,12 +992,12 @@ export default function MultiShirtCanvas({
       });
     }
   };
-  
+
   // Handle zoom level changes
   const handleZoomIn = () => {
     setZoomLevel(Math.min(200, zoomLevel + 10));
   };
-  
+
   const handleZoomOut = () => {
     setZoomLevel(Math.max(50, zoomLevel - 10));
   };
@@ -1019,7 +1019,7 @@ export default function MultiShirtCanvas({
       >
         Auto
       </button>
-      
+
       <div className="flex-grow h-full overflow-hidden">
         {editMode !== 'none' && (
           <div className="absolute top-8 left-0 right-0 z-10 bg-white/90 p-1 shadow-md border-b border-gray-200">
@@ -1043,7 +1043,7 @@ export default function MultiShirtCanvas({
                     <RotateCcw className="h-3 w-3 mr-1" /> Reset
                   </Button>
                 </div>
-                
+
                 <div className="flex gap-1">
                   <Button
                     variant="outline"
@@ -1066,7 +1066,7 @@ export default function MultiShirtCanvas({
                 </div>
               </div>
             </div>
-            
+
             {/* Basic Controls - Always visible in edit mode */}
             <div className="pt-1 flex flex-wrap gap-2 items-center justify-between border-t border-gray-200 mt-1">
               {/* Even more compact controls */}
@@ -1138,7 +1138,7 @@ export default function MultiShirtCanvas({
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500 min-w-[60px]">H: {designHeightFactor}</span>
                   <Slider 
@@ -1177,7 +1177,7 @@ export default function MultiShirtCanvas({
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500 min-w-[60px]">Y: {globalYOffset}</span>
                   <Slider 
@@ -1208,7 +1208,7 @@ export default function MultiShirtCanvas({
                   </div>
                 </div>
               </div>
-              
+
               {/* Presets */}
               <div className="flex items-center gap-1 pt-1 border-t border-gray-200 w-full">
                 <span className="text-[10px] text-gray-500">Presets:</span>
@@ -1229,7 +1229,7 @@ export default function MultiShirtCanvas({
             </div>
           </div>
         )}
-        
+
         <div className="relative h-full">
           <div className="bg-gray-50 flex items-center justify-center h-full w-full">
             <div style={{ 
