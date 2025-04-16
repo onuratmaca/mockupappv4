@@ -143,6 +143,7 @@ export default function MultiShirtCanvas({
   const [shirtConfigs, setShirtConfigs] = useState<ShirtConfig[]>(INITIAL_SHIRT_POSITIONS);
   const [selectedShirt, setSelectedShirt] = useState<number>(0);
   const [globalYOffset, setGlobalYOffset] = useState(-200);  // Default offset based on optimal positioning
+  const [globalXOffset, setGlobalXOffset] = useState(0);  // Default X offset at center
   const [editMode, setEditMode] = useState<'none' | 'all' | 'individual'>('none');
   const [designWidthFactor, setDesignWidthFactor] = useState(450); // Default design width for avg design
   const [designHeightFactor, setDesignHeightFactor] = useState(300); // Default design height
@@ -808,7 +809,7 @@ export default function MultiShirtCanvas({
           }
           
           // Draw the design with offsets
-          const designX = shirt.x + shirt.designOffset.x;
+          const designX = shirt.x + shirt.designOffset.x + globalXOffset;
           const designY = shirt.y + shirt.designOffset.y + globalYOffset;
           
           // Draw from top point instead of center for download too
@@ -1069,7 +1070,36 @@ export default function MultiShirtCanvas({
             {/* Basic Controls - Always visible in edit mode */}
             <div className="pt-1 flex flex-wrap gap-2 items-center justify-between border-t border-gray-200 mt-1">
               {/* Even more compact controls */}
-              <div className="grid grid-cols-3 gap-2 w-full">
+              <div className="grid grid-cols-4 gap-2 w-full">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs text-gray-500 min-w-[60px]">X: {globalXOffset}</span>
+                  <Slider 
+                    min={-800} 
+                    max={800} 
+                    step={2}
+                    value={[globalXOffset]} 
+                    onValueChange={(value) => setGlobalXOffset(value[0])}
+                    className="w-20"
+                  />
+                  <div className="flex gap-1">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-4 w-4 p-0" 
+                      onClick={() => setGlobalXOffset(Math.max(-800, globalXOffset - 10))}
+                    >
+                      <span className="text-[10px]">-</span>
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-4 w-4 p-0" 
+                      onClick={() => setGlobalXOffset(Math.min(800, globalXOffset + 10))}
+                    >
+                      <span className="text-[10px]">+</span>
+                    </Button>
+                  </div>
+                </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500 min-w-[60px]">W: {designWidthFactor}</span>
                   <Slider 
