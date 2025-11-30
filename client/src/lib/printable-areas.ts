@@ -97,6 +97,42 @@ export const MOCKUP_PRINTABLE_AREAS: Record<number, PrintableArea> = {
       center: { x: 0, y: 0 },
       bottom: { x: 0, y: 0.08 },
     }
+  },
+  // Mockup 6 - Calvary White (3x3 grid)
+  6: {
+    xCenter: 0.5,
+    yCenter: 0.40,
+    width: 0.70,
+    height: 0.55,
+    positionOffsets: {
+      top: { x: 0, y: -0.08 },
+      center: { x: 0, y: 0 },
+      bottom: { x: 0, y: 0.08 },
+    }
+  },
+  // Mockup 7 - Calvary White 2 (3x3 grid)
+  7: {
+    xCenter: 0.5,
+    yCenter: 0.40,
+    width: 0.70,
+    height: 0.55,
+    positionOffsets: {
+      top: { x: 0, y: -0.08 },
+      center: { x: 0, y: 0 },
+      bottom: { x: 0, y: 0.08 },
+    }
+  },
+  // Mockup 8 - Calvary Black (3x3 grid)
+  8: {
+    xCenter: 0.5,
+    yCenter: 0.40,
+    width: 0.70,
+    height: 0.55,
+    positionOffsets: {
+      top: { x: 0, y: -0.08 },
+      center: { x: 0, y: 0 },
+      bottom: { x: 0, y: 0.08 },
+    }
   }
 };
 

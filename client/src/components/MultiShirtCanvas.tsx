@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calculator, Download, ZoomIn, ZoomOut, Eye, EyeOff, MoveHorizontal, MoveVertical, Crosshair, RotateCcw, Save, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getMockupById } from "@/lib/mockup-data";
+import { getMockupById, GridLayout } from "@/lib/mockup-data";
 import { Slider } from "@/components/ui/slider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -51,8 +51,8 @@ interface ShirtConfig {
   designOffset: { x: number; y: number };
 }
 
-// Define initial shirt positions based on optimal placement data
-const INITIAL_SHIRT_POSITIONS: ShirtConfig[] = [
+// Define initial shirt positions based on optimal placement data - 2x4 grid (8 shirts)
+const INITIAL_SHIRT_POSITIONS_2x4: ShirtConfig[] = [
   // TOP ROW (Left to Right)
   { x: 500, y: 750, name: "White", index: 0, designOffset: { x: 90, y: -90 } },
   { x: 1500, y: 750, name: "Ivory", index: 1, designOffset: { x: 30, y: -75 } },
@@ -65,6 +65,32 @@ const INITIAL_SHIRT_POSITIONS: ShirtConfig[] = [
   { x: 2500, y: 2250, name: "Yam", index: 6, designOffset: { x: -30, y: -170 } },
   { x: 3500, y: 2250, name: "Khaki", index: 7, designOffset: { x: -95, y: -170 } }
 ];
+
+// Define initial shirt positions for 3x3 grid (9 shirts) - Calvary Apparel Studio mockups
+const INITIAL_SHIRT_POSITIONS_3x3: ShirtConfig[] = [
+  // TOP ROW (Left to Right)
+  { x: 667, y: 500, name: "Shirt 1", index: 0, designOffset: { x: 0, y: -50 } },
+  { x: 2000, y: 500, name: "Shirt 2", index: 1, designOffset: { x: 0, y: -50 } },
+  { x: 3333, y: 500, name: "Shirt 3", index: 2, designOffset: { x: 0, y: -50 } },
+
+  // MIDDLE ROW (Left to Right)
+  { x: 667, y: 1500, name: "Shirt 4", index: 3, designOffset: { x: 0, y: -50 } },
+  { x: 2000, y: 1500, name: "Shirt 5", index: 4, designOffset: { x: 0, y: -50 } },
+  { x: 3333, y: 1500, name: "Shirt 6", index: 5, designOffset: { x: 0, y: -50 } },
+
+  // BOTTOM ROW (Left to Right)
+  { x: 667, y: 2500, name: "Shirt 7", index: 6, designOffset: { x: 0, y: -50 } },
+  { x: 2000, y: 2500, name: "Shirt 8", index: 7, designOffset: { x: 0, y: -50 } },
+  { x: 3333, y: 2500, name: "Shirt 9", index: 8, designOffset: { x: 0, y: -50 } }
+];
+
+// Keep for backward compatibility
+const INITIAL_SHIRT_POSITIONS = INITIAL_SHIRT_POSITIONS_2x4;
+
+// Helper to get initial positions based on grid layout
+function getInitialShirtPositions(gridLayout: GridLayout): ShirtConfig[] {
+  return gridLayout === "3x3" ? INITIAL_SHIRT_POSITIONS_3x3 : INITIAL_SHIRT_POSITIONS_2x4;
+}
 
 export default function MultiShirtCanvas({
   designImage,
@@ -139,8 +165,12 @@ export default function MultiShirtCanvas({
     }
   ];
 
+  // Get current mockup's grid layout
+  const currentMockup = getMockupById(mockupId);
+  const currentGridLayout: GridLayout = currentMockup?.gridLayout || "2x4";
+
   // Design placement adjustment controls
-  const [shirtConfigs, setShirtConfigs] = useState<ShirtConfig[]>(INITIAL_SHIRT_POSITIONS);
+  const [shirtConfigs, setShirtConfigs] = useState<ShirtConfig[]>(() => getInitialShirtPositions(currentGridLayout));
   const [selectedShirt, setSelectedShirt] = useState<number>(0);
   const [globalYOffset, setGlobalYOffset] = useState(-200);  // Default offset based on optimal positioning
   const [globalXOffset, setGlobalXOffset] = useState(0);  // Default X offset at center
@@ -149,6 +179,16 @@ export default function MultiShirtCanvas({
   const [designHeightFactor, setDesignHeightFactor] = useState(300); // Default design height
   const [syncAll, setSyncAll] = useState(true); // Sync all shirts by default
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null); // Track selected preset
+
+  // Update shirt configs when mockup changes (different grid layout)
+  useEffect(() => {
+    const mockup = getMockupById(mockupId);
+    if (mockup) {
+      const newPositions = getInitialShirtPositions(mockup.gridLayout);
+      setShirtConfigs(newPositions);
+      setSelectedShirt(0);
+    }
+  }, [mockupId]);
 
   // Expose functions to parent component through refs
   useEffect(() => {
@@ -241,7 +281,8 @@ export default function MultiShirtCanvas({
       if (initialSettings.placementSettings) {
         try {
           const parsedSettings = JSON.parse(initialSettings.placementSettings);
-          if (Array.isArray(parsedSettings) && parsedSettings.length === 8) {
+          // Accept both 8 (2x4 grid) and 9 (3x3 grid) shirt configurations
+          if (Array.isArray(parsedSettings) && (parsedSettings.length === 8 || parsedSettings.length === 9)) {
             setShirtConfigs(parsedSettings);
           }
         } catch (error) {
@@ -335,7 +376,7 @@ export default function MultiShirtCanvas({
 
   // Reset positions to default optimal settings
   const resetPositions = () => {
-    setShirtConfigs(INITIAL_SHIRT_POSITIONS);
+    setShirtConfigs(getInitialShirtPositions(currentGridLayout));
     setGlobalYOffset(-200); // Reset to optimal default Y offset
     setDesignWidthFactor(450);
     setDesignHeightFactor(300);
@@ -370,7 +411,7 @@ export default function MultiShirtCanvas({
     }
 
     // Reset positions first for consistency
-    setShirtConfigs(INITIAL_SHIRT_POSITIONS);
+    setShirtConfigs(getInitialShirtPositions(currentGridLayout));
 
     // Calculate the aspect ratio
     const aspectRatio = designImg.width / designImg.height;
