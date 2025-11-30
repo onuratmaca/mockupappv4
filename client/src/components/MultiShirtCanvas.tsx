@@ -183,6 +183,9 @@ export default function MultiShirtCanvas({
   const [syncAll, setSyncAll] = useState(true); // Sync all shirts by default
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null); // Track selected preset
 
+  // Track the previous grid layout to detect layout changes
+  const [prevGridLayout, setPrevGridLayout] = useState<GridLayout | null>(null);
+
   // Update shirt configs when mockup changes (different grid layout)
   useEffect(() => {
     const mockup = getMockupById(mockupId);
@@ -190,9 +193,19 @@ export default function MultiShirtCanvas({
       const newPositions = getInitialShirtPositions(mockup.gridLayout);
       setShirtConfigs(newPositions);
       setSelectedShirt(0);
-      // 3x3 mockups have all positioning built into designOffset, so globalYOffset = 0
-      // 2x4 mockups use globalYOffset for vertical adjustment
-      setGlobalYOffset(mockup.gridLayout === "3x3" ? 0 : -200);
+      
+      // Only reset globalYOffset when switching between different grid layouts
+      // This preserves user adjustments when switching between same-layout mockups
+      if (prevGridLayout !== null && prevGridLayout !== mockup.gridLayout) {
+        // Switching between different layouts - reset to appropriate default
+        setGlobalYOffset(mockup.gridLayout === "3x3" ? 0 : -200);
+      } else if (prevGridLayout === null) {
+        // Initial load - set appropriate default
+        setGlobalYOffset(mockup.gridLayout === "3x3" ? 0 : -200);
+      }
+      // If same layout, keep the current globalYOffset
+      
+      setPrevGridLayout(mockup.gridLayout);
     }
   }, [mockupId]);
 
