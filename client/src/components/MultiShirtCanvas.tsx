@@ -67,23 +67,24 @@ const INITIAL_SHIRT_POSITIONS_2x4: ShirtConfig[] = [
 ];
 
 // Define initial shirt positions for 3x3 grid (9 shirts) - Calvary Apparel Studio mockups
-// Image is 4000x3000, grid is 3x3, each cell is ~1333x1000
-// Shirts are centered in each cell with the print area below the neckline
+// Image is 4000x3000, grid is 3x3
+// Shirts are positioned slightly lower in each successive row
+// Per-row Y offsets account for the collar-to-chest distance difference
 const INITIAL_SHIRT_POSITIONS_3x3: ShirtConfig[] = [
-  // TOP ROW (Left to Right) - y center around 500 (first third)
-  { x: 667, y: 420, name: "Shirt 1", index: 0, designOffset: { x: 0, y: 0 } },
-  { x: 2000, y: 420, name: "Shirt 2", index: 1, designOffset: { x: 0, y: 0 } },
-  { x: 3333, y: 420, name: "Shirt 3", index: 2, designOffset: { x: 0, y: 0 } },
+  // TOP ROW (Left to Right) - shirts positioned higher, need less Y offset
+  { x: 720, y: 510, name: "Shirt 1", index: 0, designOffset: { x: 0, y: -140 } },
+  { x: 2000, y: 505, name: "Shirt 2", index: 1, designOffset: { x: 0, y: -140 } },
+  { x: 3280, y: 500, name: "Shirt 3", index: 2, designOffset: { x: 0, y: -140 } },
 
-  // MIDDLE ROW (Left to Right) - y center around 1500 (second third)
-  { x: 667, y: 1420, name: "Shirt 4", index: 3, designOffset: { x: 0, y: 0 } },
-  { x: 2000, y: 1420, name: "Shirt 5", index: 4, designOffset: { x: 0, y: 0 } },
-  { x: 3333, y: 1420, name: "Shirt 6", index: 5, designOffset: { x: 0, y: 0 } },
+  // MIDDLE ROW (Left to Right) - shirts positioned slightly lower
+  { x: 720, y: 1520, name: "Shirt 4", index: 3, designOffset: { x: 0, y: -180 } },
+  { x: 2000, y: 1510, name: "Shirt 5", index: 4, designOffset: { x: 0, y: -180 } },
+  { x: 3280, y: 1505, name: "Shirt 6", index: 5, designOffset: { x: 0, y: -180 } },
 
-  // BOTTOM ROW (Left to Right) - y center around 2500 (third third)
-  { x: 667, y: 2420, name: "Shirt 7", index: 6, designOffset: { x: 0, y: 0 } },
-  { x: 2000, y: 2420, name: "Shirt 8", index: 7, designOffset: { x: 0, y: 0 } },
-  { x: 3333, y: 2420, name: "Shirt 9", index: 8, designOffset: { x: 0, y: 0 } }
+  // BOTTOM ROW (Left to Right) - shirts positioned lowest
+  { x: 720, y: 2510, name: "Shirt 7", index: 6, designOffset: { x: 0, y: -215 } },
+  { x: 2000, y: 2500, name: "Shirt 8", index: 7, designOffset: { x: 0, y: -215 } },
+  { x: 3280, y: 2495, name: "Shirt 9", index: 8, designOffset: { x: 0, y: -215 } }
 ];
 
 // Keep for backward compatibility
@@ -189,6 +190,9 @@ export default function MultiShirtCanvas({
       const newPositions = getInitialShirtPositions(mockup.gridLayout);
       setShirtConfigs(newPositions);
       setSelectedShirt(0);
+      // Use different default globalYOffset based on grid layout
+      // 3x3 mockups have per-row offsets built into designOffset, so use smaller global offset
+      setGlobalYOffset(mockup.gridLayout === "3x3" ? -50 : -200);
     }
   }, [mockupId]);
 
@@ -379,7 +383,8 @@ export default function MultiShirtCanvas({
   // Reset positions to default optimal settings
   const resetPositions = () => {
     setShirtConfigs(getInitialShirtPositions(currentGridLayout));
-    setGlobalYOffset(-200); // Reset to optimal default Y offset
+    // Use different default globalYOffset based on grid layout
+    setGlobalYOffset(currentGridLayout === "3x3" ? -50 : -200);
     setDesignWidthFactor(450);
     setDesignHeightFactor(300);
     setSelectedPreset(null);
@@ -431,8 +436,10 @@ export default function MultiShirtCanvas({
     const isSvgImage = designImage?.toLowerCase().includes('.svg') || 
                       designImage?.toLowerCase().startsWith('data:image/svg+xml');
 
-    // Default position on shirt
-    let yOffset = -200; 
+    // Base Y offset depends on grid layout
+    // 3x3 grid already has per-row offsets in designOffset, so use smaller global offset
+    const baseYOffset = currentGridLayout === "3x3" ? -50 : -200;
+    let yOffset = baseYOffset;
 
     // Choose preset and adjust for the right appearance
     if (aspectRatio > 2.0) {
@@ -440,21 +447,21 @@ export default function MultiShirtCanvas({
       setSelectedPreset(0);
       setDesignWidthFactor(DESIGN_PRESETS[0].widthFactor);
       setDesignHeightFactor(DESIGN_PRESETS[0].heightFactor);
-      yOffset = -150; // Wide designs a bit lower
+      yOffset = currentGridLayout === "3x3" ? 0 : -150; // Wide designs a bit lower
     } 
     else if (aspectRatio > 1.3) {
       // Standard landscape designs
       setSelectedPreset(1);
       setDesignWidthFactor(DESIGN_PRESETS[1].widthFactor);
       setDesignHeightFactor(DESIGN_PRESETS[1].heightFactor);
-      yOffset = -180;
+      yOffset = currentGridLayout === "3x3" ? -30 : -180;
     }
     else if (aspectRatio >= 0.7 && aspectRatio <= 1.3) {
       // Square designs
       setSelectedPreset(2);
       setDesignWidthFactor(DESIGN_PRESETS[2].widthFactor);
       setDesignHeightFactor(DESIGN_PRESETS[2].heightFactor);
-      yOffset = -200;
+      yOffset = currentGridLayout === "3x3" ? -50 : -200;
     }
     else if (aspectRatio >= 0.4 && aspectRatio < 0.7) {
       // Portrait designs need larger size to counteract the 0.6 width multiplier
@@ -471,7 +478,7 @@ export default function MultiShirtCanvas({
       setDesignHeightFactor(adjustedHeight);
 
       // Position portrait designs a bit lower than square designs
-      yOffset = -180; // Only 20px higher than square
+      yOffset = currentGridLayout === "3x3" ? -30 : -180;
     }
     else {
       // Very tall designs (aspectRatio < 0.4) need even more width adjustment
@@ -486,13 +493,13 @@ export default function MultiShirtCanvas({
       setDesignHeightFactor(adjustedHeight);
 
       // Position tall designs at similar position to portrait
-      yOffset = -180;
+      yOffset = currentGridLayout === "3x3" ? -30 : -180;
     }
 
     // If it's an SVG, adjust the position to compensate for the larger scaling factor
     // SVGs are scaled by 1.5x in the rendering process, so need to position higher
     if (isSvgImage) {
-      yOffset -= 70; // SVGs should be positioned 70px higher to maintain consistent position
+      yOffset -= currentGridLayout === "3x3" ? 30 : 70; // SVGs should be positioned higher
     }
 
     // Apply calculated Y offset
