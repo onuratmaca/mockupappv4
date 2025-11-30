@@ -17,15 +17,16 @@ export type ShirtPosition = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type GridLayout = "2x4" | "3x3";
 
 // Define the mockup images with their grid layout
+// skipPositions: positions to skip (e.g., for logo placement)
 export const MOCKUP_IMAGES = [
-  { id: 1, name: "Mockup 1", src: mockup1, gridLayout: "2x4" as GridLayout, shirtCount: 8 },
-  { id: 2, name: "Mockup 2", src: mockup2, gridLayout: "2x4" as GridLayout, shirtCount: 8 },
-  { id: 3, name: "Mockup 3", src: mockup3, gridLayout: "2x4" as GridLayout, shirtCount: 8 },
-  { id: 4, name: "Mockup 4", src: mockup4, gridLayout: "2x4" as GridLayout, shirtCount: 8 },
-  { id: 5, name: "Mockup 5", src: mockup5, gridLayout: "2x4" as GridLayout, shirtCount: 8 },
-  { id: 6, name: "Calvary White", src: mockup6, gridLayout: "3x3" as GridLayout, shirtCount: 9 },
-  { id: 7, name: "Calvary White 2", src: mockup7, gridLayout: "3x3" as GridLayout, shirtCount: 9 },
-  { id: 8, name: "Calvary Black", src: mockup8, gridLayout: "3x3" as GridLayout, shirtCount: 9 }
+  { id: 1, name: "Mockup 1", src: mockup1, gridLayout: "2x4" as GridLayout, shirtCount: 8, skipPositions: [] as number[] },
+  { id: 2, name: "Mockup 2", src: mockup2, gridLayout: "2x4" as GridLayout, shirtCount: 8, skipPositions: [] as number[] },
+  { id: 3, name: "Mockup 3", src: mockup3, gridLayout: "2x4" as GridLayout, shirtCount: 8, skipPositions: [] as number[] },
+  { id: 4, name: "Mockup 4", src: mockup4, gridLayout: "2x4" as GridLayout, shirtCount: 8, skipPositions: [] as number[] },
+  { id: 5, name: "Mockup 5", src: mockup5, gridLayout: "2x4" as GridLayout, shirtCount: 8, skipPositions: [] as number[] },
+  { id: 6, name: "Calvary White", src: mockup6, gridLayout: "3x3" as GridLayout, shirtCount: 9, skipPositions: [] as number[] },
+  { id: 7, name: "Calvary White 2", src: mockup7, gridLayout: "3x3" as GridLayout, shirtCount: 8, skipPositions: [7] as number[] }, // Skip position 7 (8th spot with logo)
+  { id: 8, name: "Calvary Black", src: mockup8, gridLayout: "3x3" as GridLayout, shirtCount: 9, skipPositions: [] as number[] }
 ];
 
 export interface Mockup {
@@ -34,6 +35,7 @@ export interface Mockup {
   src: string;
   gridLayout: GridLayout;
   shirtCount: number;
+  skipPositions: number[]; // Positions to skip (e.g., for logo placement)
 }
 
 export interface ShirtGridPosition {

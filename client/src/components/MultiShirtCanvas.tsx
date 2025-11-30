@@ -67,21 +67,23 @@ const INITIAL_SHIRT_POSITIONS_2x4: ShirtConfig[] = [
 ];
 
 // Define initial shirt positions for 3x3 grid (9 shirts) - Calvary Apparel Studio mockups
+// Image is 4000x3000, grid is 3x3, each cell is ~1333x1000
+// Shirts are centered in each cell with the print area below the neckline
 const INITIAL_SHIRT_POSITIONS_3x3: ShirtConfig[] = [
-  // TOP ROW (Left to Right)
-  { x: 667, y: 500, name: "Shirt 1", index: 0, designOffset: { x: 0, y: -50 } },
-  { x: 2000, y: 500, name: "Shirt 2", index: 1, designOffset: { x: 0, y: -50 } },
-  { x: 3333, y: 500, name: "Shirt 3", index: 2, designOffset: { x: 0, y: -50 } },
+  // TOP ROW (Left to Right) - y center around 500 (first third)
+  { x: 667, y: 420, name: "Shirt 1", index: 0, designOffset: { x: 0, y: 0 } },
+  { x: 2000, y: 420, name: "Shirt 2", index: 1, designOffset: { x: 0, y: 0 } },
+  { x: 3333, y: 420, name: "Shirt 3", index: 2, designOffset: { x: 0, y: 0 } },
 
-  // MIDDLE ROW (Left to Right)
-  { x: 667, y: 1500, name: "Shirt 4", index: 3, designOffset: { x: 0, y: -50 } },
-  { x: 2000, y: 1500, name: "Shirt 5", index: 4, designOffset: { x: 0, y: -50 } },
-  { x: 3333, y: 1500, name: "Shirt 6", index: 5, designOffset: { x: 0, y: -50 } },
+  // MIDDLE ROW (Left to Right) - y center around 1500 (second third)
+  { x: 667, y: 1420, name: "Shirt 4", index: 3, designOffset: { x: 0, y: 0 } },
+  { x: 2000, y: 1420, name: "Shirt 5", index: 4, designOffset: { x: 0, y: 0 } },
+  { x: 3333, y: 1420, name: "Shirt 6", index: 5, designOffset: { x: 0, y: 0 } },
 
-  // BOTTOM ROW (Left to Right)
-  { x: 667, y: 2500, name: "Shirt 7", index: 6, designOffset: { x: 0, y: -50 } },
-  { x: 2000, y: 2500, name: "Shirt 8", index: 7, designOffset: { x: 0, y: -50 } },
-  { x: 3333, y: 2500, name: "Shirt 9", index: 8, designOffset: { x: 0, y: -50 } }
+  // BOTTOM ROW (Left to Right) - y center around 2500 (third third)
+  { x: 667, y: 2420, name: "Shirt 7", index: 6, designOffset: { x: 0, y: 0 } },
+  { x: 2000, y: 2420, name: "Shirt 8", index: 7, designOffset: { x: 0, y: 0 } },
+  { x: 3333, y: 2420, name: "Shirt 9", index: 8, designOffset: { x: 0, y: 0 } }
 ];
 
 // Keep for backward compatibility
@@ -580,8 +582,15 @@ export default function MultiShirtCanvas({
     // SVG scaling factor - we'll make SVGs larger by default
     const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
 
+    // Get skip positions for current mockup
+    const skipPositions = currentMockup?.skipPositions || [];
+
     // Place design on each shirt position
     shirtConfigs.forEach((shirt) => {
+      // Skip positions that have logos or should not have designs
+      if (skipPositions.includes(shirt.index)) {
+        return;
+      }
       // Calculate design dimensions based on aspect ratio
       let areaWidth, areaHeight;
 
@@ -654,8 +663,16 @@ export default function MultiShirtCanvas({
     // SVG scaling factor - consistent with other functions
     const svgScaleFactor = isSvgImage ? 1.5 : 1.0;
 
+    // Get skip positions for current mockup
+    const skipPositions = currentMockup?.skipPositions || [];
+
     // For each shirt, draw boundary and guides
     shirtConfigs.forEach((shirt, index) => {
+      // Skip positions that have logos or should not have designs
+      if (skipPositions.includes(shirt.index)) {
+        return;
+      }
+
       // Set different colors for selected vs. non-selected shirts
       const isSelected = index === selectedShirt;
 
